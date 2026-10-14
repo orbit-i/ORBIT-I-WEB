@@ -7,28 +7,25 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 const navLinks = [
-  { label: 'Home', href: '#home' },
+  { label: 'Home', href: '/' },
+  { label: 'About', href: '/about' },
   {
-    label: 'About Us', href: '#about',
+    label: 'Services', href: '/services',
     dropdown: [
-      { label: 'Our Story', href: '#about' },
-      { label: 'Mission & Vision', href: '#about' },
+      { label: '✦ All Services Overview', href: '/services' },
+      { label: 'Enterprise AI & ML', href: '/services/enterprise-ai-ml' },
+      { label: 'Web Application Development', href: '/services/web-development' },
+      { label: 'Mobile App Development', href: '/services/mobile-development' },
+      { label: 'Custom Software Solutions', href: '/services/custom-software' },
+      { label: 'UI/UX Design Systems', href: '/services/ui-ux-design' },
+      { label: 'Cloud & DevOps Engineering', href: '/services/cloud-devops' },
+      { label: 'Enterprise APIs & Integrations', href: '/services/enterprise-api' },
     ],
   },
-  {
-    label: 'Services', href: '#services',
-    dropdown: [
-      { label: 'Enterprise AI & ML', href: '#services' },
-      { label: 'Web Development', href: '#services' },
-      { label: 'Mobile Development', href: '#services' },
-      { label: 'Custom Software', href: '#services' },
-      { label: 'UI/UX Design Systems', href: '#services' },
-      { label: 'Cloud & DevOps', href: '#services' },
-      { label: 'Enterprise APIs', href: '#services' },
-    ],
-  },
-  { label: 'Team', href: '#team' },
-  // { label: 'Verify Certificate', href: '/verify' }, // Hidden — enable when needed
+  { label: 'Tech Blog', href: '/blog' },
+  { label: 'Cities & SEO', href: '/locations' },
+  { label: 'Team', href: '/#team' },
+  { label: 'Contact', href: '/contact' },
   { label: 'Client Portal', href: '/portal' },
 ]
 

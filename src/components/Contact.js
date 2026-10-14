@@ -15,7 +15,8 @@ const fadeUp = (delay = 0) => ({
 const contactInfo = [
   { icon: '✉', label: 'Email', value: 'contactus@orbit-i.tech', href: 'mailto:contactus@orbit-i.tech' },
   { icon: '☎', label: 'Phone', value: '+92 319 0375751', href: 'tel:+923190375751' },
-  { icon: '◎', label: 'Head Office', value: 'Nawabshah, Sindh, Pakistan', href: null },
+  { icon: '◎', label: 'Headquarter', value: 'Nawabshah, Sindh, Pakistan', href: null },
+  { icon: '🏢', label: 'Branch Office', value: 'Karachi, Sindh, Pakistan', href: null },
   { icon: '◈', label: 'WhatsApp', value: 'Chat with us directly', href: 'https://wa.me/923190375751' },
 ]
 

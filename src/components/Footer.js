@@ -5,19 +5,22 @@ import OrbitLogo from './OrbitLogo'
 
 const footerLinks = {
   Services: [
-    { label: 'Enterprise AI & ML', href: '#services' },
-    { label: 'Web Development', href: '#services' },
-    { label: 'Mobile Development', href: '#services' },
-    { label: 'Custom Software', href: '#services' },
-    { label: 'UI/UX Design', href: '#services' },
-    { label: 'Cloud & DevOps', href: '#services' },
-    { label: 'Enterprise APIs', href: '#services' },
+    { label: 'Enterprise AI & ML', href: '/services/enterprise-ai-ml' },
+    { label: 'Web Application Development', href: '/services/web-development' },
+    { label: 'Mobile App Development', href: '/services/mobile-development' },
+    { label: 'Custom Software Solutions', href: '/services/custom-software' },
+    { label: 'UI/UX Design Systems', href: '/services/ui-ux-design' },
+    { label: 'Cloud & DevOps Engineering', href: '/services/cloud-devops' },
+    { label: 'Enterprise APIs & Integrations', href: '/services/enterprise-api' },
   ],
   Company: [
-    { label: 'About Us', href: '#about' },
-    { label: 'Team & Leadership', href: '#team' },
+    { label: 'About Us', href: '/about' },
+    { label: 'Services Overview', href: '/services' },
+    { label: 'Tech Blog & Insights', href: '/blog' },
+    { label: 'Cities & Global Reach', href: '/locations' },
+    { label: 'Team & Leadership', href: '/#team' },
+    { label: 'Contact Us', href: '/contact' },
     { label: 'Client Portal', href: '/portal' },
-    { label: 'Contact Us', href: '#contact' },
   ],
   Legal: [
     { label: 'Privacy Policy', href: '/privacy' },
@@ -98,7 +101,7 @@ export default function Footer() {
             </p>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {['SECP Active', 'Est. 2024', 'Nawabshah, Sindh'].map((t) => (
+              {['SECP Active', 'Est. 2026', 'Nawabshah & Karachi'].map((t) => (
                 <span key={t} style={{
                   fontSize: 10, padding: '4px 10px',
                   background: 'var(--bg-elevated)',
@@ -231,7 +234,7 @@ export default function Footer() {
           flexWrap: 'wrap', gap: 12,
         }}>
           <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-            © 2026 ORBIT-I Private Limited. All rights reserved. Registered in Nawabshah, Sindh, Pakistan.
+            © 2026 ORBIT-I Private Limited. All rights reserved. Headquartered in Nawabshah, Sindh with Branch Office in Karachi, Pakistan.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             {['Privacy', 'Terms', 'Security'].map((item) => (

@@ -70,7 +70,7 @@ export default function Hero() {
             {/* Left text */}
             <div className="hero-text">
               <motion.div {...fadeUp(0)}>
-                <div className="tag"><span className="dot" />Engineering HQ · Nawabshah, Sindh</div>
+                <div className="tag"><span className="dot" />HQ · Nawabshah | Branch · Karachi</div>
               </motion.div>
 
               <motion.h1 {...fadeUp(0.1)} style={{ fontSize: 'clamp(38px, 7vw, 70px)', lineHeight: 1.04, letterSpacing: '-0.03em', color: 'var(--text-primary)', fontFamily: 'Space Grotesk', fontWeight: 800 }}>
@@ -89,12 +89,12 @@ export default function Hero() {
               </motion.p>
 
               <motion.div {...fadeUp(0.25)} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <button onClick={() => scroll('#services')} className="btn-primary" style={{ fontSize: 13 }}>
+                <a href="/services" className="btn-primary" style={{ fontSize: 13, textDecoration: 'none' }}>
                   Our Services
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </button>
+                </a>
                 <button onClick={() => scroll('#team')} className="btn-outline" style={{ fontSize: 13 }}>Meet the Team</button>
-                <button onClick={() => scroll('#contact')} className="btn-outline" style={{ fontSize: 13 }}>Contact Us</button>
+                <a href="/contact" className="btn-outline" style={{ fontSize: 13, textDecoration: 'none' }}>Contact Us</a>
               </motion.div>
 
               <motion.div {...fadeUp(0.3)} style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
@@ -133,11 +133,11 @@ export default function Hero() {
                 <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <p style={{ fontSize: 10, letterSpacing: '0.12em', color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 600 }}>Official Corporate Emblem</p>
                   <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>ORBIT-I Private Limited</h3>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Engineering software, custom platforms, and verifiable cloud architectures from Nawabshah, Sindh.</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Engineering software, custom platforms, and verifiable cloud architectures from Nawabshah & Karachi, Pakistan.</p>
                 </div>
 
                 <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderTop: '1px solid var(--border)' }}>
-                  {[['EST. 2024', 'Founded'], ['SECP', 'Active'], ['SINDH', 'HQ']].map(([v, l], i) => (
+                  {[['EST. 2026', 'Founded'], ['SECP', 'Active'], ['SINDH', 'HQ & Branch']].map(([v, l], i) => (
                     <div key={l} style={{ padding: '12px 6px', textAlign: 'center', borderLeft: i > 0 ? '1px solid var(--border)' : 'none' }}>
                       <div style={{ fontFamily: 'Space Grotesk', fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>{v}</div>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{l}</div>

@@ -20,9 +20,9 @@ const values = [
 
 const metrics = [
   { value: '7+', label: 'Services', sub: 'AI, Web, Mobile & Cloud' },
-  { value: '2024', label: 'Founded', sub: 'SECP Registered' },
+  { value: '2026', label: 'Founded', sub: 'SECP Registered' },
   { value: '100%', label: 'IP Owned', sub: 'No recurring costs' },
-  { value: 'Global', label: 'Delivery', sub: 'Sindh HQ' },
+  { value: 'Global', label: 'Delivery', sub: 'Nawabshah & Karachi' },
 ]
 
 const infoCards = [

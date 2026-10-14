@@ -7,18 +7,22 @@ export const metadata = {
     default: 'ORBIT-I Private Limited — Engineering Software That Stays in Orbit',
     template: '%s | ORBIT-I Private Limited',
   },
-  description: 'ORBIT-I is a SECP registered software engineering company in Nawabshah, Sindh, Pakistan. We build enterprise AI systems, web applications, mobile apps, and custom software solutions.',
+  description: 'ORBIT-I Private Limited is an SECP registered technology company (Est. 2026) headquartered in Nawabshah with a branch in Karachi, Pakistan. We deliver enterprise AI systems, full-stack web platforms, mobile apps, and custom cloud software.',
   keywords: [
     'software company Pakistan',
     'software development Nawabshah',
+    'software house Karachi',
     'enterprise AI Pakistan',
-    'Spring Boot development',
-    'React Next.js Pakistan',
+    'Next.js development Pakistan',
+    'Node.js development Karachi',
     'custom software Sindh',
-    'LangChain RAG systems',
-    'mobile app development Pakistan',
-    'cloud DevOps Pakistan',
-    'ORBIT-I',
+    'mobile app development Hyderabad',
+    'software company Sukkur',
+    'software engineering Sibi',
+    'web developers Lahore',
+    'cloud DevOps Islamabad',
+    'SECP registered IT company',
+    'ORBIT-I Private Limited',
     'orbit-i.tech',
   ],
   authors: [{ name: 'ORBIT-I Private Limited', url: 'https://orbit-i.tech' }],
@@ -45,7 +49,7 @@ export const metadata = {
     url: 'https://orbit-i.tech',
     siteName: 'ORBIT-I Private Limited',
     title: 'ORBIT-I Private Limited — Building Ideas. Creating Impact.',
-    description: 'SECP registered software engineering company delivering enterprise AI systems, web platforms, mobile apps, and cloud infrastructure from Nawabshah, Sindh, Pakistan.',
+    description: 'SECP registered technology company (Est. 2026) with headquarters in Nawabshah and branch office in Karachi, Pakistan. Delivering enterprise AI, web, mobile, and custom cloud systems.',
     images: [
       {
         url: '/orbitlogo-removebg-preview.png',
@@ -58,12 +62,8 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'ORBIT-I Private Limited — Engineering Software That Stays in Orbit',
-    description: 'Enterprise AI systems, web platforms, mobile apps, and cloud infrastructure from Nawabshah, Sindh, Pakistan.',
+    description: 'Enterprise AI systems, web platforms, mobile apps, and cloud infrastructure from Nawabshah & Karachi, Pakistan.',
     images: ['/orbitlogo-removebg-preview.png'],
-  },
-  verification: {
-    // Add Google Search Console verification code here when available
-    // google: 'your-verification-code',
   },
   alternates: {
     canonical: 'https://orbit-i.tech',
@@ -82,48 +82,53 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        {/* Structured data — helps Google understand the business */}
+        {/* Structured data — Schema.org LocalBusiness & Organization for high-ranking SEO */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': 'Organization',
+              '@type': 'LocalBusiness',
               name: 'ORBIT-I Private Limited',
               alternateName: 'ORBIT-I',
               url: 'https://orbit-i.tech',
               logo: 'https://orbit-i.tech/orbitlogo-removebg-preview.png',
-              description: 'SECP registered software engineering company building enterprise AI systems, web platforms, mobile apps, and cloud infrastructure.',
-              foundingDate: '2024',
+              image: 'https://orbit-i.tech/orbitlogo-removebg-preview.png',
+              description: 'SECP registered software engineering firm founded in 2026, delivering enterprise AI systems, web platforms, mobile apps, and custom cloud infrastructure from Nawabshah (HQ) and Karachi (Branch), Pakistan.',
+              foundingDate: '2026',
               address: {
                 '@type': 'PostalAddress',
+                streetAddress: 'Nawabshah, Karachi',
                 addressLocality: 'Nawabshah',
                 addressRegion: 'Sindh',
                 addressCountry: 'PK',
               },
-              contactPoint: {
-                '@type': 'ContactPoint',
-                telephone: '+92-319-0375751',
-                contactType: 'customer service',
-                email: 'contactus@orbit-i.tech',
-                availableLanguage: ['English', 'Urdu'],
+              geo: {
+                '@type': 'GeoCoordinates',
+                latitude: '26.2483',
+                longitude: '68.4096',
               },
-              sameAs: [
-                'https://linkedin.com/company/orbit-i',
+              contactPoint: [
+                {
+                  '@type': 'ContactPoint',
+                  telephone: '+92-319-0375751',
+                  contactType: 'customer service',
+                  email: 'contactus@orbit-i.tech',
+                  areaServed: ['PK', 'US', 'GB', 'AE', 'SA'],
+                  availableLanguage: ['English', 'Urdu', 'Sindhi'],
+                },
               ],
-              serviceArea: {
-                '@type': 'Place',
-                name: 'Pakistan and Global',
-              },
               hasOfferCatalog: {
                 '@type': 'OfferCatalog',
                 name: 'Software Engineering Services',
                 itemListElement: [
-                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Enterprise AI & Machine Learning Solutions' } },
-                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Web Application Development' } },
-                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Mobile Application Development' } },
-                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Custom Software Solutions' } },
-                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cloud & DevOps Engineering' } },
+                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Enterprise AI & Machine Learning Solutions', url: 'https://orbit-i.tech/services/enterprise-ai-ml' } },
+                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Enterprise Web Application Development', url: 'https://orbit-i.tech/services/web-development' } },
+                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Mobile Application Development', url: 'https://orbit-i.tech/services/mobile-development' } },
+                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Custom Software Solutions', url: 'https://orbit-i.tech/services/custom-software' } },
+                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'UI/UX Design Systems', url: 'https://orbit-i.tech/services/ui-ux-design' } },
+                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Cloud & DevOps Engineering', url: 'https://orbit-i.tech/services/cloud-devops' } },
+                  { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Enterprise API & Gateway Integrations', url: 'https://orbit-i.tech/services/enterprise-api' } },
                 ],
               },
             }),
