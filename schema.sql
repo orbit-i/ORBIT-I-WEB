@@ -2,9 +2,6 @@
 -- ORBIT-I Website Database Schema for MySQL (Hostinger Ready)
 -- ========================================================
 
-CREATE DATABASE IF NOT EXISTS `orbit_website` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `orbit_website`;
-
 -- 1. Client & User Information
 CREATE TABLE IF NOT EXISTS `client_information` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -86,11 +83,3 @@ CREATE TABLE IF NOT EXISTS `contact_inquiries` (
   PRIMARY KEY (`id`),
   INDEX `idx_inquiry_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Optional default admin user seed:
--- Email: admin@orbit-i.tech
--- Default Password: AdminPassword123! (hashed using bcrypt)
--- Uncomment below if you want an initial admin user created immediately:
--- INSERT INTO `client_information` (`name`, `email`, `password`, `approved`, `role`)
--- VALUES ('ORBIT-I Admin', 'admin@orbit-i.tech', '$2a$10$7vN3gWjHsmQvL0R5uVl8ee2mZc7iFkKp9iR2e.t1kI1m8dJ4FmQ0e', 1, 'ADMIN')
--- ON DUPLICATE KEY UPDATE `approved` = 1, `role` = 'ADMIN';
