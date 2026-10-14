@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const next = require('next');
 const cors = require('cors');
-const apiRouter = require('./server/index');
-const { testConnection } = require('./server/config/db');
+const apiRouter = require('./src/server/index');
+const { testConnection } = require('./src/server/config/db');
 
 const dev = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 3000;
