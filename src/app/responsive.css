@@ -1,0 +1,170 @@
+/* ─── ABOUT ───────────────────────────────────────────────────────── */
+.about-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.about-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .about-metrics {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ─── SERVICES ────────────────────────────────────────────────────── */
+.services-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .services-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ─── TEAM ────────────────────────────────────────────────────────── */
+.founders-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+@media (min-width: 640px) {
+  .founders-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .founders-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ─── CONTACT ─────────────────────────────────────────────────────── */
+.contact-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contact-name-email {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .contact-name-email {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ─── FOOTER ──────────────────────────────────────────────────────── */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 48px;
+  }
+}
+
+/* ─── HERO ────────────────────────────────────────────────────────── */
+.hero-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  align-items: center;
+}
+
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.hero-card {
+  width: 100%;
+  max-width: 400px;
+}
+
+@media (min-width: 1024px) {
+  .hero-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .hero-text {
+    max-width: 560px;
+    flex: 1;
+  }
+  .hero-card {
+    width: 340px;
+    flex-shrink: 0;
+  }
+}
+
+/* ─── NAVBAR DESKTOP LINKS ────────────────────────────────────────── */
+.nav-links {
+  display: none;
+}
+
+.nav-contact-btn {
+  display: none;
+}
+
+.nav-hamburger {
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 1;
+    justify-content: center;
+  }
+  .nav-contact-btn {
+    display: inline-flex;
+  }
+  .nav-hamburger {
+    display: none;
+  }
+}
+
+/* ─── GENERAL ─────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+img { max-width: 100%; height: auto; }

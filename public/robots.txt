@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Block admin and portal from indexing
+Disallow: /portal/admin
+Disallow: /portal/dashboard
+
+Sitemap: https://orbit-i.tech/sitemap.xml
