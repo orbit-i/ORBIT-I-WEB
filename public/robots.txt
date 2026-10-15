@@ -1,8 +1,26 @@
 User-agent: *
 Allow: /
-
-# Block admin and portal from indexing
+Disallow: /control-vault-2026
+Disallow: /superadmin
+Disallow: /admin
 Disallow: /portal/admin
 Disallow: /portal/dashboard
+Disallow: /api/admin/
+
+# Allow AI Search Engines for AISEO Ranking
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
 
 Sitemap: https://orbit-i.tech/sitemap.xml

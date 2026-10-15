@@ -2,10 +2,24 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { loginRateLimiter } = require('../middleware/security');
 
-// All admin routes protected by authenticateToken + requireAdmin
+// 1. Public Setup Status & First-Time Master SuperAdmin Registration
+router.get('/setup-status', adminController.getSetupStatus);
+router.post('/setup', loginRateLimiter, adminController.initialSuperAdminSetup);
+
+// 2. All subsequent admin routes protected by JWT + ADMIN role verification
 router.use(authenticateToken, requireAdmin);
 
+// Account Settings
+router.put('/account', adminController.updateAdminAccount);
+
+// Security Shield Telemetry & Cache Management
+router.get('/security/stats', adminController.getSecurityTelemetry);
+router.post('/security/unban', adminController.unbanIp);
+router.post('/cache/clear', adminController.clearCache);
+
+// Operations Management
 router.get('/clients', adminController.getAllClients);
 router.put('/clients/:id/approve', adminController.approveClient);
 router.get('/projects', adminController.getAllProjects);

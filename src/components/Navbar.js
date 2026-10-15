@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import OrbitLogo from './OrbitLogo'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Sun, Moon } from 'lucide-react'
 
 const navLinks = [
   { label: 'Home', href: '/' },
@@ -23,7 +24,7 @@ const navLinks = [
     ],
   },
   { label: 'Careers', href: '/careers' },
-  { label: 'Team', href: '/#team' },
+  { label: 'Team', href: '/team' },
   { label: 'Contact', href: '/contact' },
   { label: 'Client Portal', href: '/portal' },
 ]
@@ -32,14 +33,12 @@ export default function Navbar() {
   const [scrolled, setScrolled]       = useState(false)
   const [mobileOpen, setMobileOpen]   = useState(false)
   const [activeDropdown, setActive]   = useState(null)
-  const [theme, setTheme]             = useState('dark')
+  const [theme, setTheme]             = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('orbit-theme') || 'dark' : 'dark'))
   const router = useRouter()
 
   useEffect(() => {
-    const saved = localStorage.getItem('orbit-theme') || 'dark'
-    setTheme(saved)
-    document.documentElement.setAttribute('data-theme', saved)
-  }, [])
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24)
@@ -205,7 +204,7 @@ export default function Navbar() {
               }}
               title={theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
             >
-              {theme === 'dark' ? '☀️' : '🌙'}
+              {theme === 'dark' ? <Sun size={17} color="#fbbf24" /> : <Moon size={17} color="#818cf8" />}
             </button>
 
             {/* CTA */}

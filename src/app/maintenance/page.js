@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import OrbitLogo from '@/components/OrbitLogo'
+import { MessageCircle, Mail } from 'lucide-react'
 
 export default function MaintenancePage() {
   const telemetry = [
@@ -147,9 +148,12 @@ export default function MaintenancePage() {
                   fontWeight: 600,
                   background: '#25d366',
                   color: '#ffffff',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
                 }}
               >
-                💬 WhatsApp Support
+                <MessageCircle size={15} /> WhatsApp Support
               </a>
               <a
                 href="mailto:contactus@orbit-i.tech"
@@ -159,9 +163,12 @@ export default function MaintenancePage() {
                   padding: '10px 20px',
                   fontSize: 13,
                   fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
                 }}
               >
-                ✉ contactus@orbit-i.tech
+                <Mail size={15} /> contactus@orbit-i.tech
               </a>
               <Link
                 href="/"

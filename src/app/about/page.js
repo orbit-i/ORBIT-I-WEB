@@ -6,6 +6,7 @@ import TiltCard from '@/components/TiltCard'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { MapPin } from 'lucide-react'
 
 export default function AboutPage() {
   const milestones = [
@@ -72,8 +73,8 @@ export default function AboutPage() {
                   </h3>
                   <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)', marginBottom: 12 }}>{off.type}</p>
                   <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 16 }}>{off.desc}</p>
-                  <div style={{ padding: '12px 16px', background: 'var(--bg-elevated)', borderRadius: 10, fontSize: 13, color: 'var(--text-primary)' }}>
-                    📍 <strong>Address:</strong> {off.address}
+                  <div style={{ padding: '12px 16px', background: 'var(--bg-elevated)', borderRadius: 10, fontSize: 13, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <MapPin size={16} color="var(--accent)" style={{ flexShrink: 0 }} /> <span><strong>Address:</strong> {off.address}</span>
                   </div>
                 </TiltCard>
               ))}

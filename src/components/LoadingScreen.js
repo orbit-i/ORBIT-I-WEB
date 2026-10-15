@@ -10,13 +10,23 @@ export default function LoadingScreen() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    let ignore = false
+    const mountTimer = setTimeout(() => {
+      if (!ignore) setMounted(true)
+    }, 0)
+
     // Always show loading on fresh page load
     // sessionStorage prevents showing on same-session SPA navigation
-    const hasLoaded = sessionStorage.getItem('orbit-loaded')
+    const hasLoaded = typeof window !== 'undefined' ? sessionStorage.getItem('orbit-loaded') : null
     if (hasLoaded) {
-      setDone(true)
-      return
+      const doneTimer = setTimeout(() => {
+        if (!ignore) setDone(true)
+      }, 0)
+      return () => {
+        ignore = true
+        clearTimeout(mountTimer)
+        clearTimeout(doneTimer)
+      }
     }
 
     const steps = [
@@ -26,13 +36,22 @@ export default function LoadingScreen() {
       { target: 88, delay: 1200 },
       { target: 100, delay: 1600 },
     ]
-    steps.forEach(({ target, delay }) => {
-      setTimeout(() => setProgress(target), delay)
-    })
-    setTimeout(() => {
-      sessionStorage.setItem('orbit-loaded', 'true')
-      setDone(true)
+    const stepTimers = steps.map(({ target, delay }) =>
+      setTimeout(() => {
+        if (!ignore) setProgress(target)
+      }, delay)
+    )
+    const completeTimer = setTimeout(() => {
+      if (typeof window !== 'undefined') sessionStorage.setItem('orbit-loaded', 'true')
+      if (!ignore) setDone(true)
     }, 2400)
+
+    return () => {
+      ignore = true
+      clearTimeout(mountTimer)
+      stepTimers.forEach(clearTimeout)
+      clearTimeout(completeTimer)
+    }
   }, [])
 
   if (!mounted) return null

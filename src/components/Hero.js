@@ -3,6 +3,8 @@
 import { motion } from 'framer-motion'
 import TiltCard from './TiltCard'
 import Image from 'next/image'
+import Link from 'next/link'
+import { CheckCircle2, ShieldCheck, Globe } from 'lucide-react'
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 32 },
@@ -89,18 +91,22 @@ export default function Hero() {
               </motion.p>
 
               <motion.div {...fadeUp(0.25)} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <a href="/services" className="btn-primary" style={{ fontSize: 13, textDecoration: 'none' }}>
+                <Link href="/services" className="btn-primary" style={{ fontSize: 13, textDecoration: 'none' }}>
                   Our Services
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </a>
+                </Link>
                 <button onClick={() => scroll('#team')} className="btn-outline" style={{ fontSize: 13 }}>Meet the Team</button>
-                <a href="/contact" className="btn-outline" style={{ fontSize: 13, textDecoration: 'none' }}>Contact Us</a>
+                <Link href="/contact" className="btn-outline" style={{ fontSize: 13, textDecoration: 'none' }}>Contact Us</Link>
               </motion.div>
 
               <motion.div {...fadeUp(0.3)} style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-                {[{ icon: '✓', text: 'Production-Grade Architecture' }, { icon: '✓', text: 'SECP Registered Pvt. Ltd.' }, { icon: '●', text: 'Global Delivery', green: true }].map((b) => (
+                {[
+                  { icon: <CheckCircle2 size={13} color="var(--accent)" />, text: 'Production-Grade Architecture' },
+                  { icon: <ShieldCheck size={13} color="var(--accent)" />, text: 'SECP Registered Pvt. Ltd.' },
+                  { icon: <Globe size={13} color="#22c55e" />, text: 'Global Delivery' },
+                ].map((b) => (
                   <div key={b.text} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>
-                    <span style={{ color: b.green ? '#22c55e' : 'var(--accent)', fontSize: 10 }}>{b.icon}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center' }}>{b.icon}</span>
                     {b.text}
                   </div>
                 ))}

@@ -4,6 +4,16 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import TiltCard from './TiltCard'
 import { submitContact } from '@/lib/orbitApi'
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Building2,
+  MessageCircle,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+} from 'lucide-react'
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 40 },
@@ -13,11 +23,11 @@ const fadeUp = (delay = 0) => ({
 })
 
 const contactInfo = [
-  { icon: '✉', label: 'Email', value: 'contactus@orbit-i.tech', href: 'mailto:contactus@orbit-i.tech' },
-  { icon: '☎', label: 'Phone', value: '+92 319 0375751', href: 'tel:+923190375751' },
-  { icon: '◎', label: 'Headquarter', value: 'Nawabshah, Sindh, Pakistan', href: null },
-  { icon: '🏢', label: 'Branch Office', value: 'Karachi, Sindh, Pakistan', href: null },
-  { icon: '◈', label: 'WhatsApp', value: 'Chat with us directly', href: 'https://wa.me/923190375751' },
+  { icon: <Mail size={16} color="var(--accent)" />, label: 'Email', value: 'contactus@orbit-i.tech', href: 'mailto:contactus@orbit-i.tech' },
+  { icon: <Phone size={16} color="var(--accent)" />, label: 'Phone', value: '+92 319 0375751', href: 'tel:+923190375751' },
+  { icon: <MapPin size={16} color="var(--accent)" />, label: 'Headquarter', value: 'Nawabshah, Sindh, Pakistan', href: null },
+  { icon: <Building2 size={16} color="var(--accent)" />, label: 'Branch Office', value: 'Karachi, Sindh, Pakistan', href: null },
+  { icon: <MessageCircle size={16} color="var(--accent)" />, label: 'WhatsApp', value: 'Chat with us directly', href: 'https://wa.me/923190375751' },
 ]
 
 const serviceOptions = [
@@ -39,9 +49,8 @@ export default function Contact() {
       await submitContact(form)
       setStatus('success')
       setForm({ name: '', email: '', company: '', service: '', message: '' })
-    } catch (err) {
+    } catch {
       setStatus('error')
-      // Reset to idle after 3 seconds so user can try again
       setTimeout(() => setStatus('idle'), 3000)
     }
   }
@@ -75,11 +84,13 @@ export default function Contact() {
                 Collaborate directly with our technical leads in Nawabshah, Sindh.
               </p>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center', marginTop: 6 }}>
-                <a href="mailto:contactus@orbit-i.tech" className="btn-primary" style={{ fontSize: 13 }}>
+                <a href="mailto:contactus@orbit-i.tech" className="btn-primary" style={{ fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                   Email Us Directly
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <ArrowRight size={14} />
                 </a>
-                <a href="https://wa.me/923190375751" target="_blank" rel="noopener noreferrer" className="btn-outline" style={{ fontSize: 13 }}>WhatsApp Chat</a>
+                <a href="https://wa.me/923190375751" target="_blank" rel="noopener noreferrer" className="btn-outline" style={{ fontSize: 13 }}>
+                  WhatsApp Chat
+                </a>
               </div>
             </div>
           </TiltCard>
@@ -89,7 +100,7 @@ export default function Contact() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
           <motion.div {...fadeUp(0)}><div className="tag"><span className="dot" />Get In Touch</div></motion.div>
           <motion.h2 {...fadeUp(0.1)} style={{ fontSize: 'clamp(28px, 5vw, 48px)', lineHeight: 1.1, letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>
-            Let's build something{' '}<span className="gradient-text-blue">remarkable together</span>
+            Let&apos;s build something{' '}<span className="gradient-text-blue">remarkable together</span>
           </motion.h2>
         </div>
 
@@ -105,18 +116,20 @@ export default function Contact() {
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)'; e.currentTarget.style.background = 'var(--bg-elevated)' }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-card)' }}
                   >
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--accent-glow)', border: '1px solid var(--border-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--accent)', flexShrink: 0 }}>{item.icon}</div>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--accent-glow)', border: '1px solid var(--border-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {item.icon}
+                    </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{item.label}</p>
                       <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.value}</p>
                     </div>
-                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" style={{ color: 'var(--text-muted)', flexShrink: 0 }}>
-                      <path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+                    <ArrowRight size={14} color="var(--text-muted)" style={{ flexShrink: 0 }} />
                   </a>
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 14, background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--accent-glow)', border: '1px solid var(--border-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, color: 'var(--accent)', flexShrink: 0 }}>{item.icon}</div>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--accent-glow)', border: '1px solid var(--border-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {item.icon}
+                    </div>
                     <div>
                       <p style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{item.label}</p>
                       <p style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>{item.value}</p>
@@ -157,16 +170,18 @@ export default function Contact() {
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '40px 0', textAlign: 'center' }}
                 >
-                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: '#22c55e' }}>✓</div>
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <CheckCircle2 size={24} color="#22c55e" />
+                  </div>
                   <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>Message Sent!</h3>
-                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', maxWidth: 280 }}>We'll get back to you within 24 hours.</p>
+                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', maxWidth: 280 }}>We&apos;ll get back to you within 24 hours.</p>
                   <button className="btn-outline" style={{ fontSize: 13 }} onClick={() => setStatus('idle')}>Send Another</button>
                 </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
                     <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 3 }}>Send us a message</h3>
-                    <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>We'll respond within 24 hours.</p>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>We&apos;ll respond within 24 hours.</p>
                   </div>
 
                   <div className="contact-name-email">
@@ -215,8 +230,14 @@ export default function Contact() {
                   </div>
 
                   <button type="submit" disabled={status === 'loading'} className="btn-primary"
-                    style={{ width: '100%', justifyContent: 'center', fontSize: 14, padding: '13px', opacity: status === 'loading' ? 0.7 : 1 }}>
-                    {status === 'loading' ? 'Sending...' : status === 'error' ? '✕ Failed — Try Again' : <>Send Message <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></>}
+                    style={{ width: '100%', justifyContent: 'center', fontSize: 14, padding: '13px', display: 'flex', alignItems: 'center', gap: 8, opacity: status === 'loading' ? 0.7 : 1 }}>
+                    {status === 'loading' ? (
+                      'Sending...'
+                    ) : status === 'error' ? (
+                      <>Failed — Try Again <AlertCircle size={15} /></>
+                    ) : (
+                      <>Send Message <ArrowRight size={14} /></>
+                    )}
                   </button>
                 </form>
               )}
@@ -226,13 +247,6 @@ export default function Contact() {
       </div>
 
       <div className="separator" style={{ marginTop: 80 }} />
-
-      <style>{`
-        @media (min-width: 768px) {
-          #contact-grid { display: grid !important; grid-template-columns: 2fr 3fr !important; gap: 20px !important; }
-          #name-email-grid { grid-template-columns: 1fr 1fr !important; }
-        }
-      `}</style>
     </section>
   )
 }

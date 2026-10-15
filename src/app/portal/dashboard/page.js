@@ -6,6 +6,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { getMyProjects, getToken, getUser, logout, isLoggedIn } from '@/lib/orbitApi'
+import { ADMIN_SECRET_PATH } from '@/lib/adminConfig'
+import { CheckCircle2, Clock, Circle } from 'lucide-react'
 
 const statusColors = {
   PLANNING: { bg: 'rgba(99,140,210,0.1)', color: '#60a5fa', label: 'Planning' },
@@ -15,7 +17,11 @@ const statusColors = {
   CANCELLED: { bg: 'rgba(107,114,128,0.1)', color: '#9ca3af', label: 'Cancelled' },
 }
 
-const milestoneIcons = { COMPLETED: '✓', IN_PROGRESS: '⏳', PENDING: '○' }
+const milestoneIcons = {
+  COMPLETED: <CheckCircle2 size={16} color="#22c55e" />,
+  IN_PROGRESS: <Clock size={16} color="#fbbf24" />,
+  PENDING: <Circle size={14} color="var(--text-muted)" />,
+}
 const milestoneColors = { COMPLETED: '#22c55e', IN_PROGRESS: '#fbbf24', PENDING: 'var(--text-muted)' }
 
 export default function DashboardPage() {
@@ -28,13 +34,13 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!isLoggedIn()) { router.push('/portal'); return }
     const u = getUser()
-    if (u?.role === 'ADMIN') { router.push('/portal/admin'); return }
+    if (u?.role === 'ADMIN') { router.push(ADMIN_SECRET_PATH); return }
 
     getMyProjects(getToken())
       .then(data => { setProjects(data); if (data.length > 0) setSelected(data[0]) })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [router])
 
   const handleLogout = () => { logout(); router.push('/portal') }
 
@@ -192,7 +198,15 @@ export default function DashboardPage() {
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
                               <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{m.title}</h3>
                               <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                                {m.status === 'COMPLETED' ? `✓ ${m.completedAt || 'Done'}` : m.dueDate ? `Due: ${m.dueDate}` : ''}
+                                {m.status === 'COMPLETED' ? (
+                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#22c55e' }}>
+                                    <CheckCircle2 size={12} /> {m.completedAt || 'Done'}
+                                  </span>
+                                ) : m.dueDate ? (
+                                  `Due: ${m.dueDate}`
+                                ) : (
+                                  ''
+                                )}
                               </span>
                             </div>
                             <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.5 }}>{m.description}</p>

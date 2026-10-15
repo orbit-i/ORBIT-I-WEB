@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TiltCard from '@/components/TiltCard'
 import { submitContact } from '@/lib/orbitApi'
+import { MapPin, Mail, Phone, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react'
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', company: '', service: '', message: '' })
@@ -18,7 +19,7 @@ export default function ContactPage() {
       await submitContact(form)
       setStatus('success')
       setForm({ name: '', email: '', company: '', service: '', message: '' })
-    } catch (err) {
+    } catch {
       setStatus('error')
       setTimeout(() => setStatus('idle'), 3000)
     }
@@ -64,8 +65,8 @@ export default function ContactPage() {
                   <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginTop: 12, marginBottom: 6 }}>
                     Nawabshah Office
                   </h2>
-                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12 }}>
-                    📍 Nawabshah, Sindh, Pakistan
+                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <MapPin size={16} color="var(--accent)" style={{ flexShrink: 0 }} /> Nawabshah, Sindh, Pakistan
                   </p>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                     Engineering Labs, Research, Core Server Operations & Administration.
@@ -80,8 +81,8 @@ export default function ContactPage() {
                   <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginTop: 12, marginBottom: 6 }}>
                     Karachi Office
                   </h2>
-                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12 }}>
-                    📍 Karachi, Sindh, Pakistan
+                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <MapPin size={16} color="var(--accent)" style={{ flexShrink: 0 }} /> Karachi, Sindh, Pakistan
                   </p>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                     Executive Client Consulting, Corporate Partnerships & Metropolitan Operations.
@@ -91,7 +92,9 @@ export default function ContactPage() {
                 {/* Contact Channels */}
                 <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 18 }}>✉</span>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Mail size={18} color="#818cf8" />
+                    </div>
                     <div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Email Us Directly</div>
                       <a href="mailto:contactus@orbit-i.tech" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
@@ -100,7 +103,9 @@ export default function ContactPage() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 18 }}>☎</span>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(56,189,248,0.12)', border: '1px solid rgba(56,189,248,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Phone size={18} color="#38bdf8" />
+                    </div>
                     <div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Corporate Phone / WhatsApp</div>
                       <a href="tel:+923190375751" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>
@@ -187,20 +192,29 @@ export default function ContactPage() {
                     type="submit"
                     disabled={status === 'loading'}
                     className="btn-primary"
-                    style={{ width: '100%', padding: '14px', fontSize: 14, marginTop: 8 }}
+                    style={{
+                      width: '100%',
+                      padding: '14px',
+                      fontSize: 14,
+                      marginTop: 8,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                    }}
                   >
-                    {status === 'loading' ? 'Dispatching Message...' : 'Submit Inquiry →'}
+                    {status === 'loading' ? 'Dispatching Message...' : <>Submit Inquiry <ArrowRight size={15} /></>}
                   </button>
 
                   {status === 'success' && (
-                    <div style={{ padding: '12px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10, color: '#22c55e', fontSize: 13, textAlign: 'center' }}>
-                      ✓ Thank you! We received your inquiry and will contact you within 24 hours.
+                    <div style={{ padding: '12px 16px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 10, color: '#22c55e', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                      <CheckCircle2 size={16} /> Thank you! We received your inquiry and will contact you within 24 hours.
                     </div>
                   )}
 
                   {status === 'error' && (
-                    <div style={{ padding: '12px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, color: '#ef4444', fontSize: 13, textAlign: 'center' }}>
-                      ✕ Failed to send message. Please reach us via WhatsApp or Email directly.
+                    <div style={{ padding: '12px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, color: '#ef4444', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                      <AlertCircle size={16} /> Failed to send message. Please reach us via WhatsApp or Email directly.
                     </div>
                   )}
                 </form>

@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TiltCard from '@/components/TiltCard'
 import Link from 'next/link'
+import { MapPin, ArrowRight } from 'lucide-react'
 
 const locations = [
   {
@@ -107,7 +108,9 @@ export default function LocationsPage() {
                     <span style={{ fontSize: 10, padding: '4px 10px', background: loc.highlight ? 'var(--accent-glow)' : 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 100, color: loc.highlight ? 'var(--accent-light)' : 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>
                       {loc.badge}
                     </span>
-                    <span style={{ fontSize: 18 }}>📍</span>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent-glow)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <MapPin size={16} color="var(--accent)" />
+                    </div>
                   </div>
 
                   <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
@@ -137,7 +140,7 @@ export default function LocationsPage() {
 
                   <Link href="/contact" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--accent)', textDecoration: 'none', fontWeight: 600, marginTop: 8 }}>
                     <span>Inquire for {loc.city.split(',')[0]} Projects</span>
-                    <span>→</span>
+                    <ArrowRight size={14} />
                   </Link>
                 </TiltCard>
               ))}

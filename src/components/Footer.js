@@ -17,7 +17,7 @@ const footerLinks = {
     { label: 'About Us', href: '/about' },
     { label: 'Services Overview', href: '/services' },
     { label: 'Careers & Internships', href: '/careers' },
-    { label: 'Team & Leadership', href: '/#team' },
+    { label: 'Team & Leadership', href: '/team' },
     { label: 'Contact Us', href: '/contact' },
     { label: 'Client Portal', href: '/portal' },
   ],

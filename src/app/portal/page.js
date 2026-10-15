@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { ADMIN_SECRET_PATH } from '@/lib/adminConfig'
 import { loginClient, registerClient, saveToken, isLoggedIn, getUser } from '@/lib/orbitApi'
+import { CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react'
 
 export default function PortalPage() {
   const [tab, setTab] = useState('login')
@@ -20,10 +22,10 @@ export default function PortalPage() {
   useEffect(() => {
     if (isLoggedIn()) {
       const user = getUser()
-      if (user?.role === 'ADMIN') router.push('/portal/admin')
+      if (user?.role === 'ADMIN') router.push(ADMIN_SECRET_PATH)
       else router.push('/portal/dashboard')
     }
-  }, [])
+  }, [router])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -32,7 +34,7 @@ export default function PortalPage() {
     try {
       const data = await loginClient(loginForm)
       saveToken(data.token, { name: data.name, email: data.email, role: data.role })
-      if (data.role === 'ADMIN') router.push('/portal/admin')
+      if (data.role === 'ADMIN') router.push(ADMIN_SECRET_PATH)
       else router.push('/portal/dashboard')
     } catch (err) {
       setError(err.message)
@@ -80,7 +82,9 @@ export default function PortalPage() {
               <div style={{ fontSize: 9, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Client Portal</div>
             </div>
           </Link>
-          <Link href="/" style={{ fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none' }}>← Back to Home</Link>
+          <Link href="/" style={{ fontSize: 13, color: 'var(--text-muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <ArrowLeft size={14} /> Back to Home
+          </Link>
         </header>
 
         <main className="portal-main">
@@ -89,7 +93,9 @@ export default function PortalPage() {
             {/* Registered success state */}
             {status === 'registered' ? (
               <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '40px 0' }}>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>✓</div>
+                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <CheckCircle2 size={32} color="#22c55e" />
+                </div>
                 <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 22, fontWeight: 700, color: 'var(--text-primary)' }}>Registration Submitted</h2>
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', maxWidth: 320, lineHeight: 1.6 }}>
                   Your account is pending admin approval. You will be notified once approved. This typically takes 24 hours.
@@ -157,8 +163,8 @@ export default function PortalPage() {
                             style={inputStyle('lpass')} />
                         </div>
                         <button type="submit" disabled={status === 'loading'} className="btn-primary"
-                          style={{ width: '100%', justifyContent: 'center', padding: '13px', fontSize: 14, marginTop: 4, opacity: status === 'loading' ? 0.7 : 1 }}>
-                          {status === 'loading' ? 'Signing in...' : 'Sign In →'}
+                          style={{ width: '100%', justifyContent: 'center', padding: '13px', fontSize: 14, marginTop: 4, opacity: status === 'loading' ? 0.7 : 1, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          {status === 'loading' ? 'Signing in...' : <>Sign In <ArrowRight size={14} /></>}
                         </button>
                       </motion.form>
                     )}
@@ -203,8 +209,8 @@ export default function PortalPage() {
                             style={inputStyle('rcompany')} />
                         </div>
                         <button type="submit" disabled={status === 'loading'} className="btn-primary"
-                          style={{ width: '100%', justifyContent: 'center', padding: '13px', fontSize: 14, marginTop: 4, opacity: status === 'loading' ? 0.7 : 1 }}>
-                          {status === 'loading' ? 'Submitting...' : 'Request Access →'}
+                          style={{ width: '100%', justifyContent: 'center', padding: '13px', fontSize: 14, marginTop: 4, opacity: status === 'loading' ? 0.7 : 1, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          {status === 'loading' ? 'Submitting...' : <>Request Access <ArrowRight size={14} /></>}
                         </button>
                         <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center' }}>
                           Your account requires admin approval before you can login.

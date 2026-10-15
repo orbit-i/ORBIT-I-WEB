@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { verifyCertificate } from '@/lib/orbitApi'
+import { CheckCircle2, XCircle } from 'lucide-react'
 
 export default function VerifyPage() {
   const [code, setCode] = useState('')
@@ -245,8 +246,8 @@ export default function VerifyPage() {
                     <motion.div key="found" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
                       style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                       <div className="verified-banner">
-                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(34,197,94,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <span style={{ color: '#22c55e', fontSize: 16 }}>✓</span>
+                        <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(34,197,94,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <CheckCircle2 size={20} color="#22c55e" />
                         </div>
                         <div>
                           <p style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: '#22c55e' }}>Certificate Verified</p>
@@ -291,7 +292,9 @@ export default function VerifyPage() {
                   {status === 'notfound' && (
                     <motion.div key="notfound" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
                       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, padding: '20px 0', textAlign: 'center' }}>
-                      <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, color: '#ef4444' }}>✕</div>
+                      <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <XCircle size={32} color="#ef4444" />
+                      </div>
                       <div>
                         <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: '#ef4444', marginBottom: 8 }}>Certificate Not Found</h3>
                         <p style={{ fontSize: 14, color: 'var(--text-secondary)', maxWidth: 320, lineHeight: 1.6 }}>
