@@ -1,4 +1,4 @@
-const { pool } = require('../config/db');
+const { getCertificateByCode, saveCertificate } = require('../utils/cmsStorage');
 
 async function verifyCertificate(req, res) {
   try {
@@ -7,22 +7,22 @@ async function verifyCertificate(req, res) {
       return res.status(400).json({ error: 'Certificate code is required' });
     }
 
-    const upperCode = code.trim().toUpperCase();
-    const [rows] = await pool.query(
-      `SELECT name, role, department, start_date, end_date, duration, status, certificate_code, issued_by
-       FROM intern_certificates
-       WHERE certificate_code = ?`,
-      [upperCode]
-    );
+    const upperCode = decodeURIComponent(code).trim().toUpperCase();
+    const cert = await getCertificateByCode(upperCode);
 
-    if (rows.length === 0) {
-      return res.status(400).json({ error: `Certificate not found with code : ${code}` });
+    if (!cert) {
+      return res.status(404).json({ error: `Certificate not found with code : ${code}` });
     }
 
-    const cert = rows[0];
-
     // Format dates to YYYY-MM-DD
-    const formatDate = (d) => (d ? new Date(d).toISOString().split('T')[0] : null);
+    const formatDate = (d) => {
+      if (!d) return null;
+      try {
+        return new Date(d).toISOString().split('T')[0];
+      } catch {
+        return String(d);
+      }
+    };
 
     return res.status(200).json({
       name: cert.name,
@@ -32,7 +32,7 @@ async function verifyCertificate(req, res) {
       endDate: formatDate(cert.end_date),
       duration: cert.duration,
       issuedBy: cert.issued_by || 'ORBIT-I Private Limited',
-      status: cert.status,
+      status: cert.status || 'COMPLETED',
       certificateCode: cert.certificate_code,
     });
   } catch (error) {
@@ -52,21 +52,22 @@ async function createCertificate(req, res) {
     const upperCode = certificateCode.trim().toUpperCase();
 
     // Check if code exists
-    const [existing] = await pool.query(
-      'SELECT id FROM intern_certificates WHERE certificate_code = ?',
-      [upperCode]
-    );
-
-    if (existing.length > 0) {
+    const existing = await getCertificateByCode(upperCode);
+    if (existing) {
       return res.status(400).json({ error: 'Certificate code already exists' });
     }
 
-    await pool.query(
-      `INSERT INTO intern_certificates 
-       (name, role, department, start_date, end_date, duration, status, certificate_code, issued_by, issued_at, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, 'COMPLETED', ?, 'ORBIT-I Private Limited', CURDATE(), NOW())`,
-      [name, role, department, startDate, endDate, duration, upperCode]
-    );
+    await saveCertificate({
+      name: name.trim(),
+      role: role.trim(),
+      department: department.trim(),
+      startDate,
+      endDate,
+      duration: duration.trim(),
+      certificateCode: upperCode,
+      status: 'COMPLETED',
+      issuedBy: 'ORBIT-I Private Limited',
+    });
 
     return res.status(201).send(`Certificate created successfully with code: ${upperCode}`);
   } catch (error) {

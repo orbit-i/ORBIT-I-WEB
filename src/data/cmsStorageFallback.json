@@ -227,5 +227,48 @@
       "is_published": 1,
       "created_at": "2026-10-14T16:31:15.413Z"
     }
-  ]
+  ],
+  "intern_certificates": [
+    {
+      "id": 1,
+      "name": "Chander Parkash",
+      "role": "Backend Developer",
+      "department": "Development | Software Engineering",
+      "duration": "2 Month",
+      "start_date": "2026-07-23",
+      "end_date": "2026-07-23",
+      "status": "COMPLETED",
+      "certificate_code": "ORBIT-I/INT/2026/15",
+      "issued_by": "ORBIT-I Private Limited",
+      "created_at": "2026-10-15T12:00:00.000Z"
+    }
+  ],
+  "admin_users": [],
+  "site_notice": {
+    "enabled": false,
+    "message": "🚀 Admissions open for Autumn 2026 Internship Batch! Apply now.",
+    "type": "HIRING",
+    "link_text": "Apply Now",
+    "link_url": "/careers",
+    "updated_at": "2026-10-15T12:00:00.000Z"
+  },
+  "hiring_banners": [
+    {
+      "id": 1,
+      "title": "We are Hiring Interns & Engineers for 2026",
+      "subtitle": "Join Pakistan's premier enterprise AI & full-stack development house. Remote & Hybrid options.",
+      "image_url": "/orbitlogo-removebg-preview.png",
+      "action_text": "Explore Open Roles",
+      "action_url": "/careers",
+      "is_active": 1,
+      "created_at": "2026-10-15T12:00:00.000Z"
+    }
+  ],
+  "chatbot_config": {
+    "enabled": true,
+    "bot_name": "ORBIT-I AI Assistant",
+    "greeting": "Salam! Welcome to ORBIT-I. How can I assist you with our AI services, web architecture, internships, or certificate verification today?",
+    "contact_phone": "+92 300 0000000",
+    "contact_email": "contact@orbit-i.tech"
+  }
 }

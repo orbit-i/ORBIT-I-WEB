@@ -1,5 +1,7 @@
 import './globals.css'
 import './responsive.css'
+import SiteNoticeBar from '@/components/SiteNoticeBar'
+import AIChatbot from '@/components/AIChatbot'
 
 export const metadata = {
   metadataBase: new URL('https://orbit-i.tech'),
@@ -176,7 +178,11 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <SiteNoticeBar />
+        {children}
+        <AIChatbot />
+      </body>
     </html>
   )
 }

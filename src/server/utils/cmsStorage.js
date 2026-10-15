@@ -235,6 +235,49 @@ const DEFAULT_STORE = {
       created_at: new Date().toISOString(),
     },
   ],
+  intern_certificates: [
+    {
+      id: 1,
+      name: 'Chander Parkash',
+      role: 'Backend Developer',
+      department: 'Development | Software Engineering',
+      duration: '2 Month',
+      start_date: '2026-07-23',
+      end_date: '2026-07-23',
+      status: 'COMPLETED',
+      certificate_code: 'ORBIT-I/INT/2026/15',
+      issued_by: 'ORBIT-I Private Limited',
+      created_at: new Date().toISOString(),
+    },
+  ],
+  admin_users: [],
+  site_notice: {
+    enabled: false,
+    message: '🚀 Admissions open for Autumn 2026 Internship Batch! Apply now.',
+    type: 'HIRING',
+    link_text: 'Apply Now',
+    link_url: '/careers',
+    updated_at: new Date().toISOString(),
+  },
+  hiring_banners: [
+    {
+      id: 1,
+      title: 'We are Hiring Interns & Engineers for 2026',
+      subtitle: "Join Pakistan's premier enterprise AI & full-stack development house. Remote & Hybrid options.",
+      image_url: '/orbitlogo-removebg-preview.png',
+      action_text: 'Explore Open Roles',
+      action_url: '/careers',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+    },
+  ],
+  chatbot_config: {
+    enabled: true,
+    bot_name: 'ORBIT-I AI Assistant',
+    greeting: 'Salam! Welcome to ORBIT-I. How can I assist you with our AI services, web architecture, internships, or certificate verification today?',
+    contact_phone: '+92 300 0000000',
+    contact_email: 'contact@orbit-i.tech',
+  },
 };
 
 function readFallbackStore() {
@@ -245,7 +288,13 @@ function readFallbackStore() {
       return JSON.parse(JSON.stringify(DEFAULT_STORE));
     }
     const data = fs.readFileSync(FALLBACK_FILE, 'utf8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    if (!Array.isArray(parsed.intern_certificates)) parsed.intern_certificates = DEFAULT_STORE.intern_certificates;
+    if (!Array.isArray(parsed.admin_users)) parsed.admin_users = [];
+    if (!parsed.site_notice) parsed.site_notice = DEFAULT_STORE.site_notice;
+    if (!Array.isArray(parsed.hiring_banners)) parsed.hiring_banners = DEFAULT_STORE.hiring_banners;
+    if (!parsed.chatbot_config) parsed.chatbot_config = DEFAULT_STORE.chatbot_config;
+    return parsed;
   } catch (err) {
     console.error('Error reading fallback store:', err.message);
     return JSON.parse(JSON.stringify(DEFAULT_STORE));
@@ -728,6 +777,284 @@ async function deleteInquiry(id) {
   );
 }
 
+// ─── INTERN CERTIFICATES ────────────────────────────────────────────────────
+async function getCertificates() {
+  return executeDbOrFallback(
+    async () => {
+      const [rows] = await pool.query('SELECT * FROM intern_certificates ORDER BY created_at DESC');
+      return rows;
+    },
+    () => {
+      const store = readFallbackStore();
+      return store.intern_certificates || [];
+    }
+  );
+}
+
+async function getCertificateByCode(code) {
+  if (!code) return null;
+  const upperCode = code.trim().toUpperCase();
+
+  // First try DB
+  try {
+    const [rows] = await pool.query('SELECT * FROM intern_certificates WHERE certificate_code = ?', [upperCode]);
+    if (rows && rows.length > 0) return rows[0];
+  } catch (err) {
+    // DB offline, fall through to fallback
+  }
+
+  // Fallback to local store
+  const store = readFallbackStore();
+  const cert = (store.intern_certificates || []).find(
+    (c) => (c.certificate_code || '').trim().toUpperCase() === upperCode
+  );
+  return cert || null;
+}
+
+async function saveCertificate(data) {
+  const { name, role, department, startDate, endDate, duration, certificateCode, status = 'COMPLETED', issuedBy = 'ORBIT-I Private Limited' } = data;
+  const upperCode = certificateCode.trim().toUpperCase();
+
+  // 1. Always persist to fallback store for 100% guarantee
+  const store = readFallbackStore();
+  const existingIdx = (store.intern_certificates || []).findIndex(
+    (c) => (c.certificate_code || '').trim().toUpperCase() === upperCode
+  );
+
+  const certRecord = {
+    id: existingIdx !== -1 ? store.intern_certificates[existingIdx].id : Date.now(),
+    name,
+    role,
+    department,
+    start_date: startDate,
+    end_date: endDate,
+    duration,
+    status,
+    certificate_code: upperCode,
+    issued_by: issuedBy,
+    created_at: new Date().toISOString(),
+  };
+
+  if (existingIdx !== -1) {
+    store.intern_certificates[existingIdx] = certRecord;
+  } else {
+    store.intern_certificates.unshift(certRecord);
+  }
+  writeFallbackStore(store);
+
+  // 2. Also attempt MySQL write if available
+  try {
+    await pool.query(
+      `INSERT INTO intern_certificates 
+       (name, role, department, start_date, end_date, duration, status, certificate_code, issued_by, issued_at, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), NOW())
+       ON DUPLICATE KEY UPDATE 
+       name = VALUES(name), role = VALUES(role), department = VALUES(department), duration = VALUES(duration)`,
+      [name, role, department, startDate, endDate, duration, status, upperCode, issuedBy]
+    );
+  } catch (err) {
+    console.warn('⚠️ Note: MySQL write skipped for certificate, stored in verified fallback ledger:', err.message);
+  }
+
+  return certRecord;
+}
+
+async function deleteCertificate(codeOrId) {
+  // Update fallback
+  const store = readFallbackStore();
+  store.intern_certificates = (store.intern_certificates || []).filter(
+    (c) => String(c.id) !== String(codeOrId) && (c.certificate_code || '').toUpperCase() !== String(codeOrId).toUpperCase()
+  );
+  writeFallbackStore(store);
+
+  // Try DB
+  try {
+    await pool.query('DELETE FROM intern_certificates WHERE id = ? OR certificate_code = ?', [codeOrId, codeOrId]);
+  } catch {}
+  return true;
+}
+
+// ─── ADMIN USERS & ACCOUNTS ─────────────────────────────────────────────────
+async function getAdminUsers() {
+  return executeDbOrFallback(
+    async () => {
+      const [rows] = await pool.query(
+        'SELECT id, name, email, role, approved, avatar_url, created_at FROM client_information WHERE role = "ADMIN" ORDER BY id ASC'
+      );
+      return rows;
+    },
+    () => {
+      const store = readFallbackStore();
+      return (store.admin_users || []).map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role || 'ADMIN',
+        approved: 1,
+        avatar_url: u.avatar_url || '',
+        created_at: u.created_at,
+      }));
+    }
+  );
+}
+
+async function getAdminByEmail(email) {
+  if (!email) return null;
+  const cleanEmail = email.trim().toLowerCase();
+
+  try {
+    const [rows] = await pool.query('SELECT * FROM client_information WHERE email = ? AND role = "ADMIN"', [cleanEmail]);
+    if (rows && rows.length > 0) return rows[0];
+  } catch {}
+
+  const store = readFallbackStore();
+  return (store.admin_users || []).find((u) => u.email.toLowerCase() === cleanEmail) || null;
+}
+
+async function saveAdminUser(data) {
+  const { name, email, password, avatar_url } = data;
+  const cleanEmail = email.trim().toLowerCase();
+
+  // Always write to fallback store
+  const store = readFallbackStore();
+  const id = Date.now();
+  const adminObj = {
+    id,
+    name: name.trim(),
+    email: cleanEmail,
+    password, // already hashed
+    role: 'ADMIN',
+    avatar_url: avatar_url || '',
+    created_at: new Date().toISOString(),
+  };
+
+  const existingIdx = (store.admin_users || []).findIndex((u) => u.email.toLowerCase() === cleanEmail);
+  if (existingIdx !== -1) {
+    store.admin_users[existingIdx] = { ...store.admin_users[existingIdx], ...adminObj };
+  } else {
+    store.admin_users.push(adminObj);
+  }
+  writeFallbackStore(store);
+
+  // Also try MySQL
+  try {
+    await pool.query(
+      `INSERT INTO client_information (name, email, password, approved, role, avatar_url, created_at)
+       VALUES (?, ?, ?, 1, 'ADMIN', ?, NOW())
+       ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), avatar_url = VALUES(avatar_url)`,
+      [name.trim(), cleanEmail, password, avatar_url || null]
+    );
+  } catch (err) {
+    console.warn('⚠️ Note: MySQL write skipped for admin, saved in secure fallback vault:', err.message);
+  }
+
+  return { id, name, email: cleanEmail, role: 'ADMIN', avatar_url: avatar_url || '' };
+}
+
+async function updateAdminUser(idOrEmail, data) {
+  const store = readFallbackStore();
+  const idx = (store.admin_users || []).findIndex(
+    (u) => String(u.id) === String(idOrEmail) || u.email.toLowerCase() === String(idOrEmail).toLowerCase()
+  );
+
+  if (idx !== -1) {
+    store.admin_users[idx] = { ...store.admin_users[idx], ...data, updated_at: new Date().toISOString() };
+    writeFallbackStore(store);
+  }
+
+  try {
+    if (data.password) {
+      await pool.query(
+        'UPDATE client_information SET name = COALESCE(?, name), email = COALESCE(?, email), password = ?, avatar_url = COALESCE(?, avatar_url) WHERE id = ? OR email = ?',
+        [data.name, data.email, data.password, data.avatar_url, idOrEmail, idOrEmail]
+      );
+    } else {
+      await pool.query(
+        'UPDATE client_information SET name = COALESCE(?, name), email = COALESCE(?, email), avatar_url = COALESCE(?, avatar_url) WHERE id = ? OR email = ?',
+        [data.name, data.email, data.avatar_url, idOrEmail, idOrEmail]
+      );
+    }
+  } catch {}
+
+  return true;
+}
+
+async function deleteAdminUser(id) {
+  const store = readFallbackStore();
+  store.admin_users = (store.admin_users || []).filter((u) => String(u.id) !== String(id));
+  writeFallbackStore(store);
+
+  try {
+    await pool.query('DELETE FROM client_information WHERE id = ? AND role = "ADMIN"', [id]);
+  } catch {}
+  return true;
+}
+
+// ─── QUICK SITE NOTICE & BROADCAST ALERT ────────────────────────────────────
+function getSiteNotice() {
+  const store = readFallbackStore();
+  return store.site_notice || {
+    enabled: false,
+    message: '',
+    type: 'INFO',
+    link_text: '',
+    link_url: '',
+  };
+}
+
+function updateSiteNotice(data) {
+  const store = readFallbackStore();
+  store.site_notice = { ...store.site_notice, ...data, updated_at: new Date().toISOString() };
+  writeFallbackStore(store);
+  return store.site_notice;
+}
+
+// ─── HIRING BANNERS ─────────────────────────────────────────────────────────
+function getHiringBanners() {
+  const store = readFallbackStore();
+  return store.hiring_banners || [];
+}
+
+function saveHiringBanner(data) {
+  const store = readFallbackStore();
+  if (data.id) {
+    const idx = store.hiring_banners.findIndex((b) => String(b.id) === String(data.id));
+    if (idx !== -1) {
+      store.hiring_banners[idx] = { ...store.hiring_banners[idx], ...data, updated_at: new Date().toISOString() };
+      writeFallbackStore(store);
+      return store.hiring_banners[idx];
+    }
+  }
+  const newBanner = { id: Date.now(), ...data, created_at: new Date().toISOString() };
+  store.hiring_banners.unshift(newBanner);
+  writeFallbackStore(store);
+  return newBanner;
+}
+
+function deleteHiringBanner(id) {
+  const store = readFallbackStore();
+  store.hiring_banners = (store.hiring_banners || []).filter((b) => String(b.id) !== String(id));
+  writeFallbackStore(store);
+  return true;
+}
+
+// ─── CHATBOT CONFIG & KNOWLEDGE ─────────────────────────────────────────────
+function getChatbotConfig() {
+  const store = readFallbackStore();
+  return store.chatbot_config || {
+    enabled: true,
+    bot_name: 'ORBIT-I AI Assistant',
+    greeting: 'Salam! Welcome to ORBIT-I. How can I assist you today?',
+  };
+}
+
+function updateChatbotConfig(data) {
+  const store = readFallbackStore();
+  store.chatbot_config = { ...store.chatbot_config, ...data, updated_at: new Date().toISOString() };
+  writeFallbackStore(store);
+  return store.chatbot_config;
+}
+
 module.exports = {
   getCmsPages,
   getCmsPageBySlug,
@@ -754,4 +1081,20 @@ module.exports = {
   getInquiries,
   updateInquiryStatus,
   deleteInquiry,
+  getCertificates,
+  getCertificateByCode,
+  saveCertificate,
+  deleteCertificate,
+  getAdminUsers,
+  getAdminByEmail,
+  saveAdminUser,
+  updateAdminUser,
+  deleteAdminUser,
+  getSiteNotice,
+  updateSiteNotice,
+  getHiringBanners,
+  saveHiringBanner,
+  deleteHiringBanner,
+  getChatbotConfig,
+  updateChatbotConfig,
 };

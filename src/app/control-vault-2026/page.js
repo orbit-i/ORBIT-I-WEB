@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -46,6 +46,16 @@ import {
   AlertTriangle,
   Server,
   Activity,
+  Zap,
+  Upload,
+  Copy,
+  Radio,
+  Megaphone,
+  MessageSquare,
+  Bot,
+  Smartphone,
+  Monitor,
+  Image as ImageIcon,
 } from 'lucide-react'
 import { getToken, getUser, logout, isLoggedIn, saveToken } from '@/lib/orbitApi'
 import SuperAdminGateway from '@/components/SuperAdminGateway'
@@ -100,6 +110,77 @@ function SectionCard({ title, subtitle, children, onSubmit, actionButton }) {
   )
 }
 
+function ImageUploadField({ label = 'Upload Image', value, onChange, placeholder = '/orbitlogo-removebg-preview.png' }) {
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef(null)
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await res.json()
+      if (res.ok && data.url) {
+        onChange(data.url)
+      } else {
+        alert(data.error || 'Upload failed')
+      }
+    } catch (err) {
+      alert('Upload failed: ' + err.message)
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <label style={labelStyle}>{label}</label>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        {value ? (
+          <div style={{ width: 44, height: 44, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)', flexShrink: 0, position: 'relative', background: 'var(--bg-elevated)' }}>
+            <Image src={value} alt="Preview" width={44} height={44} style={{ width: '100%', height: '100%', objectFit: 'cover' }} unoptimized />
+          </div>
+        ) : (
+          <div style={{ width: 44, height: 44, borderRadius: 10, border: '1px dashed var(--border)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}>
+            <ImageIcon size={18} />
+          </div>
+        )}
+        <input
+          type="text"
+          value={value || ''}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          style={{ ...inputStyle, flex: 1 }}
+        />
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept="image/*"
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => fileInputRef.current?.click()}
+          className="btn-outline"
+          style={{ fontSize: 12, padding: '9px 14px', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+        >
+          {uploading ? <RefreshCw size={14} className="animate-spin" /> : <Upload size={14} />}
+          <span>{uploading ? 'Uploading...' : 'Choose File'}</span>
+        </button>
+      </div>
+    </div>
+  )
+}
+
 const STATUS_COLORS = {
   PLANNING:    { bg: 'rgba(251,191,36,0.1)',  text: '#fbbf24' },
   IN_PROGRESS: { bg: 'rgba(99,102,241,0.1)',  text: '#6366f1' },
@@ -140,10 +221,55 @@ export default function SecretAdminPortalPage() {
   const [accountForm, setAccountForm] = useState({
     name: '',
     email: '',
+    avatar_url: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   })
+  const [adminsList, setAdminsList] = useState([])
+  const [adminsLoading, setAdminsLoading] = useState(false)
+  const [isAddingAdmin, setIsAddingAdmin] = useState(false)
+  const [newAdminForm, setNewAdminForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    avatar_url: '',
+  })
+
+  // Site Notice & Hiring Banners state
+  const [noticeForm, setNoticeForm] = useState({
+    enabled: false,
+    message: '',
+    type: 'HIRING',
+    link_text: '',
+    link_url: '',
+  })
+  const [hiringBanners, setHiringBanners] = useState([])
+  const [newBannerForm, setNewBannerForm] = useState({
+    title: '',
+    subtitle: '',
+    image_url: '/orbitlogo-removebg-preview.png',
+    action_text: 'Explore Roles',
+    action_url: '/careers',
+    is_active: 1,
+  })
+
+  // Chatbot configuration state
+  const [chatbotForm, setChatbotForm] = useState({
+    enabled: true,
+    bot_name: 'ORBIT-I AI Assistant',
+    greeting: 'Salam! Welcome to ORBIT-I. How can I assist you today?',
+    contact_phone: '+92 300 0000000',
+    contact_email: 'contact@orbit-i.tech',
+  })
+
+  // SEO Studio State
+  const [seoSimTitle, setSeoSimTitle] = useState('ORBIT-I — #1 Enterprise Software & AI House')
+  const [seoSimSlug, setSeoSimSlug] = useState('services/enterprise-ai-ml')
+  const [seoSimDesc, setSeoSimDesc] = useState('Official enterprise architectural blueprints, zero-trust cloud security standards, and SLA guarantees for Nawabshah, Karachi & Hyderabad.')
+  const [seoFocusKeywords, setSeoFocusKeywords] = useState('software house Nawabshah, AI development Karachi, IT company Hyderabad')
+  const [seoPreviewMode, setSeoPreviewMode] = useState('desktop') // 'desktop' | 'mobile'
+  const [schemaTypeSelect, setSchemaTypeSelect] = useState('LocalBusiness')
 
   // Operations state
   const [clients, setClients] = useState([])
@@ -461,18 +587,17 @@ export default function SecretAdminPortalPage() {
           if (!ignore) setServicesLoading(false)
         }
       } else if (tab === 'security') {
-        setSecLoading(true)
-        try {
-          const data = await adminReq('/api/admin/security/stats')
-          if (!ignore) setSecurityStats(data)
-        } catch {} finally {
-          if (!ignore) setSecLoading(false)
-        }
+        fetchSecurityStats()
       } else if (tab === 'account') {
         const u = getUser()
         if (u) {
-          setAccountForm((prev) => ({ ...prev, name: u.name || '', email: u.email || '' }))
+          setAccountForm((prev) => ({ ...prev, name: u.name || '', email: u.email || '', avatar_url: u.avatar_url || '' }))
         }
+        fetchAdmins()
+      } else if (tab === 'banners_notices') {
+        fetchNoticeAndBanners()
+      } else if (tab === 'chatbot') {
+        fetchChatbot()
       }
     }
 
@@ -999,12 +1124,52 @@ export default function SecretAdminPortalPage() {
   }
 
   // Security Telemetry Handlers
+  const fetchSecurityStats = useCallback(async () => {
+    setSecLoading(true)
+    try {
+      const data = await adminReq('/api/admin/security')
+      setSecurityStats(data)
+    } catch (err) {
+      showMsg(err.message, 'error')
+    } finally {
+      setSecLoading(false)
+    }
+  }, [])
+
+  const fetchAdmins = useCallback(async () => {
+    setAdminsLoading(true)
+    try {
+      const data = await adminReq('/api/admin/accounts')
+      if (Array.isArray(data)) setAdminsList(data)
+    } catch {} finally {
+      setAdminsLoading(false)
+    }
+  }, [])
+
+  const fetchNoticeAndBanners = useCallback(async () => {
+    try {
+      const nRes = await fetch('/api/notice')
+      const nData = await nRes.json()
+      if (nData) setNoticeForm(nData)
+      const bRes = await fetch('/api/banners/hiring')
+      const bData = await bRes.json()
+      if (Array.isArray(bData)) setHiringBanners(bData)
+    } catch {}
+  }, [])
+
+  const fetchChatbot = useCallback(async () => {
+    try {
+      const res = await fetch('/api/chatbot/config')
+      const data = await res.json()
+      if (data) setChatbotForm(data)
+    } catch {}
+  }, [])
+
   const handleUnbanIp = async (ip) => {
     try {
       await adminReq('/api/admin/security/unban', { method: 'POST', body: JSON.stringify({ ip }) })
       showMsg(`IP restriction for [${ip}] lifted`)
-      const data = await adminReq('/api/admin/security/stats')
-      setSecurityStats(data)
+      fetchSecurityStats()
     } catch (err) {
       showMsg(err.message, 'error')
     }
@@ -1014,14 +1179,13 @@ export default function SecretAdminPortalPage() {
     try {
       await adminReq('/api/admin/cache/clear', { method: 'POST' })
       showMsg('High-speed balance loader memory cache flushed successfully!')
-      const data = await adminReq('/api/admin/security/stats')
-      setSecurityStats(data)
+      fetchSecurityStats()
     } catch (err) {
       showMsg(err.message, 'error')
     }
   }
 
-  // Account Settings Handler
+  // Account Settings Handlers
   const handleUpdateAccount = async (e) => {
     e.preventDefault()
     if (accountForm.newPassword && accountForm.newPassword !== accountForm.confirmPassword) {
@@ -1030,17 +1194,130 @@ export default function SecretAdminPortalPage() {
     }
 
     try {
-      await adminReq('/api/admin/account', {
+      const res = await adminReq('/api/admin/account', {
         method: 'PUT',
         body: JSON.stringify({
           name: accountForm.name,
           email: accountForm.email,
+          avatar_url: accountForm.avatar_url,
           currentPassword: accountForm.currentPassword,
           newPassword: accountForm.newPassword,
         }),
       })
       showMsg('SuperAdmin master credentials updated successfully!')
+      if (res?.user) {
+        saveToken(getToken(), res.user)
+        setCurrentUser(res.user)
+      }
       setAccountForm((prev) => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }))
+      fetchAdmins()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  const handleCreateAdmin = async (e) => {
+    e.preventDefault()
+    if (!newAdminForm.name.trim() || !newAdminForm.email.trim() || !newAdminForm.password.trim()) {
+      showMsg('Name, email, and password are required', 'error')
+      return
+    }
+    try {
+      await adminReq('/api/admin/accounts', {
+        method: 'POST',
+        body: JSON.stringify(newAdminForm),
+      })
+      showMsg(`Administrator [${newAdminForm.name}] created successfully!`)
+      setNewAdminForm({ name: '', email: '', password: '', avatar_url: '' })
+      setIsAddingAdmin(false)
+      fetchAdmins()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  const handleDeleteAdmin = async (id, adminName) => {
+    if (!confirm(`Are you sure you want to remove administrator [${adminName}]?`)) return
+    try {
+      await adminReq(`/api/admin/accounts/${id}`, { method: 'DELETE' })
+      showMsg(`Administrator [${adminName}] removed`)
+      fetchAdmins()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  const handleResetAdminPassword = async (id, adminName) => {
+    const newPass = prompt(`Enter new password for ${adminName} (min 8 chars):`)
+    if (!newPass) return
+    if (newPass.length < 8) {
+      showMsg('Password must be at least 8 characters long', 'error')
+      return
+    }
+    try {
+      await adminReq(`/api/admin/accounts/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ password: newPass }),
+      })
+      showMsg(`Password reset successfully for ${adminName}`)
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  // Quick Notice Handlers
+  const handleSaveNotice = async (e) => {
+    e.preventDefault()
+    try {
+      await adminReq('/api/notice', {
+        method: 'PUT',
+        body: JSON.stringify(noticeForm),
+      })
+      showMsg('Sitewide notice banner updated successfully!')
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  // Hiring Banner Handlers
+  const handleSaveBanner = async (e) => {
+    e.preventDefault()
+    if (!newBannerForm.title.trim()) {
+      showMsg('Banner title is required', 'error')
+      return
+    }
+    try {
+      await adminReq('/api/banners/hiring', {
+        method: 'POST',
+        body: JSON.stringify(newBannerForm),
+      })
+      showMsg('Hiring banner saved!')
+      setNewBannerForm({ title: '', subtitle: '', image_url: '/orbitlogo-removebg-preview.png', action_text: 'Explore Roles', action_url: '/careers', is_active: 1 })
+      fetchNoticeAndBanners()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  const handleDeleteBanner = async (id) => {
+    try {
+      await adminReq(`/api/banners/hiring?id=${id}`, { method: 'DELETE' })
+      showMsg('Banner deleted')
+      fetchNoticeAndBanners()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  // Chatbot Config Handlers
+  const handleSaveChatbotConfig = async (e) => {
+    e.preventDefault()
+    try {
+      await adminReq('/api/chatbot/config', {
+        method: 'PUT',
+        body: JSON.stringify(chatbotForm),
+      })
+      showMsg('AI Chatbot configuration updated successfully!')
     } catch (err) {
       showMsg(err.message, 'error')
     }
@@ -1176,11 +1453,35 @@ export default function SecretAdminPortalPage() {
               )
             })}
 
-            <p className="sidebar-section-title">System & Security</p>
+            <p className="sidebar-section-title">Marketing & SEO</p>
             {[
               { id: 'services', label: 'Services & Local SEO', icon: Globe },
+              { id: 'seo_studio', label: 'SEO Studio & Tools', icon: Sparkles },
+              { id: 'banners_notices', label: 'Banners & Notices', icon: Megaphone },
+            ].map((t) => {
+              const IconComp = t.icon
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className="sidebar-btn"
+                  style={{
+                    background: tab === t.id ? 'var(--accent-glow)' : 'transparent',
+                    color: tab === t.id ? 'var(--accent)' : 'var(--text-muted)',
+                    border: tab === t.id ? '1px solid var(--border-hover)' : '1px solid transparent',
+                  }}
+                >
+                  <IconComp style={{ width: 15, height: 15 }} />
+                  <span>{t.label}</span>
+                </button>
+              )
+            })}
+
+            <p className="sidebar-section-title">System & Security</p>
+            {[
+              { id: 'chatbot', label: 'AI Chatbot Agent', icon: Bot },
               { id: 'security', label: 'Cyber Shield & WAF', icon: Shield },
-              { id: 'account', label: 'Admin Account', icon: SlidersHorizontal },
+              { id: 'account', label: 'Admin Accounts', icon: SlidersHorizontal },
             ].map((t) => {
               const IconComp = t.icon
               return (
@@ -2157,9 +2458,13 @@ export default function SecretAdminPortalPage() {
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 16 }}>
-                      <div>
-                        <label style={labelStyle}>Avatar Image URL</label>
-                        <input type="text" placeholder="/orbitlogo-removebg-preview.png" value={teamForm.avatar_url} onChange={(e) => setTeamForm((prev) => ({ ...prev, avatar_url: e.target.value }))} style={inputStyle} />
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <ImageUploadField
+                          label="Team Member Photo (Upload from Computer/Phone or Paste URL)"
+                          value={teamForm.avatar_url}
+                          onChange={(url) => setTeamForm((prev) => ({ ...prev, avatar_url: url }))}
+                          placeholder="/orbitlogo-removebg-preview.png"
+                        />
                       </div>
                       <div>
                         <label style={labelStyle}>LinkedIn URL</label>
@@ -2724,21 +3029,90 @@ export default function SecretAdminPortalPage() {
               </motion.div>
             )}
 
-            {/* ── SUPERADMIN MASTER ACCOUNT SETTINGS ── */}
+            {/* ── SUPERADMIN MASTER ACCOUNT & MULTI-ADMIN SETTINGS ── */}
             {tab === 'account' && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>
-                  SuperAdmin Master Account Settings
-                </h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>
+                      Administrator Profiles & Access Control
+                    </h2>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                      Manage your profile picture, credentials, and create accounts for other team administrators.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsAddingAdmin(!isAddingAdmin)}
+                    className="btn-primary"
+                    style={{ fontSize: 12, padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <Plus size={14} />
+                    <span>{isAddingAdmin ? 'Close Form' : 'Add New Admin'}</span>
+                  </button>
+                </div>
 
+                {/* Add New Admin Form */}
+                {isAddingAdmin && (
+                  <SectionCard
+                    title="Create New Administrator Account"
+                    subtitle="Grant secure dashboard access to another trusted team engineer."
+                    onSubmit={handleCreateAdmin}
+                  >
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 14 }}>
+                      <div>
+                        <label style={labelStyle}>Full Name *</label>
+                        <input
+                          type="text" required placeholder="e.g. Engr. M. Waleed"
+                          value={newAdminForm.name}
+                          onChange={(e) => setNewAdminForm({ ...newAdminForm, name: e.target.value })}
+                          style={inputStyle}
+                        />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Email Address *</label>
+                        <input
+                          type="email" required placeholder="admin@orbit-i.tech"
+                          value={newAdminForm.email}
+                          onChange={(e) => setNewAdminForm({ ...newAdminForm, email: e.target.value })}
+                          style={inputStyle}
+                        />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Initial Password *</label>
+                        <input
+                          type="password" required placeholder="Min 8 characters"
+                          value={newAdminForm.password}
+                          onChange={(e) => setNewAdminForm({ ...newAdminForm, password: e.target.value })}
+                          style={inputStyle}
+                        />
+                      </div>
+                    </div>
+                    <ImageUploadField
+                      label="Admin Profile Picture"
+                      value={newAdminForm.avatar_url}
+                      onChange={(url) => setNewAdminForm({ ...newAdminForm, avatar_url: url })}
+                      placeholder="/orbitlogo-removebg-preview.png"
+                    />
+                    <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                      <button type="submit" className="btn-primary" style={{ fontSize: 13, padding: '9px 18px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <Save size={14} /> Create Admin Account
+                      </button>
+                      <button type="button" onClick={() => setIsAddingAdmin(false)} className="btn-outline" style={{ fontSize: 13 }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </SectionCard>
+                )}
+
+                {/* Current Admin Profile */}
                 <SectionCard
-                  title="Update Administrator Credentials"
-                  subtitle="Change your master email address, display name, or update your password."
+                  title="My Administrator Profile"
+                  subtitle="Update your personal display name, profile photo, and password."
                   onSubmit={handleUpdateAccount}
                 >
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16, marginBottom: 16 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 16 }}>
                     <div>
-                      <label style={labelStyle}>SuperAdmin Display Name</label>
+                      <label style={labelStyle}>Display Name</label>
                       <input
                         type="text" required value={accountForm.name}
                         onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
@@ -2746,7 +3120,7 @@ export default function SecretAdminPortalPage() {
                       />
                     </div>
                     <div>
-                      <label style={labelStyle}>Master Email Address</label>
+                      <label style={labelStyle}>Email Address</label>
                       <input
                         type="email" required value={accountForm.email}
                         onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
@@ -2755,9 +3129,16 @@ export default function SecretAdminPortalPage() {
                     </div>
                   </div>
 
+                  <ImageUploadField
+                    label="My Profile Photo (Upload or Paste URL)"
+                    value={accountForm.avatar_url}
+                    onChange={(url) => setAccountForm({ ...accountForm, avatar_url: url })}
+                    placeholder="/orbitlogo-removebg-preview.png"
+                  />
+
                   <div style={{ padding: '16px', background: 'var(--bg-elevated)', borderRadius: 12, border: '1px solid var(--border)', marginBottom: 18 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: 12 }}>
-                      Change Master Password (Optional)
+                      Change Password (Optional)
                     </span>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
@@ -2771,7 +3152,7 @@ export default function SecretAdminPortalPage() {
                         />
                       </div>
                       <div>
-                        <label style={labelStyle}>New Master Password</label>
+                        <label style={labelStyle}>New Password</label>
                         <input
                           type="password" placeholder="Minimum 8 characters"
                           value={accountForm.newPassword}
@@ -2793,7 +3174,462 @@ export default function SecretAdminPortalPage() {
 
                   <button type="submit" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, padding: '10px 22px' }}>
                     <Save style={{ width: 14, height: 14 }} />
-                    <span>Save Master Credentials</span>
+                    <span>Save My Profile</span>
+                  </button>
+                </SectionCard>
+
+                {/* Active Administrators Table */}
+                <SectionCard
+                  title="All Active System Administrators"
+                  subtitle="Authorized administrators with access to the SuperAdmin Control Vault."
+                >
+                  {adminsLoading ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Loading admin accounts...</p>
+                  ) : adminsList.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Primary SuperAdmin active.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {adminsList.map((adm) => (
+                        <div
+                          key={adm.id}
+                          style={{
+                            background: 'var(--bg-elevated)',
+                            border: '1px solid var(--border)',
+                            borderRadius: 12,
+                            padding: '12px 16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: 12,
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <Image
+                              src={adm.avatar_url || '/orbitlogo-removebg-preview.png'}
+                              alt=""
+                              width={40}
+                              height={40}
+                              style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+                              unoptimized
+                            />
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{adm.name}</span>
+                                <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.15)', color: '#818cf8', fontWeight: 600 }}>
+                                  {adm.role || 'ADMIN'}
+                                </span>
+                              </div>
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{adm.email}</span>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button
+                              onClick={() => handleResetAdminPassword(adm.id, adm.name)}
+                              className="btn-outline"
+                              style={{ fontSize: 11, padding: '5px 10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                            >
+                              <Key size={12} /> Reset Password
+                            </button>
+                            {adminsList.length > 1 && adm.email !== currentUser?.email && (
+                              <button
+                                onClick={() => handleDeleteAdmin(adm.id, adm.name)}
+                                style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#ef4444', borderRadius: 6, padding: '5px 8px', fontSize: 11, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                              >
+                                <Trash2 size={12} /> Remove
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </SectionCard>
+              </motion.div>
+            )}
+
+            {/* ── BANNERS & QUICK NOTICE ── */}
+            {tab === 'banners_notices' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>
+                  Sitewide Notices & Hiring Banners
+                </h2>
+
+                {/* Sitewide Top Announcement Bar */}
+                <SectionCard
+                  title="Sitewide Top Emergency / Announcement Notice"
+                  subtitle="Displays a high-visibility announcement bar across the top of all website pages."
+                  onSubmit={handleSaveNotice}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      <input
+                        type="checkbox"
+                        checked={noticeForm.enabled}
+                        onChange={(e) => setNoticeForm({ ...noticeForm, enabled: e.target.checked })}
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                      />
+                      Enable Announcement Notice Bar on Website
+                    </label>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 14 }}>
+                    <div>
+                      <label style={labelStyle}>Notice Type / Badge Style</label>
+                      <select
+                        value={noticeForm.type}
+                        onChange={(e) => setNoticeForm({ ...noticeForm, type: e.target.value })}
+                        style={{ ...inputStyle, cursor: 'pointer' }}
+                      >
+                        <option value="HIRING">Hiring (Indigo / Purple)</option>
+                        <option value="UPDATE">Announcement (Green)</option>
+                        <option value="WARNING">Important Notice (Yellow)</option>
+                        <option value="INFO">General Info (Blue)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Action Link Text</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Apply Now"
+                        value={noticeForm.link_text || ''}
+                        onChange={(e) => setNoticeForm({ ...noticeForm, link_text: e.target.value })}
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Action Link URL</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. /careers"
+                        value={noticeForm.link_url || ''}
+                        onChange={(e) => setNoticeForm({ ...noticeForm, link_url: e.target.value })}
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={labelStyle}>Notice Message *</label>
+                    <textarea
+                      rows={2}
+                      required
+                      placeholder="e.g. 🚀 Admissions open for Autumn 2026 Internship Batch! Apply now before seats fill."
+                      value={noticeForm.message || ''}
+                      onChange={(e) => setNoticeForm({ ...noticeForm, message: e.target.value })}
+                      style={{ ...inputStyle, resize: 'vertical' }}
+                    />
+                  </div>
+
+                  <button type="submit" className="btn-primary" style={{ fontSize: 13, padding: '9px 20px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Save size={14} /> Save & Publish Notice
+                  </button>
+                </SectionCard>
+
+                {/* Hiring Banners Manager */}
+                <SectionCard
+                  title="Hiring & Opportunity Banners"
+                  subtitle="Prominent promotional banners shown on the /careers page."
+                  onSubmit={handleSaveBanner}
+                >
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, marginBottom: 14 }}>
+                    <div>
+                      <label style={labelStyle}>Banner Title *</label>
+                      <input
+                        type="text" required placeholder="e.g. Join ORBIT-I Engineering 2026"
+                        value={newBannerForm.title}
+                        onChange={(e) => setNewBannerForm({ ...newBannerForm, title: e.target.value })}
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Target Action URL</label>
+                      <input
+                        type="text" placeholder="/careers"
+                        value={newBannerForm.action_url}
+                        onChange={(e) => setNewBannerForm({ ...newBannerForm, action_url: e.target.value })}
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Button Label</label>
+                      <input
+                        type="text" placeholder="Explore Open Roles"
+                        value={newBannerForm.action_text}
+                        onChange={(e) => setNewBannerForm({ ...newBannerForm, action_text: e.target.value })}
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: 14 }}>
+                    <label style={labelStyle}>Subtitle / Description</label>
+                    <textarea
+                      rows={2}
+                      placeholder="Highlight key perks, stipend, remote flexibility, or department focus..."
+                      value={newBannerForm.subtitle}
+                      onChange={(e) => setNewBannerForm({ ...newBannerForm, subtitle: e.target.value })}
+                      style={{ ...inputStyle, resize: 'vertical' }}
+                    />
+                  </div>
+
+                  <ImageUploadField
+                    label="Banner Graphic / Logo (Upload File or Enter URL)"
+                    value={newBannerForm.image_url}
+                    onChange={(url) => setNewBannerForm({ ...newBannerForm, image_url: url })}
+                    placeholder="/orbitlogo-removebg-preview.png"
+                  />
+
+                  <button type="submit" className="btn-primary" style={{ fontSize: 13, padding: '9px 20px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Plus size={14} /> Add Hiring Banner
+                  </button>
+
+                  {/* List of active banners */}
+                  <div style={{ marginTop: 24 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', display: 'block', marginBottom: 10 }}>Current Banners</span>
+                    {hiringBanners.length === 0 ? (
+                      <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No custom banners added yet.</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {hiringBanners.map((b) => (
+                          <div key={b.id} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <Image src={b.image_url || '/orbitlogo-removebg-preview.png'} alt="" width={44} height={44} style={{ borderRadius: 8, objectFit: 'contain' }} unoptimized />
+                              <div>
+                                <h4 style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{b.title}</h4>
+                                <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{b.subtitle}</p>
+                              </div>
+                            </div>
+                            <button onClick={() => handleDeleteBanner(b.id)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#ef4444', borderRadius: 6, padding: '6px 10px', fontSize: 11, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              <Trash2 size={12} /> Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </SectionCard>
+              </motion.div>
+            )}
+
+            {/* ── SEO STUDIO & CONTENT WRITING SUITE ── */}
+            {tab === 'seo_studio' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <div style={{ marginBottom: 20 }}>
+                  <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>
+                    SEO Content Studio & Search Dominance Suite
+                  </h2>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                    Test and perfect Google SERP titles, meta descriptions, and rich snippets for top rankings across Nawabshah, Karachi, and Hyderabad.
+                  </p>
+                </div>
+
+                {/* Google SERP Live Simulator */}
+                <SectionCard
+                  title="Google SERP Search Result Simulator"
+                  subtitle="Live preview of how your page appears on Google Search results."
+                  actionButton={
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        onClick={() => setSeoPreviewMode('desktop')}
+                        style={{
+                          background: seoPreviewMode === 'desktop' ? 'var(--accent-glow)' : 'var(--bg-elevated)',
+                          border: `1px solid ${seoPreviewMode === 'desktop' ? 'var(--border-hover)' : 'var(--border)'}`,
+                          color: seoPreviewMode === 'desktop' ? 'var(--accent)' : 'var(--text-muted)',
+                          padding: '5px 10px',
+                          borderRadius: 6,
+                          fontSize: 11,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                        }}
+                      >
+                        <Monitor size={12} /> Desktop
+                      </button>
+                      <button
+                        onClick={() => setSeoPreviewMode('mobile')}
+                        style={{
+                          background: seoPreviewMode === 'mobile' ? 'var(--accent-glow)' : 'var(--bg-elevated)',
+                          border: `1px solid ${seoPreviewMode === 'mobile' ? 'var(--border-hover)' : 'var(--border)'}`,
+                          color: seoPreviewMode === 'mobile' ? 'var(--accent)' : 'var(--text-muted)',
+                          padding: '5px 10px',
+                          borderRadius: 6,
+                          fontSize: 11,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                        }}
+                      >
+                        <Smartphone size={12} /> Mobile
+                      </button>
+                    </div>
+                  }
+                >
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16, marginBottom: 20 }}>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                        <label style={labelStyle}>SEO Title Tag</label>
+                        <span style={{ fontSize: 11, color: seoSimTitle.length > 60 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
+                          {seoSimTitle.length} / 60 chars
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        value={seoSimTitle}
+                        onChange={(e) => setSeoSimTitle(e.target.value)}
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Target URL Path</label>
+                      <input
+                        type="text"
+                        value={seoSimSlug}
+                        onChange={(e) => setSeoSimSlug(e.target.value)}
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+                      <label style={labelStyle}>Meta Description</label>
+                      <span style={{ fontSize: 11, color: seoSimDesc.length > 160 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
+                        {seoSimDesc.length} / 160 chars
+                      </span>
+                    </div>
+                    <textarea
+                      rows={3}
+                      value={seoSimDesc}
+                      onChange={(e) => setSeoSimDesc(e.target.value)}
+                      style={{ ...inputStyle, resize: 'vertical' }}
+                    />
+                  </div>
+
+                  {/* Visual Google Card Box */}
+                  <div style={{ background: '#202124', borderRadius: 14, padding: '18px 22px', border: '1px solid #3c4043', maxWidth: seoPreviewMode === 'mobile' ? 420 : 680, margin: '0 auto 10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        <Image src="/orbitlogo-removebg-preview.png" alt="" width={20} height={20} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 12, color: '#dadce0', fontWeight: 500 }}>ORBIT-I Private Limited</div>
+                        <div style={{ fontSize: 11, color: '#bdc1c6' }}>https://orbit-i.tech/{seoSimSlug}</div>
+                      </div>
+                    </div>
+                    <h3 style={{ fontSize: seoPreviewMode === 'mobile' ? 17 : 19, color: '#8ab4f8', fontWeight: 400, margin: '4px 0 6px', lineHeight: 1.3, cursor: 'pointer' }}>
+                      {seoSimTitle || 'ORBIT-I Private Limited'}
+                    </h3>
+                    <p style={{ fontSize: 13, color: '#bdc1c6', lineHeight: 1.5, margin: 0 }}>
+                      {seoSimDesc || 'Discover premier software engineering and enterprise AI solutions in Sindh.'}
+                    </p>
+                  </div>
+                </SectionCard>
+
+                {/* Schema.org Graph Generator */}
+                <SectionCard
+                  title="Instant Schema.org JSON-LD Generator"
+                  subtitle="Generate verified rich-snippet structured data for search crawlers."
+                >
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 14 }}>
+                    <label style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>Schema Type:</label>
+                    <select
+                      value={schemaTypeSelect}
+                      onChange={(e) => setSchemaTypeSelect(e.target.value)}
+                      style={{ ...inputStyle, width: 'auto', padding: '6px 12px' }}
+                    >
+                      <option value="LocalBusiness">LocalBusiness (Nawabshah, Karachi, Hyderabad)</option>
+                      <option value="Service">Professional Service</option>
+                      <option value="FAQPage">FAQ Page</option>
+                    </select>
+                  </div>
+
+                  <pre style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px', fontSize: 11, color: 'var(--accent)', overflowX: 'auto', fontFamily: 'monospace' }}>
+                    {JSON.stringify(
+                      schemaTypeSelect === 'LocalBusiness'
+                        ? {
+                            '@context': 'https://schema.org',
+                            '@type': 'LocalBusiness',
+                            name: 'ORBIT-I Private Limited',
+                            address: { '@type': 'PostalAddress', addressLocality: 'Nawabshah', addressRegion: 'Sindh', addressCountry: 'PK' },
+                            areaServed: ['Nawabshah', 'Karachi', 'Hyderabad'],
+                            url: 'https://orbit-i.tech',
+                          }
+                        : {
+                            '@context': 'https://schema.org',
+                            '@type': 'Service',
+                            name: seoSimTitle,
+                            description: seoSimDesc,
+                            provider: { '@type': 'Organization', name: 'ORBIT-I Private Limited' },
+                          },
+                      null,
+                      2
+                    )}
+                  </pre>
+                </SectionCard>
+              </motion.div>
+            )}
+
+            {/* ── AI CHATBOT SETTINGS ── */}
+            {tab === 'chatbot' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>
+                  AI Chatbot Configuration & Knowledge Guard
+                </h2>
+
+                <SectionCard
+                  title="AI Assistant Configuration"
+                  subtitle="Control bot availability, display persona, and welcome greeting."
+                  onSubmit={handleSaveChatbotConfig}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      <input
+                        type="checkbox"
+                        checked={chatbotForm.enabled}
+                        onChange={(e) => setChatbotForm({ ...chatbotForm, enabled: e.target.checked })}
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                      />
+                      Enable AI Assistant Widget on Website
+                    </label>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 14 }}>
+                    <div>
+                      <label style={labelStyle}>Bot Display Name</label>
+                      <input
+                        type="text"
+                        value={chatbotForm.bot_name || 'ORBIT-I AI Assistant'}
+                        onChange={(e) => setChatbotForm({ ...chatbotForm, bot_name: e.target.value })}
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Escalation Email</label>
+                      <input
+                        type="email"
+                        value={chatbotForm.contact_email || 'contact@orbit-i.tech'}
+                        onChange={(e) => setChatbotForm({ ...chatbotForm, contact_email: e.target.value })}
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={labelStyle}>Default Greeting / Welcome Message</label>
+                    <textarea
+                      rows={3}
+                      value={chatbotForm.greeting || ''}
+                      onChange={(e) => setChatbotForm({ ...chatbotForm, greeting: e.target.value })}
+                      style={{ ...inputStyle, resize: 'vertical' }}
+                    />
+                  </div>
+
+                  <button type="submit" className="btn-primary" style={{ fontSize: 13, padding: '9px 20px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Save size={14} /> Save Chatbot Settings
                   </button>
                 </SectionCard>
               </motion.div>

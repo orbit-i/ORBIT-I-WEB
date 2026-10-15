@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { pool } from '@/server/config/db';
 import { verifyAdmin } from '@/lib/authServer';
+import { saveCertificate, getCertificateByCode } from '@/server/utils/cmsStorage';
 
 export async function POST(request) {
   try {
@@ -18,21 +18,23 @@ export async function POST(request) {
 
     const upperCode = certificateCode.trim().toUpperCase();
 
-    const [existing] = await pool.query(
-      'SELECT id FROM intern_certificates WHERE certificate_code = ?',
-      [upperCode]
-    );
-
-    if (existing.length > 0) {
-      return NextResponse.json({ error: 'Certificate code already exists' }, { status: 400 });
+    // Check if code already exists in DB or fallback
+    const existing = await getCertificateByCode(upperCode);
+    if (existing) {
+      return NextResponse.json({ error: `Certificate code ${upperCode} already exists` }, { status: 400 });
     }
 
-    await pool.query(
-      `INSERT INTO intern_certificates 
-       (name, role, department, start_date, end_date, duration, status, certificate_code, issued_by, issued_at, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, 'COMPLETED', ?, 'ORBIT-I Private Limited', CURDATE(), NOW())`,
-      [name, role, department, startDate, endDate, duration, upperCode]
-    );
+    const cert = await saveCertificate({
+      name: name.trim(),
+      role: role.trim(),
+      department: department.trim(),
+      startDate,
+      endDate,
+      duration: duration.trim(),
+      certificateCode: upperCode,
+      status: 'COMPLETED',
+      issuedBy: 'ORBIT-I Private Limited',
+    });
 
     return new Response(`Certificate created successfully with code: ${upperCode}`, { status: 201 });
   } catch (error) {

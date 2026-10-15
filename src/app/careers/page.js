@@ -48,8 +48,16 @@ export default function CareersPage() {
   const [errorMessage, setErrorMessage] = useState('')
   const [expandedCard, setExpandedCard] = useState(null)
   const fileInputRef = useRef(null)
+  const [hiringBanners, setHiringBanners] = useState([])
 
   useEffect(() => {
+    fetch('/api/banners/hiring')
+      .then((r) => r.json())
+      .then((d) => {
+        if (Array.isArray(d)) setHiringBanners(d.filter((b) => b.is_active))
+      })
+      .catch(() => {})
+
     fetch('/api/careers/jobs')
       .then((r) => r.json())
       .then((data) => {
@@ -217,6 +225,67 @@ export default function CareersPage() {
           }}>
             Launch your career with an SECP-registered technology firm headquartered in <strong style={{ color: 'var(--text-primary)' }}>Nawabshah</strong> with a branch in <strong style={{ color: 'var(--text-primary)' }}>Karachi</strong>. Gain authentic hands-on engineering mastery or earn transparent, high-value commissions through commercial freelance partnerships.
           </p>
+
+          {/* ACTIVE HIRING BANNERS FROM SUPERADMIN */}
+          {hiringBanners && hiringBanners.length > 0 && (
+            <div style={{ maxWidth: 860, margin: '0 auto 32px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {hiringBanners.map((b) => (
+                <div
+                  key={b.id}
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(30,58,138,0.3) 0%, rgba(13,22,39,0.9) 100%)',
+                    border: '1px solid rgba(56,189,248,0.4)',
+                    borderRadius: 20,
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.4)',
+                    position: 'relative'
+                  }}
+                >
+                  {b.image_url && (
+                    <div style={{ flex: '1 1 280px', minHeight: 180, position: 'relative', overflow: 'hidden' }}>
+                      <img
+                        src={b.image_url}
+                        alt={b.title}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+                    </div>
+                  )}
+                  <div style={{ flex: '2 1 320px', padding: '24px 28px', textAlign: 'left' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 999, background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.3)', color: '#38bdf8', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 10 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#38bdf8' }} />
+                      Actively Hiring
+                    </div>
+                    <h3 style={{ fontSize: 20, fontWeight: 700, color: '#f8fafc', margin: '0 0 6px' }}>{b.title}</h3>
+                    {b.subtitle && <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 16px', lineHeight: 1.5 }}>{b.subtitle}</p>}
+                    {b.cta_text && (
+                      <a
+                        href={b.cta_link || '#roles'}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '10px 20px',
+                          borderRadius: 10,
+                          background: 'linear-gradient(135deg, #0284c7, #2563eb)',
+                          color: '#fff',
+                          fontWeight: 600,
+                          fontSize: 13,
+                          textDecoration: 'none',
+                          boxShadow: '0 4px 14px rgba(2,132,199,0.35)'
+                        }}
+                      >
+                        {b.cta_text} →
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* AUTHENTICITY / TRANSPARENCY NOTICE */}
           <div style={{

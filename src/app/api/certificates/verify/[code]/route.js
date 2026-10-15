@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
-import { pool } from '@/server/config/db';
+import { getCertificateByCode } from '@/server/utils/cmsStorage';
 
-const formatDate = (d) => (d ? new Date(d).toISOString().split('T')[0] : null);
+const formatDate = (d) => {
+  if (!d) return null;
+  try {
+    return new Date(d).toISOString().split('T')[0];
+  } catch {
+    return String(d);
+  }
+};
 
 export async function GET(request, { params }) {
   try {
@@ -10,19 +17,12 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Certificate code is required' }, { status: 400 });
     }
 
-    const upperCode = code.trim().toUpperCase();
-    const [rows] = await pool.query(
-      `SELECT name, role, department, start_date, end_date, duration, status, certificate_code, issued_by
-       FROM intern_certificates
-       WHERE certificate_code = ?`,
-      [upperCode]
-    );
+    const upperCode = decodeURIComponent(code).trim().toUpperCase();
+    const cert = await getCertificateByCode(upperCode);
 
-    if (rows.length === 0) {
-      return NextResponse.json({ error: `Certificate not found with code : ${code}` }, { status: 400 });
+    if (!cert) {
+      return NextResponse.json({ error: `Certificate not found with code : ${code}` }, { status: 404 });
     }
-
-    const cert = rows[0];
 
     return NextResponse.json({
       name: cert.name,
@@ -32,7 +32,7 @@ export async function GET(request, { params }) {
       endDate: formatDate(cert.end_date),
       duration: cert.duration,
       issuedBy: cert.issued_by || 'ORBIT-I Private Limited',
-      status: cert.status,
+      status: cert.status || 'COMPLETED',
       certificateCode: cert.certificate_code,
     });
   } catch (error) {
