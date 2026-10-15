@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '@/server/config/db';
+import { getAdminUsers, saveAdminUser } from '@/server/utils/cmsStorage';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'orbit_i_jwt_secret_key_super_secure_2026_dev';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
@@ -28,6 +29,11 @@ export async function POST(request) {
       adminCount = 0;
     }
 
+    if (adminCount === 0) {
+      const fallbackAdmins = await getAdminUsers();
+      adminCount = fallbackAdmins.length;
+    }
+
     if (adminCount > 0) {
       return NextResponse.json({
         error: 'Security Lockout: Initial SuperAdmin setup has already been completed. Please use SuperAdmin Login.',
@@ -35,22 +41,22 @@ export async function POST(request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = name.trim();
 
-    try {
-      await pool.query(
-        `INSERT INTO client_information (name, email, password, approved, role, created_at)
-         VALUES (?, ?, ?, 1, 'ADMIN', NOW())`,
-        [name.trim(), email.trim().toLowerCase(), hashedPassword]
-      );
-    } catch (dbErr) {
-      console.error('DB Insert error during setup:', dbErr.message);
-    }
+    // Persist to fallback store and MySQL
+    await saveAdminUser({
+      name: cleanName,
+      email: cleanEmail,
+      password: hashedPassword,
+      avatar_url: '',
+    });
 
     const token = jwt.sign(
       {
-        sub: email.trim().toLowerCase(),
-        email: email.trim().toLowerCase(),
-        name: name.trim(),
+        sub: cleanEmail,
+        email: cleanEmail,
+        name: cleanName,
         role: 'ADMIN',
       },
       JWT_SECRET,
@@ -60,12 +66,12 @@ export async function POST(request) {
     return NextResponse.json({
       message: 'SuperAdmin account initialized successfully.',
       token,
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
+      name: cleanName,
+      email: cleanEmail,
       role: 'ADMIN',
     });
   } catch (error) {
     console.error('Admin setup error:', error);
-    return NextResponse.json({ error: error.message || 'Server error during setup' }, { status: 500 });
+    return NextResponse.json({ error: 'Server error during setup. Please try again.' }, { status: 500 });
   }
 }

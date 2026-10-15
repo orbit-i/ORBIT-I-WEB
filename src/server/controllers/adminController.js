@@ -268,6 +268,82 @@ async function getAllProjects(req, res) {
   }
 }
 
+async function getAdminOverview(req, res) {
+  try {
+    const {
+      getInquiries,
+      getCertificates,
+      getCareersJobs,
+      getTeamMembers,
+      getCmsPages,
+      getBlogPosts,
+      getChatbotConfig,
+      getSiteNotice,
+      getAdminUsers,
+    } = require('../utils/cmsStorage');
+
+    const [inquiries, certificates, jobs, team, pages, posts, admins] = await Promise.all([
+      getInquiries().catch(() => []),
+      getCertificates().catch(() => []),
+      getCareersJobs().catch(() => []),
+      getTeamMembers().catch(() => []),
+      getCmsPages().catch(() => []),
+      getBlogPosts().catch(() => []),
+      getAdminUsers().catch(() => []),
+    ]);
+
+    let totalClients = 0;
+    let pendingClients = 0;
+    try {
+      const [clientRows] = await pool.query(
+        "SELECT COUNT(*) as total, SUM(CASE WHEN approved = 0 THEN 1 ELSE 0 END) as pending FROM client_information WHERE role = 'CLIENT'"
+      );
+      if (clientRows && clientRows.length > 0) {
+        totalClients = Number(clientRows[0].total || 0);
+        pendingClients = Number(clientRows[0].pending || 0);
+      }
+    } catch {}
+
+    const newInquiries = (inquiries || []).filter((i) => i.status === 'NEW').length;
+    const botConfig = getChatbotConfig();
+
+    return res.status(200).json({
+      success: true,
+      metrics: {
+        totalInquiries: (inquiries || []).length,
+        newInquiries,
+        totalCertificates: (certificates || []).length,
+        totalClients,
+        pendingClients,
+        openJobs: (jobs || []).length,
+        teamCount: (team || []).length,
+        publishedPages: (pages || []).length,
+        blogArticles: (posts || []).length,
+        adminCount: (admins || []).length,
+      },
+      system: {
+        chatbotEnabled: Boolean(botConfig?.enabled),
+        nodeUptime: Math.floor(process.uptime()),
+        timestamp: new Date().toISOString(),
+      },
+      recentInquiries: (inquiries || []).slice(0, 5),
+      recentCertificates: (certificates || []).slice(0, 5),
+    });
+  } catch (error) {
+    console.error('getAdminOverview error:', error);
+    return res.status(200).json({
+      success: true,
+      metrics: {
+        totalInquiries: 0,
+        newInquiries: 0,
+        totalCertificates: 0,
+        totalClients: 0,
+        pendingClients: 0,
+      },
+    });
+  }
+}
+
 module.exports = {
   getSetupStatus,
   initialSuperAdminSetup,
@@ -278,4 +354,5 @@ module.exports = {
   getAllClients,
   approveClient,
   getAllProjects,
+  getAdminOverview,
 };

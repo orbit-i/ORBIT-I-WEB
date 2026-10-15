@@ -116,7 +116,9 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
           onAuthenticated({ name: data.name, email: data.email, role: data.role })
         }, 800)
       } catch (err) {
-        setError(err.message)
+        const msg = err.message || 'Invalid administrator credentials.'
+        const isDbLeak = /access denied|database|mysql|connection|sql|table|host/i.test(msg)
+        setError(isDbLeak ? 'Invalid credentials or authentication service offline.' : msg)
         setStatus('idle')
       }
     }

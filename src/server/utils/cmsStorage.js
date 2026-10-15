@@ -156,13 +156,13 @@ const DEFAULT_STORE = {
   team_members: [
     {
       id: 1,
-      name: 'Abdul Samad',
-      designation: 'Founder & Chief Executive Officer',
-      department: 'Leadership',
-      bio: 'Visionary technologist and systems architect leading enterprise software, AI engineering, and technology strategy across Pakistan and international markets.',
-      avatar_url: '/orbitlogo-removebg-preview.png',
+      name: 'Abdul Samad Rind',
+      designation: 'Founder & CEO',
+      department: 'Executive Leadership',
+      bio: 'Steering ORBIT-I Private Limited with focus on high-performance systems, sustainable architecture, and digital engineering partnerships across Pakistan and internationally.',
+      avatar_url: '/team/samad rind.jpeg',
       skills: 'System Architecture, AI Systems, Enterprise Strategy, Cloud Infrastructure',
-      linkedin_url: 'https://linkedin.com',
+      linkedin_url: 'https://www.linkedin.com/company/orbit-i-private-limited/',
       github_url: 'https://github.com',
       order_index: 1,
       is_published: 1,
@@ -170,13 +170,13 @@ const DEFAULT_STORE = {
     },
     {
       id: 2,
-      name: 'Engr. M. Waleed',
-      designation: 'Co-Founder & Chief Operating Officer',
+      name: 'Maria Almani',
+      designation: 'Co-Founder & COO',
       department: 'Operations & Strategy',
-      bio: 'Operations and engineering leader managing client delivery pipelines, compliance, organizational scaling, and strategic partnerships.',
-      avatar_url: '/orbitlogo-removebg-preview.png',
+      bio: 'Overseeing client operations, sprint delivery management, team coordination, and strategic business growth for all ORBIT-I engagements.',
+      avatar_url: '/team/female avatar.png',
       skills: 'Operations, Strategic Planning, Agile Delivery, Team Leadership',
-      linkedin_url: 'https://linkedin.com',
+      linkedin_url: 'https://www.linkedin.com/company/orbit-i-private-limited/',
       github_url: 'https://github.com',
       order_index: 2,
       is_published: 1,
@@ -184,13 +184,13 @@ const DEFAULT_STORE = {
     },
     {
       id: 3,
-      name: 'Lead AI Engineer',
-      designation: 'Head of Artificial Intelligence',
-      department: 'AI & Data Science',
-      bio: 'Specialist in deep neural architectures, LangChain / LlamaIndex workflows, vector databases, and domain fine-tuning.',
-      avatar_url: '/orbitlogo-removebg-preview.png',
-      skills: 'PyTorch, LangChain, pgvector, LLM Fine-Tuning, FastAPIs',
-      linkedin_url: 'https://linkedin.com',
+      name: 'Muhammad Muneeb Ur Rahman',
+      designation: 'Co-Founder & CTO',
+      department: 'Engineering & Technology',
+      bio: 'Orchestrating technical architecture, cloud scalability, secure database design, and engineering standards across all ORBIT-I products.',
+      avatar_url: '/team/Muneeb ur rehman.jpeg',
+      skills: 'Technical Architecture, Cloud Scalability, Database Design, System Security',
+      linkedin_url: 'https://www.linkedin.com/company/orbit-i-private-limited/',
       github_url: 'https://github.com',
       order_index: 3,
       is_published: 1,
@@ -198,15 +198,43 @@ const DEFAULT_STORE = {
     },
     {
       id: 4,
-      name: 'Senior Full-Stack Architect',
-      designation: 'Lead Solutions Architect',
-      department: 'Web Engineering',
-      bio: 'Architecting ultra-low latency Next.js web applications, scalable REST/GraphQL APIs, and robust database layers.',
-      avatar_url: '/orbitlogo-removebg-preview.png',
-      skills: 'Next.js, React, Node.js, MySQL, PostgreSQL, Docker',
-      linkedin_url: 'https://linkedin.com',
+      name: 'Waleed Ahmed',
+      designation: 'Digital Marketing Expert',
+      department: 'Marketing & Growth',
+      bio: 'Driving global digital acquisition, technical SEO strategy, brand positioning, and enterprise client growth pipelines.',
+      avatar_url: '/team/waleed.jpeg',
+      skills: 'Digital Marketing, Growth Hacking, Technical SEO, Brand Strategy',
+      linkedin_url: 'https://www.linkedin.com/company/orbit-i-private-limited/',
       github_url: 'https://github.com',
       order_index: 4,
+      is_published: 1,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 5,
+      name: 'Rashid Ali Channa',
+      designation: 'AI/ML Engineer',
+      department: 'AI & Research',
+      bio: 'Specialist in deep neural architectures, LLM fine-tuning, vector search, and computer vision models.',
+      avatar_url: '/team/rashid channa.jpeg',
+      skills: 'PyTorch, LangChain, pgvector, Computer Vision, FastAPIs',
+      linkedin_url: 'https://www.linkedin.com/company/orbit-i-private-limited/',
+      github_url: 'https://github.com',
+      order_index: 5,
+      is_published: 1,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 6,
+      name: 'Hassan Ansar',
+      designation: 'Web Developer',
+      department: 'Web Engineering',
+      bio: 'Specialized in high-density Next.js web platforms, component libraries, and API integrations.',
+      avatar_url: '/team/hassan anser.jpeg',
+      skills: 'Next.js, React, Node.js, TypeScript, TailwindCSS',
+      linkedin_url: 'https://www.linkedin.com/company/orbit-i-private-limited/',
+      github_url: 'https://github.com',
+      order_index: 6,
       is_published: 1,
       created_at: new Date().toISOString(),
     },
@@ -777,6 +805,39 @@ async function deleteInquiry(id) {
   );
 }
 
+async function saveInquiry(data) {
+  const { name, email, company, service, message } = data;
+  const store = readFallbackStore();
+  if (!store.contact_inquiries) store.contact_inquiries = [];
+
+  const inquiryRecord = {
+    id: Date.now(),
+    name,
+    email,
+    company: company || '',
+    service: service || '',
+    message,
+    status: 'NEW',
+    created_at: new Date().toISOString(),
+  };
+
+  store.contact_inquiries.unshift(inquiryRecord);
+  writeFallbackStore(store);
+
+  // Attempt MySQL write if available
+  try {
+    await pool.query(
+      `INSERT INTO contact_inquiries (name, email, company, service, message, status, created_at)
+       VALUES (?, ?, ?, ?, ?, 'NEW', NOW())`,
+      [name, email, company || null, service || null, message]
+    );
+  } catch (err) {
+    console.warn('⚠️ Note: MySQL write skipped for inquiry, stored in fallback inquiries vault:', err.message);
+  }
+
+  return inquiryRecord;
+}
+
 // ─── INTERN CERTIFICATES ────────────────────────────────────────────────────
 async function getCertificates() {
   return executeDbOrFallback(
@@ -1079,6 +1140,7 @@ module.exports = {
   updateTestimonial,
   deleteTestimonial,
   getInquiries,
+  saveInquiry,
   updateInquiryStatus,
   deleteInquiry,
   getCertificates,

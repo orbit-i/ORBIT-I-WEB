@@ -1,4 +1,4 @@
-const { pool } = require('../config/db');
+const { saveInquiry } = require('../utils/cmsStorage');
 const { sendContactEmail } = require('../utils/mailer');
 
 async function submitInquiry(req, res) {
@@ -9,21 +9,27 @@ async function submitInquiry(req, res) {
       return res.status(400).json({ error: 'Name, email, and message are required' });
     }
 
-    await pool.query(
-      `INSERT INTO contact_inquiries (name, email, company, service, message, status, created_at)
-       VALUES (?, ?, ?, ?, ?, 'NEW', NOW())`,
-      [name, email, company || null, service || null, message]
-    );
+    const saved = await saveInquiry({
+      name: name.trim(),
+      email: email.trim(),
+      company: (company || '').trim(),
+      service: (service || '').trim(),
+      message: message.trim(),
+    });
 
     // Send email notification asynchronously without blocking response
     sendContactEmail({ name, email, company, service, message }).catch((err) => {
-      console.error('Mail dispatch error:', err.message);
+      console.warn('Mail dispatch note:', err.message);
     });
 
-    return res.status(201).send('Thank you for reaching out. We will contact you within 24 hours.');
+    return res.status(201).json({
+      success: true,
+      message: 'Thank you for reaching out. We will contact you within 24 hours.',
+      inquiry: saved,
+    });
   } catch (error) {
     console.error('Contact inquiry error:', error);
-    return res.status(500).json({ error: error.message || 'Server error processing contact inquiry' });
+    return res.status(500).json({ error: 'Server error processing contact inquiry' });
   }
 }
 

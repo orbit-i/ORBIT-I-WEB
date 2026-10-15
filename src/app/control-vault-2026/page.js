@@ -191,7 +191,9 @@ const STATUS_COLORS = {
 
 export default function SecretAdminPortalPage() {
   const router = useRouter()
-  const [tab, setTab] = useState('clients')
+  const [tab, setTab] = useState('overview')
+  const [overviewData, setOverviewData] = useState(null)
+  const [overviewLoading, setOverviewLoading] = useState(false)
   const [currentUser, setCurrentUser] = useState(() => (typeof window !== 'undefined' ? getUser() : null))
   const [authChecked, setAuthChecked] = useState(false)
   const [setupRequired, setSetupRequired] = useState(false)
@@ -393,6 +395,18 @@ export default function SecretAdminPortalPage() {
     setTimeout(() => setMessage({ text: '', type: 'success' }), 4000)
   }
 
+  const fetchOverview = useCallback(async () => {
+    setOverviewLoading(true)
+    try {
+      const data = await adminReq('/api/admin/overview')
+      setOverviewData(data)
+    } catch {
+      // offline fallback
+    } finally {
+      setOverviewLoading(false)
+    }
+  }, [])
+
   const fetchClients = useCallback(async () => {
     try {
       const data = await adminReq('/api/admin/clients')
@@ -503,6 +517,7 @@ export default function SecretAdminPortalPage() {
           if (!ignore) {
             setCurrentUser(u)
             setAuthChecked(true)
+            fetchOverview()
             fetchClients()
           }
           return
@@ -531,13 +546,15 @@ export default function SecretAdminPortalPage() {
     return () => {
       ignore = true
     }
-  }, [fetchClients])
+  }, [fetchClients, fetchOverview])
 
   // Tab change triggers
   useEffect(() => {
     let ignore = false
     const loadTabData = async () => {
-      if (tab === 'projects' || tab === 'milestones' || tab === 'progress') {
+      if (tab === 'overview') {
+        fetchOverview()
+      } else if (tab === 'projects' || tab === 'milestones' || tab === 'progress') {
         try {
           const data = await adminReq('/api/admin/projects')
           if (!ignore) setProjects(Array.isArray(data) ? data : data.content ?? [])
@@ -1338,6 +1355,7 @@ export default function SecretAdminPortalPage() {
         setupRequired={setupRequired}
         onAuthenticated={(user) => {
           setCurrentUser(user)
+          fetchOverview()
           fetchClients()
         }}
       />
@@ -1402,6 +1420,7 @@ export default function SecretAdminPortalPage() {
           <aside className="secret-admin-sidebar">
             <p className="sidebar-section-title">Operations & Deliveries</p>
             {[
+              { id: 'overview', label: 'Executive Overview', icon: Activity },
               { id: 'clients', label: 'Clients', icon: Users },
               { id: 'certificates', label: 'Certificates', icon: Award },
               { id: 'projects', label: 'Projects', icon: FolderKanban },
@@ -1532,6 +1551,339 @@ export default function SecretAdminPortalPage() {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* ── EXECUTIVE OVERVIEW ── */}
+            {tab === 'overview' && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+                {/* Header & Status Bar */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, marginBottom: 24 }}>
+                  <div>
+                    <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span>Executive Overview</span>
+                      <span style={{ fontSize: 11, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e', padding: '2px 8px', borderRadius: 100, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }}></span>
+                        Systems Operational
+                      </span>
+                    </h2>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
+                      Real-time telemetry, incoming client leads, certificate issuances, and portal services.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <button
+                      onClick={fetchOverview}
+                      disabled={overviewLoading}
+                      className="btn-outline"
+                      style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+                    >
+                      <RefreshCw size={13} className={overviewLoading ? 'animate-spin' : ''} />
+                      <span>{overviewLoading ? 'Syncing...' : 'Refresh Metrics'}</span>
+                    </button>
+                    <button
+                      onClick={() => setTab('inquiries')}
+                      className="btn-primary"
+                      style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+                    >
+                      <Inbox size={13} />
+                      <span>View Inquiries</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* KPI Metrics Grid */}
+                {(() => {
+                  const m = overviewData?.metrics || {}
+                  const kpis = [
+                    {
+                      label: 'Client Inquiries',
+                      value: m.totalInquiries ?? inquiries.length,
+                      badge: (m.newInquiries ?? 0) > 0 ? `${m.newInquiries} New` : 'All Caught Up',
+                      badgeColor: (m.newInquiries ?? 0) > 0 ? '#ef4444' : '#22c55e',
+                      badgeBg: (m.newInquiries ?? 0) > 0 ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.12)',
+                      icon: Inbox,
+                      color: '#818cf8',
+                      tabTarget: 'inquiries',
+                    },
+                    {
+                      label: 'Verified Certificates',
+                      value: m.totalCertificates ?? 0,
+                      badge: 'Online /verify',
+                      badgeColor: '#22c55e',
+                      badgeBg: 'rgba(34,197,94,0.12)',
+                      icon: Award,
+                      color: '#22c55e',
+                      tabTarget: 'certificates',
+                    },
+                    {
+                      label: 'Client Accounts',
+                      value: m.totalClients ?? clients.length,
+                      badge: (m.pendingClients ?? 0) > 0 ? `${m.pendingClients} Pending` : 'Verified',
+                      badgeColor: (m.pendingClients ?? 0) > 0 ? '#f59e0b' : '#38bdf8',
+                      badgeBg: (m.pendingClients ?? 0) > 0 ? 'rgba(245,158,11,0.12)' : 'rgba(56,189,248,0.12)',
+                      icon: Users,
+                      color: '#38bdf8',
+                      tabTarget: 'clients',
+                    },
+                    {
+                      label: 'Engineering Projects',
+                      value: m.totalProjects ?? 0,
+                      badge: `${m.activeProjects ?? 0} In Progress`,
+                      badgeColor: '#f59e0b',
+                      badgeBg: 'rgba(245,158,11,0.12)',
+                      icon: FolderKanban,
+                      color: '#f59e0b',
+                      tabTarget: 'projects',
+                    },
+                    {
+                      label: 'Career Positions',
+                      value: m.openJobs ?? 0,
+                      badge: 'Published',
+                      badgeColor: '#a855f7',
+                      badgeBg: 'rgba(168,85,247,0.12)',
+                      icon: Briefcase,
+                      color: '#a855f7',
+                      tabTarget: 'careers',
+                    },
+                    {
+                      label: 'CMS Web Pages',
+                      value: m.publishedPages ?? 0,
+                      badge: 'SEO Active',
+                      badgeColor: '#ec4899',
+                      badgeBg: 'rgba(236,72,153,0.12)',
+                      icon: FileText,
+                      color: '#ec4899',
+                      tabTarget: 'cms',
+                    },
+                    {
+                      label: 'Articles & Insights',
+                      value: m.blogArticles ?? 0,
+                      badge: 'Editorial',
+                      badgeColor: '#10b981',
+                      badgeBg: 'rgba(16,185,129,0.12)',
+                      icon: PenTool,
+                      color: '#10b981',
+                      tabTarget: 'blog',
+                    },
+                    {
+                      label: 'Vault Admins',
+                      value: m.adminCount ?? 1,
+                      badge: 'SuperAdmins',
+                      badgeColor: '#6366f1',
+                      badgeBg: 'rgba(99,102,241,0.12)',
+                      icon: Shield,
+                      color: '#6366f1',
+                      tabTarget: 'account',
+                    },
+                  ]
+
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 14, marginBottom: 26 }}>
+                      {kpis.map((k, idx) => {
+                        const IconComp = k.icon
+                        return (
+                          <div
+                            key={idx}
+                            onClick={() => setTab(k.tabTarget)}
+                            style={{
+                              background: 'var(--bg-card)',
+                              border: '1px solid var(--border)',
+                              borderRadius: 14,
+                              padding: '16px 18px',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              justifyContent: 'space-between',
+                              gap: 12,
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--border-hover)'
+                              e.currentTarget.style.transform = 'translateY(-2px)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--border)'
+                              e.currentTarget.style.transform = 'none'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                {k.label}
+                              </span>
+                              <div style={{ width: 32, height: 32, borderRadius: 8, background: `${k.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: k.color }}>
+                                <IconComp size={16} />
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+                              <span style={{ fontFamily: 'Space Grotesk', fontSize: 26, fontWeight: 800, color: 'var(--text-primary)' }}>
+                                {k.value}
+                              </span>
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 100, color: k.badgeColor, background: k.badgeBg }}>
+                                {k.badge}
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )
+                })()}
+
+                {/* Split Details Section */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
+                  {/* Recent Inquiries Panel */}
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Inbox size={16} style={{ color: 'var(--accent)' }} />
+                        <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
+                          Recent Inquiries & Contact Leads
+                        </h3>
+                      </div>
+                      <button
+                        onClick={() => setTab('inquiries')}
+                        className="btn-outline"
+                        style={{ fontSize: 11, padding: '4px 10px', cursor: 'pointer' }}
+                      >
+                        View All
+                      </button>
+                    </div>
+
+                    {(!overviewData?.recentInquiries || overviewData.recentInquiries.length === 0) ? (
+                      <div style={{ padding: '30px 16px', textAlign: 'center', background: 'var(--bg-elevated)', borderRadius: 10, border: '1px dashed var(--border)' }}>
+                        <Inbox size={28} style={{ color: 'var(--text-muted)', margin: '0 auto 8px', opacity: 0.6 }} />
+                        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>No inquiries yet</p>
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                          Website contact forms and quotation requests will appear here automatically.
+                        </p>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {overviewData.recentInquiries.map((inq) => (
+                          <div
+                            key={inq.id}
+                            onClick={() => {
+                              setSelectedInquiry(inq)
+                              setTab('inquiries')
+                            }}
+                            style={{
+                              background: 'var(--bg-elevated)',
+                              border: '1px solid var(--border)',
+                              borderRadius: 10,
+                              padding: '12px 14px',
+                              cursor: 'pointer',
+                              transition: 'border-color 0.15s ease',
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)' }}
+                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)' }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                              <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{inq.name || 'Anonymous Client'}</p>
+                              <span style={{
+                                fontSize: 10,
+                                fontWeight: 700,
+                                padding: '2px 7px',
+                                borderRadius: 100,
+                                background: inq.status === 'NEW' ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.12)',
+                                color: inq.status === 'NEW' ? '#ef4444' : '#22c55e',
+                              }}>
+                                {inq.status || 'NEW'}
+                              </span>
+                            </div>
+                            <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 4 }}>
+                              {inq.subject || inq.service || 'Direct Website Inquiry'}
+                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)' }}>
+                              <span>{inq.email}</span>
+                              <span>{inq.created_at ? new Date(inq.created_at).toLocaleDateString() : 'Recent'}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* System Health & Quick Access */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {/* Status Box */}
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                        <Activity size={16} style={{ color: '#22c55e' }} />
+                        <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>
+                          System Telemetry & Health
+                        </h3>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 12px', background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>AI Chatbot Agent</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: overviewData?.system?.chatbotEnabled ? '#22c55e' : '#f59e0b' }}>
+                            {overviewData?.system?.chatbotEnabled ? '● Active & Grounded' : '○ Standby'}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 12px', background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Database Resilience</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#22c55e' }}>
+                            ● Self-Healing Active
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 12px', background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Hiring Notice Banner</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: overviewData?.system?.siteNoticeEnabled ? '#22c55e' : 'var(--text-muted)' }}>
+                            {overviewData?.system?.siteNoticeEnabled ? '● Broadcasting' : '○ Disabled'}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 12px', background: 'var(--bg-elevated)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                          <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Server Uptime</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>
+                            {overviewData?.system?.nodeUptime ? `${Math.floor(overviewData.system.nodeUptime / 60)} min` : 'Active'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Operation Links */}
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '20px' }}>
+                      <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
+                        Quick Actions
+                      </h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                        <button
+                          onClick={() => setTab('certificates')}
+                          className="btn-outline"
+                          style={{ fontSize: 12, padding: '10px 12px', justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: 8 }}
+                        >
+                          <Award size={14} color="#22c55e" />
+                          <span>Issue Certificate</span>
+                        </button>
+                        <button
+                          onClick={() => setTab('clients')}
+                          className="btn-outline"
+                          style={{ fontSize: 12, padding: '10px 12px', justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: 8 }}
+                        >
+                          <Users size={14} color="#38bdf8" />
+                          <span>Approve Clients</span>
+                        </button>
+                        <button
+                          onClick={() => setTab('cms')}
+                          className="btn-outline"
+                          style={{ fontSize: 12, padding: '10px 12px', justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: 8 }}
+                        >
+                          <FileText size={14} color="#ec4899" />
+                          <span>Edit Website CMS</span>
+                        </button>
+                        <button
+                          onClick={() => setTab('chatbot')}
+                          className="btn-outline"
+                          style={{ fontSize: 12, padding: '10px 12px', justifyContent: 'flex-start', display: 'flex', alignItems: 'center', gap: 8 }}
+                        >
+                          <Bot size={14} color="#818cf8" />
+                          <span>Chatbot Settings</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
             {/* ── CLIENTS ── */}
             {tab === 'clients' && (

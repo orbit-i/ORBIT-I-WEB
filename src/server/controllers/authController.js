@@ -34,6 +34,8 @@ async function register(req, res) {
   }
 }
 
+}
+
 async function login(req, res) {
   try {
     const { email, password } = req.body;
@@ -42,16 +44,41 @@ async function login(req, res) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const [rows] = await pool.query(
-      'SELECT id, name, email, password, phone, company, approved, role FROM client_information WHERE email = ?',
-      [email]
-    );
+    const cleanEmail = email.trim().toLowerCase();
+    let user = null;
 
-    if (rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
+    // 1. Try MySQL Database
+    try {
+      const [rows] = await pool.query(
+        'SELECT id, name, email, password, phone, company, approved, role FROM client_information WHERE LOWER(email) = ?',
+        [cleanEmail]
+      );
+      if (rows && rows.length > 0) {
+        user = rows[0];
+      }
+    } catch (dbErr) {
+      console.warn('MySQL auth query unavailable, checking fallback store:', dbErr.message);
     }
 
-    const user = rows[0];
+    // 2. Fallback to admin storage
+    if (!user) {
+      const { getAdminByEmail } = require('../utils/cmsStorage');
+      const fallbackAdmin = await getAdminByEmail(cleanEmail);
+      if (fallbackAdmin) {
+        user = {
+          id: fallbackAdmin.id,
+          name: fallbackAdmin.name,
+          email: fallbackAdmin.email,
+          password: fallbackAdmin.password,
+          role: fallbackAdmin.role || 'ADMIN',
+          approved: 1,
+        };
+      }
+    }
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -66,6 +93,7 @@ async function login(req, res) {
       {
         sub: user.email,
         email: user.email,
+        name: user.name,
         role: user.role,
       },
       JWT_SECRET,
@@ -80,7 +108,7 @@ async function login(req, res) {
     });
   } catch (error) {
     console.error('Login error:', error);
-    return res.status(500).json({ error: error.message || 'Server error during login' });
+    return res.status(401).json({ error: 'Invalid email or password.' });
   }
 }
 

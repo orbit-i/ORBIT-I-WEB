@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { pool } from '@/server/config/db';
+import { saveInquiry } from '@/server/utils/cmsStorage';
 import { sendContactEmail } from '@/server/utils/mailer';
 
 export async function POST(request) {
@@ -11,19 +11,25 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Name, email, and message are required' }, { status: 400 });
     }
 
-    await pool.query(
-      `INSERT INTO contact_inquiries (name, email, company, service, message, status, created_at)
-       VALUES (?, ?, ?, ?, ?, 'NEW', NOW())`,
-      [name, email, company || null, service || null, message]
-    );
-
-    sendContactEmail({ name, email, company, service, message }).catch((err) => {
-      console.error('Mail dispatch error:', err.message);
+    const saved = await saveInquiry({
+      name: name.trim(),
+      email: email.trim(),
+      company: (company || '').trim(),
+      service: (service || '').trim(),
+      message: message.trim(),
     });
 
-    return new Response('Thank you for reaching out. We will contact you within 24 hours.', { status: 201 });
+    sendContactEmail({ name, email, company, service, message }).catch((err) => {
+      console.warn('Mail dispatch note:', err.message);
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Thank you for reaching out. We will contact you within 24 hours.',
+      inquiry: saved,
+    }, { status: 201 });
   } catch (error) {
     console.error('Contact inquiry error:', error);
-    return NextResponse.json({ error: error.message || 'Server error processing contact inquiry' }, { status: 500 });
+    return NextResponse.json({ error: 'Unable to submit inquiry at this moment. Please email contactus@orbit-i.tech directly.' }, { status: 500 });
   }
 }

@@ -127,25 +127,25 @@ export default function AIChatbot() {
           bottom: 92px;
           right: 24px;
           z-index: 9999;
-          width: 380px;
+          width: 390px;
           max-width: calc(100vw - 32px);
           height: 540px;
           max-height: calc(100vh - 120px);
-          background: rgba(13, 17, 23, 0.95);
+          background: var(--bg-card);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.12);
+          border: 1px solid var(--border-hover);
           border-radius: 20px;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.2);
+          box-shadow: 0 20px 50px var(--card-shadow), 0 0 25px var(--accent-glow);
           overflow: hidden;
           font-family: 'Inter', sans-serif;
         }
         .chat-header {
           padding: 14px 18px;
-          background: rgba(255, 255, 255, 0.03);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          background: var(--bg-elevated);
+          border-bottom: 1px solid var(--border);
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -157,9 +157,10 @@ export default function AIChatbot() {
           display: flex;
           flex-direction: column;
           gap: 12px;
+          background: var(--bg);
         }
         .chat-bubble {
-          max-width: 82%;
+          max-width: 84%;
           padding: 10px 14px;
           border-radius: 14px;
           font-size: 13px;
@@ -168,31 +169,33 @@ export default function AIChatbot() {
         }
         .chat-bubble-user {
           align-self: flex-end;
-          background: linear-gradient(135deg, #6366f1, #4f46e5);
+          background: linear-gradient(135deg, var(--accent), #4f46e5);
           color: #ffffff;
           border-bottom-right-radius: 4px;
         }
         .chat-bubble-bot {
           align-self: flex-start;
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          color: #e2e8f0;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          color: var(--text-primary);
           border-bottom-left-radius: 4px;
         }
         .quick-prompt-btn {
           font-size: 11px;
-          padding: 5px 10px;
+          padding: 6px 12px;
           border-radius: 100px;
-          background: rgba(99, 102, 241, 0.12);
-          border: 1px solid rgba(99, 102, 241, 0.25);
-          color: #a5b4fc;
+          background: var(--bg-card);
+          border: 1px solid var(--border-hover);
+          color: var(--text-primary);
           cursor: pointer;
           white-space: nowrap;
           transition: all 0.15s;
+          font-weight: 500;
         }
         .quick-prompt-btn:hover {
-          background: rgba(99, 102, 241, 0.25);
+          background: var(--accent);
           color: #fff;
+          border-color: var(--accent);
         }
       `}</style>
 
@@ -286,8 +289,8 @@ export default function AIChatbot() {
             <div
               style={{
                 padding: '8px 12px',
-                background: 'rgba(0, 0, 0, 0.2)',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                background: 'var(--bg-elevated)',
+                borderBottom: '1px solid var(--border)',
                 display: 'flex',
                 gap: 6,
                 overflowX: 'auto',
@@ -320,7 +323,7 @@ export default function AIChatbot() {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: 4,
-                            background: '#6366f1',
+                            background: 'var(--accent)',
                             color: '#fff',
                             padding: '4px 10px',
                             borderRadius: 6,
@@ -335,15 +338,15 @@ export default function AIChatbot() {
                       </div>
                     )}
                   </div>
-                  <span style={{ fontSize: 9, color: '#64748b', marginTop: 3, padding: '0 4px' }}>{m.time}</span>
+                  <span style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 3, padding: '0 4px' }}>{m.time}</span>
                 </div>
               ))}
 
               {isTyping && (
                 <div className="chat-bubble chat-bubble-bot" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '8px 14px' }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#818cf8', animation: 'pulse 1s infinite' }} />
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#818cf8', animation: 'pulse 1s infinite 0.2s' }} />
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#818cf8', animation: 'pulse 1s infinite 0.4s' }} />
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', animation: 'pulse 1s infinite' }} />
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', animation: 'pulse 1s infinite 0.2s' }} />
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', animation: 'pulse 1s infinite 0.4s' }} />
                 </div>
               )}
               <div ref={messagesEndRef} />
@@ -357,8 +360,8 @@ export default function AIChatbot() {
               }}
               style={{
                 padding: '12px 14px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                background: 'var(--bg-elevated)',
+                borderTop: '1px solid var(--border)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
@@ -371,11 +374,11 @@ export default function AIChatbot() {
                 onChange={(e) => setInputText(e.target.value)}
                 style={{
                   flex: 1,
-                  background: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
                   borderRadius: 10,
                   padding: '9px 12px',
-                  color: '#f8fafc',
+                  color: 'var(--text-primary)',
                   fontSize: 13,
                   outline: 'none',
                 }}

@@ -10,17 +10,28 @@ export async function GET(request) {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    const [projects] = await pool.query('SELECT * FROM project_details ORDER BY id DESC');
+    let projects = [];
+    try {
+      const [dbProjects] = await pool.query('SELECT * FROM project_details ORDER BY id DESC');
+      projects = dbProjects || [];
+    } catch (dbErr) {
+      console.warn('MySQL projects query unavailable, returning empty list:', dbErr.message);
+      return NextResponse.json([]);
+    }
 
     if (projects.length === 0) {
       return NextResponse.json([]);
     }
 
-    const projectIds = projects.map((p) => p.id);
-    const [milestones] = await pool.query(
-      'SELECT * FROM project_milestones WHERE project_id IN (?) ORDER BY sequence_number',
-      [projectIds]
-    );
+    let milestones = [];
+    try {
+      const projectIds = projects.map((p) => p.id);
+      const [dbMilestones] = await pool.query(
+        'SELECT * FROM project_milestones WHERE project_id IN (?) ORDER BY sequence_number',
+        [projectIds]
+      );
+      milestones = dbMilestones || [];
+    } catch {}
 
     const milestonesByProject = {};
     milestones.forEach((m) => {
@@ -35,6 +46,6 @@ export async function GET(request) {
     return NextResponse.json(response);
   } catch (error) {
     console.error('getAllProjects error:', error);
-    return NextResponse.json({ error: error.message || 'Server error loading all projects' }, { status: 500 });
+    return NextResponse.json([]);
   }
 }

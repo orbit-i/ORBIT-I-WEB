@@ -36,7 +36,6 @@ export async function GET(request, { params }) {
       certificateCode: cert.certificate_code,
     });
   } catch (error) {
-    console.error('Verify certificate error:', error);
-    return NextResponse.json({ error: error.message || 'Server error verifying certificate' }, { status: 500 });
+    return NextResponse.json({ error: 'Unable to verify certificate at this time. Please try again later.' }, { status: 500 });
   }
 }

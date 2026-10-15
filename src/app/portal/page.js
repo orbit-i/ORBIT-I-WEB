@@ -37,7 +37,9 @@ export default function PortalPage() {
       if (data.role === 'ADMIN') router.push(ADMIN_SECRET_PATH)
       else router.push('/portal/dashboard')
     } catch (err) {
-      setError(err.message)
+      const msg = err.message || 'Invalid email or password.'
+      const isDbLeak = /access denied|database|mysql|connection|sql|table|host/i.test(msg)
+      setError(isDbLeak ? 'Invalid email or password. Please verify your credentials.' : msg)
       setStatus('idle')
     }
   }

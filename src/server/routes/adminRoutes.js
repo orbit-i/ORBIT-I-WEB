@@ -19,7 +19,8 @@ router.get('/security/stats', adminController.getSecurityTelemetry);
 router.post('/security/unban', adminController.unbanIp);
 router.post('/cache/clear', adminController.clearCache);
 
-// Operations Management
+// Operations Management & Executive Overview
+router.get('/overview', adminController.getAdminOverview);
 router.get('/clients', adminController.getAllClients);
 router.put('/clients/:id/approve', adminController.approveClient);
 router.get('/projects', adminController.getAllProjects);
