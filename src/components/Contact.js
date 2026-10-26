@@ -42,16 +42,20 @@ export default function Contact() {
   const [status, setStatus] = useState('idle')
   const [focused, setFocused] = useState(null)
 
+  const [errorMessage, setErrorMessage] = useState('')
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setStatus('loading')
+    setErrorMessage('')
     try {
-      await submitContact(form)
+      const { getStoredUtm } = await import('@/lib/utm')
+      await submitContact({ ...form, utm: getStoredUtm() })
       setStatus('success')
       setForm({ name: '', email: '', company: '', service: '', message: '' })
-    } catch {
+    } catch (err) {
+      setErrorMessage(err.message || 'Failed to submit inquiry. Please email us directly at contactus@orbit-i.tech.')
       setStatus('error')
-      setTimeout(() => setStatus('idle'), 3000)
     }
   }
 

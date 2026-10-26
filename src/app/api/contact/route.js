@@ -5,7 +5,7 @@ import { sendContactEmail } from '@/server/utils/mailer';
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { name, email, company, service, message } = body;
+    const { name, email, company, service, message, utm } = body;
 
     if (!name || !email || !message) {
       return NextResponse.json({ error: 'Name, email, and message are required' }, { status: 400 });
@@ -17,9 +17,10 @@ export async function POST(request) {
       company: (company || '').trim(),
       service: (service || '').trim(),
       message: message.trim(),
+      utm: utm || {},
     });
 
-    sendContactEmail({ name, email, company, service, message }).catch((err) => {
+    sendContactEmail({ name, email, company, service, message, utm }).catch((err) => {
       console.warn('Mail dispatch note:', err.message);
     });
 

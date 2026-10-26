@@ -30,11 +30,9 @@ export default function LoadingScreen() {
     }
 
     const steps = [
-      { target: 20, delay: 100 },
-      { target: 45, delay: 400 },
-      { target: 70, delay: 800 },
-      { target: 88, delay: 1200 },
-      { target: 100, delay: 1600 },
+      { target: 45, delay: 50 },
+      { target: 80, delay: 120 },
+      { target: 100, delay: 200 },
     ]
     const stepTimers = steps.map(({ target, delay }) =>
       setTimeout(() => {
@@ -44,7 +42,7 @@ export default function LoadingScreen() {
     const completeTimer = setTimeout(() => {
       if (typeof window !== 'undefined') sessionStorage.setItem('orbit-loaded', 'true')
       if (!ignore) setDone(true)
-    }, 2400)
+    }, 350)
 
     return () => {
       ignore = true

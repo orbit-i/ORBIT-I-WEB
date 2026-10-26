@@ -7,9 +7,9 @@ import Link from 'next/link'
 import { CheckCircle2, ShieldCheck, Globe } from 'lucide-react'
 
 const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 32 },
+  initial: { opacity: 0, y: 24 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.7, delay: 2.8 + delay, ease: [0.76, 0, 0.24, 1] },
+  transition: { duration: 0.5, delay: delay * 0.08, ease: [0.76, 0, 0.24, 1] },
 })
 
 export default function Hero() {
@@ -95,7 +95,7 @@ export default function Hero() {
                   Our Services
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </Link>
-                <button onClick={() => scroll('#team')} className="btn-outline" style={{ fontSize: 13 }}>Meet the Team</button>
+                <Link href="/team" className="btn-outline" style={{ fontSize: 13, textDecoration: 'none' }}>Meet the Team</Link>
                 <Link href="/contact" className="btn-outline" style={{ fontSize: 13, textDecoration: 'none' }}>Contact Us</Link>
               </motion.div>
 
@@ -116,9 +116,9 @@ export default function Hero() {
             {/* Right emblem card */}
             <motion.div
               className="hero-card"
-              initial={{ opacity: 0, x: 30, scale: 0.95 }}
+              initial={{ opacity: 0, x: 20, scale: 0.98 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ duration: 0.8, delay: 3.1, ease: [0.76, 0, 0.24, 1] }}
+              transition={{ duration: 0.6, delay: 0.15, ease: [0.76, 0, 0.24, 1] }}
             >
               <TiltCard style={{ borderRadius: 24, padding: '32px 24px', background: 'var(--bg-card)', border: '1px solid var(--border-hover)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', top: -60, left: '50%', transform: 'translateX(-50%)', width: 240, height: 200, background: 'radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
@@ -165,7 +165,7 @@ export default function Hero() {
           </div>
 
           {/* Scroll indicator */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 3.4 }}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: 0.25 }}
             style={{ display: 'flex', justifyContent: 'center', marginTop: 40 }}>
             <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               onClick={() => scroll('#about')}

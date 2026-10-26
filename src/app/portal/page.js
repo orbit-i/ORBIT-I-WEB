@@ -7,7 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ADMIN_SECRET_PATH } from '@/lib/adminConfig'
 import { loginClient, registerClient, saveToken, isLoggedIn, getUser } from '@/lib/orbitApi'
-import { CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react'
+import { CheckCircle2, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 
 export default function PortalPage() {
   const [tab, setTab] = useState('login')
@@ -17,6 +17,8 @@ export default function PortalPage() {
 
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
   const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '', phone: '', company: '' })
+  const [showLoginPassword, setShowLoginPassword] = useState(false)
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false)
   const [focused, setFocused] = useState(null)
 
   useEffect(() => {
@@ -159,10 +161,36 @@ export default function PortalPage() {
                         </div>
                         <div>
                           <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Password</label>
-                          <input type="password" placeholder="Your password" value={loginForm.password} required
-                            onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                            onFocus={() => setFocused('lpass')} onBlur={() => setFocused(null)}
-                            style={inputStyle('lpass')} />
+                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <input
+                              type={showLoginPassword ? 'text' : 'password'}
+                              placeholder="Your password"
+                              value={loginForm.password}
+                              required
+                              onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                              onFocus={() => setFocused('lpass')}
+                              onBlur={() => setFocused(null)}
+                              style={{ ...inputStyle('lpass'), paddingRight: 42 }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowLoginPassword(!showLoginPassword)}
+                              aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                              style={{
+                                position: 'absolute',
+                                right: 12,
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: 'var(--text-muted)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: 4,
+                              }}
+                            >
+                              {showLoginPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          </div>
                         </div>
                         <button type="submit" disabled={status === 'loading'} className="btn-primary"
                           style={{ width: '100%', justifyContent: 'center', padding: '13px', fontSize: 14, marginTop: 4, opacity: status === 'loading' ? 0.7 : 1, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -191,14 +219,40 @@ export default function PortalPage() {
                         </div>
                         <div>
                           <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Password *</label>
-                          <input type="password" placeholder="Create a password" value={registerForm.password} required
-                            onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
-                            onFocus={() => setFocused('rpass')} onBlur={() => setFocused(null)}
-                            style={inputStyle('rpass')} />
+                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <input
+                              type={showRegisterPassword ? 'text' : 'password'}
+                              placeholder="Create a password"
+                              value={registerForm.password}
+                              required
+                              onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                              onFocus={() => setFocused('rpass')}
+                              onBlur={() => setFocused(null)}
+                              style={{ ...inputStyle('rpass'), paddingRight: 42 }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                              aria-label={showRegisterPassword ? 'Hide password' : 'Show password'}
+                              style={{
+                                position: 'absolute',
+                                right: 12,
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: 'var(--text-muted)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: 4,
+                              }}
+                            >
+                              {showRegisterPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                          </div>
                         </div>
                         <div>
                           <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>Phone Number</label>
-                          <input type="text" placeholder="+92 300 0000000" value={registerForm.phone}
+                          <input type="text" placeholder="+92 319 0375751" value={registerForm.phone}
                             onChange={(e) => setRegisterForm({ ...registerForm, phone: e.target.value })}
                             onFocus={() => setFocused('rphone')} onBlur={() => setFocused(null)}
                             style={inputStyle('rphone')} />

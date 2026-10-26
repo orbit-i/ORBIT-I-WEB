@@ -261,8 +261,8 @@ export default function SecretAdminPortalPage() {
     enabled: true,
     bot_name: 'ORBIT-I AI Assistant',
     greeting: 'Salam! Welcome to ORBIT-I. How can I assist you today?',
-    contact_phone: '+92 300 0000000',
-    contact_email: 'contact@orbit-i.tech',
+    contact_phone: '+92 319 0375751',
+    contact_email: 'contactus@orbit-i.tech',
   })
 
   // SEO Studio State

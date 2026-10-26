@@ -2,6 +2,10 @@ import './globals.css'
 import './responsive.css'
 import SiteNoticeBar from '@/components/SiteNoticeBar'
 import AIChatbot from '@/components/AIChatbot'
+import ScrollProgressBar from '@/components/ScrollProgressBar'
+import UtmTracker from '@/components/UtmTracker'
+import BackToTop from '@/components/BackToTop'
+import FloatingContactButton from '@/components/FloatingContactButton'
 
 export const metadata = {
   metadataBase: new URL('https://orbit-i.tech'),
@@ -179,8 +183,17 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+        <a href="#main-content" className="skip-to-content">
+          Skip to main content
+        </a>
+        <ScrollProgressBar />
+        <UtmTracker />
         <SiteNoticeBar />
-        {children}
+        <div id="main-content">
+          {children}
+        </div>
+        <FloatingContactButton />
+        <BackToTop />
         <AIChatbot />
       </body>
     </html>

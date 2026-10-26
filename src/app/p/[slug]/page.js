@@ -27,7 +27,7 @@ export default async function DynamicCmsPage({ params }) {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: '85vh', background: 'var(--bg)', paddingTop: 120, paddingBottom: 80, paddingLeft: 24, paddingRight: 24 }}>
+      <main style={{ minHeight: '85vh', background: 'var(--bg)', paddingTop: 48, paddingBottom: 80, paddingLeft: 24, paddingRight: 24 }}>
         <article style={{ maxWidth: 880, margin: '0 auto', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 24, padding: '48px 36px', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}>
           <div style={{ marginBottom: 28, borderBottom: '1px solid var(--border)', paddingBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>

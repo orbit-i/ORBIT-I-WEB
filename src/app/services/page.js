@@ -10,7 +10,7 @@ export default function ServicesPage() {
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: 100, minHeight: '100vh', background: 'var(--bg)' }}>
+      <main style={{ minHeight: '100vh', background: 'var(--bg)' }}>
         {/* Hero */}
         <section style={{ padding: '48px 0 60px', position: 'relative', overflow: 'hidden' }}>
           <div className="grid-bg" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />

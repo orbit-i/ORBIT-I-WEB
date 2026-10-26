@@ -14,7 +14,7 @@ export default function NotFound() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '120px 24px 60px',
+        padding: '60px 24px 60px',
         position: 'relative',
         overflow: 'hidden',
         background: 'radial-gradient(circle at 50% 30%, rgba(99,102,241,0.12) 0%, rgba(7,13,26,1) 70%)',

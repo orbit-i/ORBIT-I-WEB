@@ -16,7 +16,7 @@ export default async function BlogListingPage() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: '85vh', background: 'var(--bg)', paddingTop: 120, paddingBottom: 80, paddingLeft: 24, paddingRight: 24 }}>
+      <main style={{ minHeight: '85vh', background: 'var(--bg)', paddingTop: 48, paddingBottom: 80, paddingLeft: 24, paddingRight: 24 }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 50 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.12em', padding: '4px 12px', background: 'var(--accent-glow)', borderRadius: 100, border: '1px solid var(--border-hover)' }}>

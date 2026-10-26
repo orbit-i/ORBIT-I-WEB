@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { careerPositions } from '@/data/careersData'
+import { getStoredUtm } from '@/lib/utm'
 import {
   Briefcase,
   Globe,
@@ -157,6 +158,7 @@ export default function CareersPage() {
       payload.append('category', currentRole ? currentRole.category : 'internship')
       payload.append('linkedin', formData.linkedin.trim())
       payload.append('coverNote', formData.coverNote.trim())
+      payload.append('utm', JSON.stringify(getStoredUtm()))
       payload.append('cv', cvFile)
 
       const res = await fetch('/api/careers/apply', {
@@ -181,7 +183,7 @@ export default function CareersPage() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingTop: 110, paddingBottom: 80 }}>
+      <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingTop: 48, paddingBottom: 80 }}>
         
         {/* HERO SECTION */}
         <section className="container" style={{ textAlign: 'center', marginBottom: 56, position: 'relative' }}>
@@ -805,7 +807,7 @@ export default function CareersPage() {
                         type="tel"
                         name="phone"
                         required
-                        placeholder="+92 300 0000000"
+                        placeholder="+92 319 0375751"
                         value={formData.phone}
                         onChange={handleInputChange}
                         style={{

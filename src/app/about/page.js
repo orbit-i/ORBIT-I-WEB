@@ -35,7 +35,7 @@ export default function AboutPage() {
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: 100, minHeight: '100vh', background: 'var(--bg)' }}>
+      <main style={{ minHeight: '100vh', background: 'var(--bg)' }}>
         {/* Hero Section */}
         <section style={{ padding: '48px 0 64px', position: 'relative', overflow: 'hidden' }}>
           <div className="grid-bg" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />

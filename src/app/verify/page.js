@@ -55,7 +55,7 @@ export default function VerifyPage() {
           color: var(--text-primary);
         }
         .verify-main {
-          padding-top: 120px;
+          padding-top: 48px;
           padding-bottom: 80px;
           position: relative;
           overflow: hidden;

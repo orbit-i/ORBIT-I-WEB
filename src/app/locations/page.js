@@ -77,7 +77,7 @@ export default function LocationsPage() {
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: 100, minHeight: '100vh', background: 'var(--bg)' }}>
+      <main style={{ minHeight: '100vh', background: 'var(--bg)' }}>
         <section style={{ padding: '48px 0 60px', position: 'relative' }}>
           <div className="grid-bg" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
           <div className="container" style={{ position: 'relative', textAlign: 'center', maxWidth: 880 }}>

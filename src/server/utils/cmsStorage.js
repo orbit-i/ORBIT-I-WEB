@@ -303,8 +303,8 @@ const DEFAULT_STORE = {
     enabled: true,
     bot_name: 'ORBIT-I AI Assistant',
     greeting: 'Salam! Welcome to ORBIT-I. How can I assist you with our AI services, web architecture, internships, or certificate verification today?',
-    contact_phone: '+92 300 0000000',
-    contact_email: 'contact@orbit-i.tech',
+    contact_phone: '+92 319 0375751',
+    contact_email: 'contactus@orbit-i.tech',
   },
 };
 
@@ -553,8 +553,25 @@ async function saveCareerJob(data) {
     },
     () => {
       const store = readFallbackStore();
-      const id = Date.now();
-      const newJob = { id, ...data, is_open: data.is_open ? 1 : 0, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+      const { id: incomingId, ...cleanData } = data;
+      const id = (incomingId && String(incomingId) !== 'null' && String(incomingId) !== 'undefined')
+        ? incomingId
+        : (cleanData.slug || 'job_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
+      const newJob = {
+        ...cleanData,
+        id,
+        is_open: cleanData.is_open ? 1 : 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      const existingIdx = (store.careers_jobs || []).findIndex(
+        (j) => String(j.id) === String(id) || (cleanData.slug && j.slug === cleanData.slug)
+      );
+      if (existingIdx !== -1) {
+        store.careers_jobs[existingIdx] = { ...store.careers_jobs[existingIdx], ...newJob };
+        writeFallbackStore(store);
+        return store.careers_jobs[existingIdx];
+      }
       store.careers_jobs.unshift(newJob);
       writeFallbackStore(store);
       return newJob;
@@ -576,7 +593,7 @@ async function updateCareerJob(id, data) {
     },
     () => {
       const store = readFallbackStore();
-      const index = store.careers_jobs.findIndex((j) => String(j.id) === String(id));
+      const index = (store.careers_jobs || []).findIndex((j) => String(j.id) === String(id) || String(j.slug) === String(id));
       if (index !== -1) {
         store.careers_jobs[index] = { ...store.careers_jobs[index], ...data, updated_at: new Date().toISOString() };
         writeFallbackStore(store);
@@ -588,14 +605,17 @@ async function updateCareerJob(id, data) {
 }
 
 async function deleteCareerJob(id) {
+  if (!id || id === 'null' || id === 'undefined') {
+    return false;
+  }
   return executeDbOrFallback(
     async () => {
-      await pool.query('DELETE FROM careers_jobs WHERE id = ?', [id]);
+      await pool.query('DELETE FROM careers_jobs WHERE id = ? OR slug = ?', [id, id]);
       return true;
     },
     () => {
       const store = readFallbackStore();
-      store.careers_jobs = store.careers_jobs.filter((j) => String(j.id) !== String(id));
+      store.careers_jobs = (store.careers_jobs || []).filter((j) => j && String(j.id) !== String(id) && String(j.slug) !== String(id));
       writeFallbackStore(store);
       return true;
     }
@@ -1078,23 +1098,26 @@ function getHiringBanners() {
 
 function saveHiringBanner(data) {
   const store = readFallbackStore();
-  if (data.id) {
-    const idx = store.hiring_banners.findIndex((b) => String(b.id) === String(data.id));
+  const { id: incomingId, ...cleanData } = data;
+  if (incomingId && String(incomingId) !== 'null' && String(incomingId) !== 'undefined') {
+    const idx = (store.hiring_banners || []).findIndex((b) => String(b.id) === String(incomingId));
     if (idx !== -1) {
-      store.hiring_banners[idx] = { ...store.hiring_banners[idx], ...data, updated_at: new Date().toISOString() };
+      store.hiring_banners[idx] = { ...store.hiring_banners[idx], ...cleanData, updated_at: new Date().toISOString() };
       writeFallbackStore(store);
       return store.hiring_banners[idx];
     }
   }
-  const newBanner = { id: Date.now(), ...data, created_at: new Date().toISOString() };
+  const id = Date.now();
+  const newBanner = { ...cleanData, id, created_at: new Date().toISOString() };
   store.hiring_banners.unshift(newBanner);
   writeFallbackStore(store);
   return newBanner;
 }
 
 function deleteHiringBanner(id) {
+  if (!id || id === 'null' || id === 'undefined') return false;
   const store = readFallbackStore();
-  store.hiring_banners = (store.hiring_banners || []).filter((b) => String(b.id) !== String(id));
+  store.hiring_banners = (store.hiring_banners || []).filter((b) => b && String(b.id) !== String(id));
   writeFallbackStore(store);
   return true;
 }

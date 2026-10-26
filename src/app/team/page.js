@@ -154,7 +154,7 @@ export default function TeamPage() {
   return (
     <>
       <Navbar />
-      <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingTop: 100, paddingBottom: 100 }}>
+      <main style={{ minHeight: '100vh', background: 'var(--bg)', paddingTop: 0, paddingBottom: 100 }}>
         {/* Header Section */}
         <section style={{ padding: '48px 0 60px', position: 'relative', overflow: 'hidden' }}>
           <div className="grid-bg" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />

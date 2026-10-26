@@ -3,8 +3,9 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import TiltCard from '@/components/TiltCard'
 import Link from 'next/link'
-import { CheckCircle2, Sparkles, MapPin, ArrowRight, ArrowLeft } from 'lucide-react'
+import { CheckCircle2, Sparkles, MapPin, ArrowRight, ArrowLeft, Clock } from 'lucide-react'
 import { servicesList, getServiceBySlug } from '@/data/servicesData'
+import ExpandableFaq from '@/components/ExpandableFaq'
 
 export function generateStaticParams() {
   return servicesList.map((s) => ({ slug: s.slug }))
@@ -170,6 +171,9 @@ export default async function ServiceDetailPage({ params }) {
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span className="tag"><span className="dot" />{service.category}</span>
                 <span className="tag">SECP Verified Enterprise Delivery</span>
+                <span className="tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <Clock size={12} /> Last Updated: October 2026
+                </span>
               </div>
 
               <h1 style={{ fontFamily: 'Space Grotesk', fontSize: 'clamp(32px, 5vw, 52px)', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.15 }}>
@@ -274,25 +278,15 @@ export default async function ServiceDetailPage({ params }) {
               </div>
             </div>
 
-            {/* FAQs */}
+            {/* Expandable FAQs */}
             {service.faqs && service.faqs.length > 0 && (
-              <div style={{ marginTop: 40 }}>
-                <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>
-                  Frequently Asked Questions
-                </h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {service.faqs.map((faq, i) => (
-                    <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: 24 }}>
-                      <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
-                        {faq.q}
-                      </h3>
-                      <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-                        {faq.a}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <ExpandableFaq
+                faqs={service.faqs}
+                title="Frequently Asked Questions"
+                subtitle={`Common architectural, deployment, and SLA inquiries regarding ${service.title}.`}
+                showLastUpdated={true}
+                lastUpdatedDate="October 2026"
+              />
             )}
           </div>
         </section>
