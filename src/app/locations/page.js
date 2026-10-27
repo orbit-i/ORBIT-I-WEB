@@ -9,6 +9,7 @@ import { MapPin, ArrowRight } from 'lucide-react'
 const locations = [
   {
     city: 'Nawabshah, Sindh',
+    address: 'Nawabshah, Sindh, Pakistan',
     role: 'Corporate Headquarters & Core Engineering Lab',
     desc: 'Our registered headquarters under SECP. Nawabshah serves as our primary engineering facility where our core architecture, autonomous AI frameworks, and foundational software systems are researched, prototyped, and tested.',
     servicesOffered: ['Enterprise AI & Machine Learning', 'Custom Web Platforms', 'Full-Stack Software Architecture', 'Mobile Apps (iOS & Android)', 'SECP Verifiable Software Solutions'],
@@ -17,19 +18,12 @@ const locations = [
   },
   {
     city: 'Karachi, Sindh',
+    address: 'Karachi, Sindh, Pakistan',
     role: 'Executive Branch & Metropolitan Commercial Office',
     desc: 'Our Karachi branch leads corporate enterprise partnerships, high-volume fintech integrations, client accounts, and metropolitan tech implementations for startups and corporations.',
     servicesOffered: ['Fintech & Payment Gateways (JazzCash, EasyPaisa, Stripe)', 'Enterprise ERP & CRM Systems', 'High-Traffic Web Applications', 'Cloud & DevOps Infrastructures'],
-    badge: 'Branch Office',
+    badge: 'Regional Branch',
     highlight: true,
-  },
-  {
-    city: 'Hyderabad, Sindh',
-    role: 'Regional Enterprise & Higher-Ed Digital Solutions',
-    desc: 'Providing software engineering services, custom university portals, medical clinic management platforms, and regional eCommerce applications for organizations throughout Hyderabad and Kotri.',
-    servicesOffered: ['Custom ERP Software', 'Mobile Applications', 'Web Development', 'UI/UX Design Systems'],
-    badge: 'Regional Delivery',
-    highlight: false,
   },
   {
     city: 'Sukkur, Sindh',
@@ -86,7 +80,7 @@ export default function LocationsPage() {
               Local & International <span className="gradient-text-blue">Service Coverage</span>
             </h1>
             <p style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.75 }}>
-              Headquartered in <strong>Nawabshah</strong> with an active branch office in <strong>Karachi</strong>, ORBIT-I Private Limited delivers verified, SECP-compliant software engineering across all major Pakistani cities and international corridors.
+              Operating from our corporate headquarters in <strong>Nawabshah</strong> and regional branch in <strong>Karachi</strong> — ORBIT-I Private Limited delivers verified, SECP-compliant software engineering across Pakistan and globally (USA, UK, UAE, EU).
             </p>
           </div>
         </section>
@@ -113,11 +107,18 @@ export default function LocationsPage() {
                     </div>
                   </div>
 
-                  <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
-                    {loc.city}
-                  </h2>
+                  <div>
+                    <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+                      {loc.city}
+                    </h2>
+                    {loc.address && (
+                      <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span>📍</span> {loc.address}
+                      </p>
+                    )}
+                  </div>
 
-                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>
                     {loc.role}
                   </p>
 

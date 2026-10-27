@@ -141,14 +141,19 @@ export default function Footer() {
                 <span>+92 319 0375751 (Voice / WhatsApp)</span>
               </a>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: 'var(--text-muted)' }}>
-                <MapPin size={15} color="var(--accent)" style={{ flexShrink: 0 }} />
-                <span>HQ: Nawabshah • Branch: Karachi</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: 'var(--text-muted)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <MapPin size={14} color="var(--accent)" style={{ flexShrink: 0 }} />
+                  <span><strong>Nawabshah (HQ):</strong> Nawabshah, Sindh, Pakistan</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 22 }}>
+                  <span><strong>Karachi (Branch):</strong> Karachi, Sindh, Pakistan</span>
+                </div>
               </div>
             </div>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6 }}>
-              {['SECP Registered', 'Est. 2026', 'Nawabshah, Karachi, Hyderabad'].map((t) => (
+              {['SECP Registered', 'Est. 2026', 'Nawabshah & Karachi', 'Remote Global Services'].map((t) => (
                 <span
                   key={t}
                   style={{

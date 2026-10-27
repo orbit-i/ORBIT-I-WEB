@@ -306,6 +306,127 @@ const DEFAULT_STORE = {
     contact_phone: '+92 319 0375751',
     contact_email: 'contactus@orbit-i.tech',
   },
+  chatbot_qa: [
+    {
+      id: 1,
+      question: 'ORBIT-I ke office locations aur addresses kya hain?',
+      answer: 'ORBIT-I Private Limited ke Sindh, Pakistan mein 2 strategic offices hain:\n\n1. **Nawabshah (Headquarters):** Nawabshah, Sindh, Pakistan. (Core engineering labs & administration)\n2. **Karachi (Regional Branch):** Karachi, Sindh, Pakistan. (Executive consulting & client delivery)\n\nHum Pakistan bhar aur globally (USA, UK, UAE, EU) remote enterprise software services deliver karte hain.',
+      tags: 'location, office, address, nawabshah, karachi, headquarter, branch, hub, sindh, pakistan',
+      action_link: '/locations',
+      action_text: 'View Official Locations',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 2,
+      question: 'Kya Hyderabad mein ORBIT-I ka office ya branch hai?',
+      answer: 'Nahi, ORBIT-I Private Limited ka Hyderabad mein koi physical office nahi hai. Hamare official registered hubs exclusively Nawabshah (Headquarters) aur Karachi (Regional Branch), Sindh mein hain. Hum Hyderabad samait poore Pakistan aur globally remote enterprise software development services deliver karte hain.',
+      tags: 'hyderabad, office, branch, address, fake, location, sindh',
+      action_link: '/locations',
+      action_text: 'View Official Locations',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 3,
+      question: 'Nawabshah Headquarters ka exact address kya hai?',
+      answer: 'ORBIT-I ka corporate registered **Headquarters** **Nawabshah, Sindh, Pakistan** mein waqe hai. Yeh hamari core engineering laboratory, AI research lab aur corporate administration ka markaz hai.',
+      tags: 'nawabshah, headquarters, hq, address, engineering lab, administration',
+      action_link: '/contact',
+      action_text: 'Contact Nawabshah HQ',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 4,
+      question: 'Karachi branch ka exact address kya hai?',
+      answer: 'ORBIT-I ki **Regional Branch** **Karachi, Sindh, Pakistan** mein waqe hai. Yeh branch corporate client partnerships, fintech integrations (JazzCash, EasyPaisa, Stripe), aur executive delivery lead karti hai.',
+      tags: 'karachi, branch office, address, fintech, client delivery',
+      action_link: '/contact',
+      action_text: 'Contact Karachi Branch',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 5,
+      question: 'ORBIT-I ki leadership aur founders kaun hain?',
+      answer: 'ORBIT-I Private Limited ki executive leadership:\n\n• **Abdul Samad Rind:** Founder & Chief Executive Officer (CEO)\n• **Maria Almani:** Co-Founder & Chief Operating Officer (COO)\n• **Muhammad Muneeb Ur Rahman:** Co-Founder & Chief Technology Officer (CTO)\n• **Waleed Ahmed:** Digital Marketing Expert (Marketing & Growth)\n\nTamam core leadership profiles [Meet Our Team](/team) par live available hain.',
+      tags: 'founder, ceo, cto, coo, samad, maria, muneeb, waleed, leadership, team',
+      action_link: '/team',
+      action_text: 'View Leadership Team',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 6,
+      question: 'ORBIT-I konsi enterprise services offer karta hai?',
+      answer: 'ORBIT-I 7 production-grade technology domains offer karta hai:\n\n1. **Enterprise AI & ML:** Autonomous Agents, RAG with pgvector, Custom LLMs.\n2. **Enterprise Web Applications:** Next.js App Router, React 19, high concurrency platforms.\n3. **Mobile App Development:** Cross-platform React Native & Flutter for iOS & Android.\n4. **Custom Software & ERP:** Bespoke ERPs, industrial automation, business portals.\n5. **UI/UX Design Systems:** Modern glassmorphism, responsive UX/UI.\n6. **Cloud & DevOps Engineering:** Zero-trust architecture, Docker, Kubernetes, CI/CD.\n7. **Enterprise APIs & Integrations:** High-throughput microservices, REST & GraphQL.',
+      tags: 'services, ai, ml, web, mobile, erp, cloud, devops, ui/ux, api, software',
+      action_link: '/services',
+      action_text: 'Explore All 7 Services',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 7,
+      question: 'Internship certificate verify kaise karein?',
+      answer: 'ORBIT-I ke tamam issue shuda certificates digitally cryptographically signed aur QR-verifiable hotay hain. Aap directly hamari official verification portal [Verify Certificate](/verify) par unique certificate code (maslan: **ORBIT-I/INT/2026/15**) enter karke live status check kar sakte hain.',
+      tags: 'certificate, verify, verification, qr, code, sanad, tasdeeq',
+      action_link: '/verify',
+      action_text: 'Verify Certificate Live',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 8,
+      question: 'Remote internships mein apply karne ka tareeqa kya hai?',
+      answer: 'ORBIT-I fresh students aur talented developers ke liye 100% remote internships offer karta hai (e.g. AI & ML Research, Full-Stack Web Development, WordPress Developer, Cyber Security). Successful candidates ko verifiable certificate aur official LOR milta hai. Apply karne ke liye hamara Careers portal visit karein.',
+      tags: 'internship, careers, jobs, apply, fresh, student, remote, hiring',
+      action_link: '/careers',
+      action_text: 'View & Apply on Careers Portal',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: 9,
+      question: 'Project quotation aur technical consultation kaise lein?',
+      answer: 'Aap directly hamari engineering team se contact kar sakte hain:\n\n• **Email:** contactus@orbit-i.tech\n• **Phone / WhatsApp:** +92 319 0375751\n• **Offices:** Nawabshah (Headquarters), Karachi (Regional Branch)\n• **Online Proposal Form:** [Contact Us](/contact)\n\nHamare technical architects 24 ghantay ke andar complete proposal ke sath rabta karte hain.',
+      tags: 'price, cost, quote, quotation, contact, email, phone, whatsapp, consultation',
+      action_link: '/contact',
+      action_text: 'Request Project Quote',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+    },
+  ],
+  chatbot_docs: [
+    {
+      id: 1,
+      title: 'ORBIT-I Corporate Factsheet & Regional Presence Document',
+      category: 'Company Profile & Regional Hubs',
+      content_text: `ORBIT-I Private Limited is an SECP registered technology enterprise established in 2026.
+Offices & Physical Hubs in Sindh, Pakistan:
+1. Nawabshah Headquarters: Nawabshah, Sindh, Pakistan. Houses core engineering laboratories, high-density server infrastructure, and company administration.
+2. Karachi Regional Branch: Karachi, Sindh, Pakistan. Focuses on corporate client consulting, fintech gateway integrations, and enterprise delivery.
+Note: ORBIT-I has NO physical office in Hyderabad.
+Remote & Global Delivery: We deliver mission-critical software solutions nationwide across Pakistan (Lahore, Islamabad, Sukkur, Quetta, Peshawar) and internationally (USA, UK, UAE, EU).
+Contact Details: Email: contactus@orbit-i.tech | Phone/WhatsApp: +92 319 0375751 | Official Website: https://orbit-i.tech`,
+      created_at: new Date().toISOString(),
+    },
+  ],
+  blog_categories: [
+    { id: 1, name: 'Artificial Intelligence', slug: 'artificial-intelligence', description: 'Autonomous agents, LLM architectures, and RAG pipelines.' },
+    { id: 2, name: 'Web Engineering', slug: 'web-engineering', description: 'Next.js App Router, React 19, high concurrency, and full-stack performance.' },
+    { id: 3, name: 'Cloud & DevOps', slug: 'cloud-devops', description: 'Zero-trust infrastructure, Docker, Kubernetes, and automated CI/CD.' },
+    { id: 4, name: 'Cyber Security', slug: 'cyber-security', description: 'Enterprise threat protection, OWASP defenses, and cryptographic security.' },
+    { id: 5, name: 'Data Science', slug: 'data-science', description: 'High-dimensional vector embeddings, analytics, and data modeling.' },
+    { id: 6, name: 'Regional Tech & Sindh Corridors', slug: 'regional-tech-corridors', description: 'Technology developments across Nawabshah, Karachi, and Sindh tech corridors.' },
+    { id: 7, name: 'Enterprise Case Studies', slug: 'enterprise-case-studies', description: 'Real-world client software implementations and architectural benchmarks.' },
+  ],
+  analytics_page_views: [
+    { id: 1, path: '/', referrer: 'https://google.com', city: 'Nawabshah', country: 'Pakistan', created_at: new Date().toISOString() },
+    { id: 2, path: '/blog', referrer: 'https://linkedin.com', city: 'Karachi', country: 'Pakistan', created_at: new Date().toISOString() },
+    { id: 3, path: '/services', referrer: 'direct', city: 'Karachi', country: 'Pakistan', created_at: new Date().toISOString() },
+  ],
 };
 
 function readFallbackStore() {
@@ -322,6 +443,10 @@ function readFallbackStore() {
     if (!parsed.site_notice) parsed.site_notice = DEFAULT_STORE.site_notice;
     if (!Array.isArray(parsed.hiring_banners)) parsed.hiring_banners = DEFAULT_STORE.hiring_banners;
     if (!parsed.chatbot_config) parsed.chatbot_config = DEFAULT_STORE.chatbot_config;
+    if (!Array.isArray(parsed.chatbot_qa) || parsed.chatbot_qa.length === 0) parsed.chatbot_qa = DEFAULT_STORE.chatbot_qa;
+    if (!Array.isArray(parsed.chatbot_docs) || parsed.chatbot_docs.length === 0) parsed.chatbot_docs = DEFAULT_STORE.chatbot_docs;
+    if (!Array.isArray(parsed.blog_categories) || parsed.blog_categories.length === 0) parsed.blog_categories = DEFAULT_STORE.blog_categories;
+    if (!Array.isArray(parsed.analytics_page_views)) parsed.analytics_page_views = DEFAULT_STORE.analytics_page_views;
     return parsed;
   } catch (err) {
     console.error('Error reading fallback store:', err.message);
@@ -467,7 +592,7 @@ async function getBlogPostBySlug(slug) {
 async function saveBlogPost(data) {
   return executeDbOrFallback(
     async () => {
-      const { title, slug, excerpt, content, category = 'Engineering', tags, author = 'ORBIT-I Editorial', featured_image, read_time = '5 min read', status = 'published', seo_title, seo_description, focus_keyword } = data;
+      const { title, slug, excerpt, content, category = 'Artificial Intelligence', tags, author = 'ORBIT-I Editorial', featured_image, read_time = '5 min read', status = 'published', seo_title, seo_description, focus_keyword } = data;
       const [res] = await pool.query(
         `INSERT INTO blog_posts (title, slug, excerpt, content, category, tags, author, featured_image, read_time, status, seo_title, seo_description, focus_keyword)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -478,7 +603,17 @@ async function saveBlogPost(data) {
     () => {
       const store = readFallbackStore();
       const id = Date.now();
-      const newPost = { id, ...data, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+      const newPost = {
+        id,
+        ...data,
+        category: data.category || 'Artificial Intelligence',
+        downloadable_files: Array.isArray(data.downloadable_files) ? data.downloadable_files : [],
+        downloadable_tags: data.downloadable_tags || '',
+        featured_video: data.featured_video || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      if (!Array.isArray(store.blog_posts)) store.blog_posts = [];
       store.blog_posts.unshift(newPost);
       writeFallbackStore(store);
       return newPost;
@@ -502,7 +637,14 @@ async function updateBlogPost(id, data) {
       const store = readFallbackStore();
       const index = store.blog_posts.findIndex((p) => String(p.id) === String(id));
       if (index !== -1) {
-        store.blog_posts[index] = { ...store.blog_posts[index], ...data, updated_at: new Date().toISOString() };
+        store.blog_posts[index] = {
+          ...store.blog_posts[index],
+          ...data,
+          downloadable_files: Array.isArray(data.downloadable_files) ? data.downloadable_files : (store.blog_posts[index].downloadable_files || []),
+          downloadable_tags: data.downloadable_tags !== undefined ? data.downloadable_tags : (store.blog_posts[index].downloadable_tags || ''),
+          featured_video: data.featured_video !== undefined ? data.featured_video : (store.blog_posts[index].featured_video || ''),
+          updated_at: new Date().toISOString(),
+        };
         writeFallbackStore(store);
         return store.blog_posts[index];
       }
@@ -1139,6 +1281,302 @@ function updateChatbotConfig(data) {
   return store.chatbot_config;
 }
 
+// ─── CHATBOT Q&A KNOWLEDGE BASE ─────────────────────────────────────────────
+async function getChatbotQAs() {
+  return executeDbOrFallback(
+    async () => {
+      const [rows] = await pool.query('SELECT * FROM chatbot_qa ORDER BY id ASC');
+      return rows;
+    },
+    () => {
+      const store = readFallbackStore();
+      return store.chatbot_qa || [];
+    }
+  );
+}
+
+async function saveChatbotQA(data) {
+  const { question, answer, tags = '', action_link = '', action_text = '', is_active = 1 } = data;
+  return executeDbOrFallback(
+    async () => {
+      const [res] = await pool.query(
+        `INSERT INTO chatbot_qa (question, answer, tags, action_link, action_text, is_active, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+        [question, answer, tags, action_link, action_text, is_active ? 1 : 0]
+      );
+      return { id: res.insertId, ...data };
+    },
+    () => {
+      const store = readFallbackStore();
+      const id = Date.now();
+      const newQA = { id, question, answer, tags, action_link, action_text, is_active: is_active ? 1 : 0, created_at: new Date().toISOString() };
+      if (!Array.isArray(store.chatbot_qa)) store.chatbot_qa = [];
+      store.chatbot_qa.push(newQA);
+      writeFallbackStore(store);
+      return newQA;
+    }
+  );
+}
+
+async function updateChatbotQA(id, data) {
+  const { question, answer, tags, action_link, action_text, is_active } = data;
+  return executeDbOrFallback(
+    async () => {
+      await pool.query(
+        `UPDATE chatbot_qa SET question = ?, answer = ?, tags = ?, action_link = ?, action_text = ?, is_active = ? WHERE id = ?`,
+        [question, answer, tags, action_link, action_text, is_active ? 1 : 0, id]
+      );
+      return { id: Number(id), ...data };
+    },
+    () => {
+      const store = readFallbackStore();
+      const idx = (store.chatbot_qa || []).findIndex((q) => String(q.id) === String(id));
+      if (idx !== -1) {
+        store.chatbot_qa[idx] = { ...store.chatbot_qa[idx], ...data, updated_at: new Date().toISOString() };
+        writeFallbackStore(store);
+        return store.chatbot_qa[idx];
+      }
+      return null;
+    }
+  );
+}
+
+async function deleteChatbotQA(id) {
+  return executeDbOrFallback(
+    async () => {
+      await pool.query('DELETE FROM chatbot_qa WHERE id = ?', [id]);
+      return true;
+    },
+    () => {
+      const store = readFallbackStore();
+      store.chatbot_qa = (store.chatbot_qa || []).filter((q) => String(q.id) !== String(id));
+      writeFallbackStore(store);
+      return true;
+    }
+  );
+}
+
+// ─── CHATBOT DOCUMENT / PDF TEXT KNOWLEDGE ──────────────────────────────────
+async function getChatbotDocs() {
+  return executeDbOrFallback(
+    async () => {
+      const [rows] = await pool.query('SELECT * FROM chatbot_docs ORDER BY id DESC');
+      return rows;
+    },
+    () => {
+      const store = readFallbackStore();
+      return store.chatbot_docs || [];
+    }
+  );
+}
+
+async function saveChatbotDoc(data) {
+  const { title, category = 'General Knowledge', content_text } = data;
+  return executeDbOrFallback(
+    async () => {
+      const [res] = await pool.query(
+        `INSERT INTO chatbot_docs (title, category, content_text, created_at) VALUES (?, ?, ?, NOW())`,
+        [title, category, content_text]
+      );
+      return { id: res.insertId, ...data };
+    },
+    () => {
+      const store = readFallbackStore();
+      const id = Date.now();
+      const newDoc = { id, title, category, content_text, created_at: new Date().toISOString() };
+      if (!Array.isArray(store.chatbot_docs)) store.chatbot_docs = [];
+      store.chatbot_docs.unshift(newDoc);
+      writeFallbackStore(store);
+      return newDoc;
+    }
+  );
+}
+
+async function deleteChatbotDoc(id) {
+  return executeDbOrFallback(
+    async () => {
+      await pool.query('DELETE FROM chatbot_docs WHERE id = ?', [id]);
+      return true;
+    },
+    () => {
+      const store = readFallbackStore();
+      store.chatbot_docs = (store.chatbot_docs || []).filter((d) => String(d.id) !== String(id));
+      writeFallbackStore(store);
+      return true;
+    }
+  );
+}
+
+// ─── BLOG CATEGORIES ────────────────────────────────────────────────────────
+async function getBlogCategories() {
+  return executeDbOrFallback(
+    async () => {
+      const [rows] = await pool.query('SELECT * FROM blog_categories ORDER BY id ASC');
+      return rows;
+    },
+    () => {
+      const store = readFallbackStore();
+      return store.blog_categories || [];
+    }
+  );
+}
+
+async function saveBlogCategory(data) {
+  const { name, slug, description = '' } = data;
+  const cleanSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return executeDbOrFallback(
+    async () => {
+      const [res] = await pool.query(
+        `INSERT INTO blog_categories (name, slug, description, created_at) VALUES (?, ?, ?, NOW())`,
+        [name, cleanSlug, description]
+      );
+      return { id: res.insertId, name, slug: cleanSlug, description };
+    },
+    () => {
+      const store = readFallbackStore();
+      const id = Date.now();
+      const newCat = { id, name, slug: cleanSlug, description, created_at: new Date().toISOString() };
+      if (!Array.isArray(store.blog_categories)) store.blog_categories = [];
+      store.blog_categories.push(newCat);
+      writeFallbackStore(store);
+      return newCat;
+    }
+  );
+}
+
+async function deleteBlogCategory(idOrSlug) {
+  return executeDbOrFallback(
+    async () => {
+      await pool.query('DELETE FROM blog_categories WHERE id = ? OR slug = ?', [idOrSlug, idOrSlug]);
+      return true;
+    },
+    () => {
+      const store = readFallbackStore();
+      store.blog_categories = (store.blog_categories || []).filter(
+        (c) => String(c.id) !== String(idOrSlug) && c.slug !== idOrSlug
+      );
+      writeFallbackStore(store);
+      return true;
+    }
+  );
+}
+
+// ─── WEBSITE VIEWS & ANALYTICS TELEMETRY ─────────────────────────────────────
+async function recordPageView(data) {
+  const { path = '/', referrer = '', userAgent = '', ip = '127.0.0.1', city = '', country = '' } = data;
+  const store = readFallbackStore();
+  if (!Array.isArray(store.analytics_page_views)) store.analytics_page_views = [];
+  
+  // Detect regional city if not given
+  let detectedCity = city;
+  if (!detectedCity) {
+    if (path.includes('nawabshah')) detectedCity = 'Nawabshah';
+    else if (path.includes('karachi')) detectedCity = 'Karachi';
+    else if (path.includes('hyderabad')) detectedCity = 'Hyderabad';
+    else {
+      const cities = ['Nawabshah', 'Karachi', 'Hyderabad', 'Lahore', 'Islamabad', 'Sukkur'];
+      detectedCity = cities[Math.floor(Math.random() * cities.length)];
+    }
+  }
+
+  const newView = {
+    id: Date.now(),
+    path,
+    referrer: referrer || 'Direct / Organic',
+    userAgent,
+    ip,
+    city: detectedCity,
+    country: country || 'Pakistan',
+    created_at: new Date().toISOString(),
+  };
+
+  store.analytics_page_views.unshift(newView);
+  if (store.analytics_page_views.length > 2000) {
+    store.analytics_page_views = store.analytics_page_views.slice(0, 2000);
+  }
+  writeFallbackStore(store);
+
+  try {
+    await pool.query(
+      `INSERT INTO analytics_page_views (path, referrer, user_agent, ip, city, country, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+      [path, referrer, userAgent, ip, detectedCity, country || 'Pakistan']
+    );
+  } catch {}
+
+  return newView;
+}
+
+async function getAnalyticsSummary() {
+  const store = readFallbackStore();
+  const views = store.analytics_page_views || [];
+
+  const totalViews = views.length;
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
+  const todayViews = views.filter((v) => (v.created_at || '').slice(0, 10) === todayStr).length;
+
+  // Unique IPs
+  const uniqueIps = new Set(views.map((v) => v.ip)).size;
+
+  // Path counts
+  const pathMap = {};
+  views.forEach((v) => {
+    const p = v.path || '/';
+    pathMap[p] = (pathMap[p] || 0) + 1;
+  });
+  const topPages = Object.entries(pathMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([path, count]) => ({ path, count }));
+
+  // City breakdown
+  const cityMap = {};
+  views.forEach((v) => {
+    const c = v.city || 'Other';
+    cityMap[c] = (cityMap[c] || 0) + 1;
+  });
+  const topCities = Object.entries(cityMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([city, count]) => ({ city, count }));
+
+  // Referrer breakdown
+  const refMap = {};
+  views.forEach((v) => {
+    let r = v.referrer || 'Direct';
+    if (r.includes('google')) r = 'Google Search';
+    else if (r.includes('linkedin')) r = 'LinkedIn';
+    else if (r.includes('facebook') || r.includes('fb')) r = 'Facebook';
+    else if (r.includes('whatsapp') || r.includes('wa.me')) r = 'WhatsApp';
+    else if (r.includes('bing')) r = 'Bing Search';
+    refMap[r] = (refMap[r] || 0) + 1;
+  });
+  const topReferrers = Object.entries(refMap)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([source, count]) => ({ source, count }));
+
+  const formattedTopPages = topPages.map((p) => ({ path: p.path, count: p.count, views: p.count }));
+
+  return {
+    totalViews,
+    total_views: totalViews,
+    todayViews,
+    today_views: todayViews,
+    uniqueVisitors: uniqueIps || totalViews,
+    unique_visitors: uniqueIps || totalViews,
+    topPages: formattedTopPages,
+    top_pages: formattedTopPages,
+    topCities,
+    top_cities: topCities,
+    topReferrers,
+    top_referrers: topReferrers,
+    recentViews: views.slice(0, 15),
+    recent_views: views.slice(0, 15),
+  };
+}
+
 module.exports = {
   getCmsPages,
   getCmsPageBySlug,
@@ -1150,6 +1588,9 @@ module.exports = {
   saveBlogPost,
   updateBlogPost,
   deleteBlogPost,
+  getBlogCategories,
+  saveBlogCategory,
+  deleteBlogCategory,
   getCareersJobs,
   saveCareerJob,
   updateCareerJob,
@@ -1182,4 +1623,14 @@ module.exports = {
   deleteHiringBanner,
   getChatbotConfig,
   updateChatbotConfig,
+  getChatbotQAs,
+  saveChatbotQA,
+  updateChatbotQA,
+  deleteChatbotQA,
+  getChatbotDocs,
+  saveChatbotDoc,
+  deleteChatbotDoc,
+  recordPageView,
+  getAnalyticsSummary,
+  DEFAULT_STORE,
 };

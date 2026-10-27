@@ -32,7 +32,7 @@ const founders = [
     objectPosition: 'center center',
     linkedin: 'https://www.linkedin.com/company/orbit-i-private-limited/',
     email: 'contactus@orbit-i.tech',
-    location: 'Karachi & Hyderabad',
+    location: 'Karachi',
   },
   {
     name: 'Muhammad Muneeb Ur Rahman',
@@ -166,7 +166,7 @@ export default function TeamPage() {
               Meet the Engineers & Architects <span className="gradient-text-blue">Behind ORBIT-I</span>
             </h1>
             <p style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: 680, margin: '0 auto' }}>
-              From corporate headquarters in <strong>Nawabshah</strong> to commercial offices in <strong>Karachi</strong> and regional engineering clusters in <strong>Hyderabad</strong> — our SECP-governed software leaders build scalable digital futures.
+              From corporate headquarters in <strong>Nawabshah</strong> to commercial offices in <strong>Karachi</strong> — our SECP-governed software leaders build scalable digital futures.
             </p>
 
             {/* Stats row */}

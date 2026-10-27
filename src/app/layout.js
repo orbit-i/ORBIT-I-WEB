@@ -6,14 +6,15 @@ import ScrollProgressBar from '@/components/ScrollProgressBar'
 import UtmTracker from '@/components/UtmTracker'
 import BackToTop from '@/components/BackToTop'
 import FloatingContactButton from '@/components/FloatingContactButton'
+import AnalyticsClientTracker from '@/components/AnalyticsClientTracker'
 
 export const metadata = {
   metadataBase: new URL('https://orbit-i.tech'),
   title: {
-    default: 'ORBIT-I Private Limited — Top #1 Software & AI Engineering Company in Nawabshah, Karachi & Hyderabad',
+    default: 'ORBIT-I Private Limited — Top #1 Software & AI Engineering Company in Nawabshah & Karachi, Sindh',
     template: '%s | ORBIT-I Private Limited',
   },
-  description: 'ORBIT-I Private Limited is an SECP registered technology enterprise (Est. 2026) headquartered in Nawabshah with executive branch in Karachi and regional delivery in Hyderabad, Pakistan. We engineer enterprise AI systems, full-stack web platforms, mobile apps, and custom ERP software.',
+  description: 'ORBIT-I Private Limited is an SECP registered technology enterprise (Est. 2026) headquartered in Nawabshah with executive regional branch in Karachi, Pakistan. Delivering enterprise AI systems, full-stack web platforms, mobile apps, and custom software.',
   keywords: [
     // Nawabshah Local SEO Top Rankings
     'software company Nawabshah',
@@ -29,12 +30,6 @@ export const metadata = {
     'custom software Karachi',
     'Next.js developer Karachi',
     'top IT firms Karachi',
-    // Hyderabad Local SEO Top Rankings
-    'software house Hyderabad',
-    'software company Hyderabad Sindh',
-    'web developers Hyderabad',
-    'mobile app development Hyderabad',
-    'custom ERP software Hyderabad',
     // Pakistan & Global AISEO Keywords
     'SECP registered software company Pakistan',
     'autonomous AI agents Pakistan',
@@ -48,7 +43,7 @@ export const metadata = {
   publisher: 'ORBIT-I Private Limited',
   other: {
     'geo.region': 'PK-SD',
-    'geo.placename': 'Nawabshah, Karachi, Hyderabad',
+    'geo.placename': 'Nawabshah, Karachi',
     'geo.position': '26.2483;68.4096',
     'ICBM': '26.2483, 68.4096',
   },
@@ -73,7 +68,7 @@ export const metadata = {
     url: 'https://orbit-i.tech',
     siteName: 'ORBIT-I Private Limited',
     title: 'ORBIT-I Private Limited — Top #1 Software & AI Engineering Company',
-    description: 'SECP registered technology enterprise headquartered in Nawabshah with executive offices in Karachi and Hyderabad, Pakistan. Delivering enterprise AI, web, mobile, and custom cloud systems.',
+    description: 'SECP registered technology enterprise headquartered in Nawabshah with executive branch in Karachi, Pakistan. Delivering enterprise AI, web, mobile, and custom cloud systems.',
     images: [
       {
         url: '/orbitlogo-removebg-preview.png',
@@ -86,7 +81,7 @@ export const metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'ORBIT-I Private Limited — Top #1 Software & AI Engineering Company',
-    description: 'Enterprise AI systems, web platforms, mobile apps, and cloud infrastructure from Nawabshah, Karachi & Hyderabad, Pakistan.',
+    description: 'Enterprise AI systems, web platforms, mobile apps, and cloud infrastructure from Nawabshah & Karachi, Pakistan.',
     images: ['/orbitlogo-removebg-preview.png'],
   },
   alternates: {
@@ -106,7 +101,7 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        {/* Structured data — Schema.org LocalBusiness, Corporation & Organization for dominant Nawabshah, Karachi, Hyderabad SEO */}
+        {/* Structured data — Schema.org LocalBusiness, Corporation & Organization for dominant Nawabshah & Karachi SEO */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -121,14 +116,14 @@ export default function RootLayout({ children }) {
                   url: 'https://orbit-i.tech',
                   logo: 'https://orbit-i.tech/orbitlogo-removebg-preview.png',
                   image: 'https://orbit-i.tech/orbitlogo-removebg-preview.png',
-                  description: 'Top SECP registered software engineering company (Est. 2026) headquartered in Nawabshah, with offices in Karachi and Hyderabad, Pakistan. Delivering enterprise AI systems, full-stack web platforms, mobile apps, and custom cloud infrastructure.',
+                  description: 'Top SECP registered software engineering company (Est. 2026) headquartered in Nawabshah, with regional branch in Karachi, Pakistan. Delivering enterprise AI systems, full-stack web platforms, mobile apps, and custom cloud infrastructure.',
                   foundingDate: '2026',
                   priceRange: '$$$',
                   telephone: '+92-319-0375751',
                   email: 'contactus@orbit-i.tech',
                   address: {
                     '@type': 'PostalAddress',
-                    streetAddress: 'Corporate Headquarters, Engineering District',
+                    streetAddress: 'Nawabshah',
                     addressLocality: 'Nawabshah',
                     addressRegion: 'Sindh',
                     postalCode: '67450',
@@ -139,6 +134,33 @@ export default function RootLayout({ children }) {
                     latitude: 26.2483,
                     longitude: 68.4096,
                   },
+                  department: [
+                    {
+                      '@type': 'LocalBusiness',
+                      name: 'ORBIT-I Corporate Headquarters',
+                      address: {
+                        '@type': 'PostalAddress',
+                        streetAddress: 'Nawabshah',
+                        addressLocality: 'Nawabshah',
+                        addressRegion: 'Sindh',
+                        postalCode: '67450',
+                        addressCountry: 'PK',
+                      },
+                      telephone: '+92-319-0375751',
+                    },
+                    {
+                      '@type': 'LocalBusiness',
+                      name: 'ORBIT-I Karachi Regional Branch',
+                      address: {
+                        '@type': 'PostalAddress',
+                        streetAddress: 'Karachi',
+                        addressLocality: 'Karachi',
+                        addressRegion: 'Sindh',
+                        addressCountry: 'PK',
+                      },
+                      telephone: '+92-319-0375751',
+                    },
+                  ],
                   areaServed: [
                     { '@type': 'City', name: 'Nawabshah' },
                     { '@type': 'City', name: 'Karachi' },
@@ -188,6 +210,7 @@ export default function RootLayout({ children }) {
         </a>
         <ScrollProgressBar />
         <UtmTracker />
+        <AnalyticsClientTracker />
         <SiteNoticeBar />
         <div id="main-content">
           {children}

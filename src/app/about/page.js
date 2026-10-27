@@ -19,16 +19,16 @@ export default function AboutPage() {
     {
       city: 'Nawabshah, Sindh',
       type: 'Corporate Headquarters',
-      desc: 'Our primary software engineering laboratory, corporate administration, and core research facility.',
+      desc: 'Our primary software engineering laboratory, autonomous AI research center, high-density server clusters, and corporate administration.',
       address: 'Nawabshah, Sindh, Pakistan',
-      badge: 'HQ & Engineering Hub'
+      badge: 'Headquarters & Core Labs'
     },
     {
       city: 'Karachi, Sindh',
-      type: 'Executive Branch Office',
-      desc: 'Client relationship management, enterprise integrations, and metropolitan delivery operations.',
+      type: 'Executive Regional Branch',
+      desc: 'Corporate client relationship management, fintech integrations (JazzCash, EasyPaisa, Stripe), and metropolitan delivery operations.',
       address: 'Karachi, Sindh, Pakistan',
-      badge: 'Commercial & Client Branch'
+      badge: 'Regional Commercial Branch'
     }
   ]
 
@@ -44,13 +44,13 @@ export default function AboutPage() {
               <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <span className="tag"><span className="dot" />Est. 2026</span>
                 <span className="tag">SECP Active Pvt. Ltd.</span>
-                <span className="tag">Nawabshah & Karachi</span>
+                <span className="tag">Nawabshah · Karachi</span>
               </div>
               <h1 style={{ fontFamily: 'Space Grotesk', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, lineHeight: 1.1, color: 'var(--text-primary)' }}>
                 About <span className="gradient-text-blue">ORBIT-I Private Limited</span>
               </h1>
               <p style={{ fontSize: 16, lineHeight: 1.8, color: 'var(--text-secondary)' }}>
-                Founded in <strong>2026</strong>, ORBIT-I Private Limited is an SECP-registered technology firm headquartered in <strong>Nawabshah, Sindh</strong> with an executive branch office in <strong>Karachi</strong>. We engineer production-grade enterprise software, autonomous AI systems, cross-platform mobile apps, and robust cloud platforms.
+                Founded in <strong>2026</strong>, ORBIT-I Private Limited is an SECP-registered technology firm operating from our corporate headquarters in <strong>Nawabshah</strong> and regional branch in <strong>Karachi</strong>, Sindh. We deliver mission-critical software across Pakistan and globally (USA, UK, UAE, EU).
               </p>
             </div>
           </div>
@@ -60,7 +60,7 @@ export default function AboutPage() {
         <section style={{ padding: '0 0 64px' }}>
           <div className="container">
             <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 24, textAlign: 'center' }}>
-              Our Strategic Presence: Nawabshah & Karachi
+              Our Strategic Hubs: Nawabshah & Karachi
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
               {offices.map((off) => (

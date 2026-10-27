@@ -614,5 +614,176 @@
     "contact_phone": "+92 319 0375751",
     "contact_email": "contactus@orbit-i.tech",
     "operational_presence": "Nawabshah & Karachi, Sindh (Remote Operations — No physical walk-in offices)"
-  }
+  },
+  "chatbot_qa": [
+    {
+      "id": 1,
+      "question": "ORBIT-I ke office locations aur addresses kya hain?",
+      "answer": "ORBIT-I Private Limited ke Sindh, Pakistan mein 2 strategic offices hain:\n\n1. **Nawabshah (Headquarters):** Nawabshah, Sindh, Pakistan. (Core engineering labs & administration)\n2. **Karachi (Regional Branch):** Karachi, Sindh, Pakistan. (Executive consulting & client delivery)\n\nHum Pakistan bhar aur globally (USA, UK, UAE, EU) remote enterprise software services deliver karte hain.",
+      "tags": "location, office, address, nawabshah, karachi, headquarter, branch, hub, sindh, pakistan",
+      "action_link": "/locations",
+      "action_text": "View Official Locations",
+      "is_active": 1,
+      "created_at": "2026-10-27T05:54:32.197Z"
+    },
+    {
+      "id": 2,
+      "question": "Kya Hyderabad mein ORBIT-I ka office ya branch hai?",
+      "answer": "Nahi, ORBIT-I Private Limited ka Hyderabad mein koi physical office nahi hai. Hamare official registered hubs exclusively Nawabshah (Headquarters) aur Karachi (Regional Branch), Sindh mein hain. Hum Hyderabad samait poore Pakistan aur globally remote enterprise software development services deliver karte hain.",
+      "tags": "hyderabad, office, branch, address, fake, location, sindh",
+      "action_link": "/locations",
+      "action_text": "View Official Locations",
+      "is_active": 1,
+      "created_at": "2026-10-27T05:54:32.197Z"
+    },
+    {
+      "id": 3,
+      "question": "Nawabshah Headquarters ka exact address kya hai?",
+      "answer": "ORBIT-I ka corporate registered **Headquarters** **Nawabshah, Sindh, Pakistan** mein waqe hai. Yeh hamari core engineering laboratory, AI research lab aur corporate administration ka markaz hai.",
+      "tags": "nawabshah, headquarters, hq, address, engineering lab, administration",
+      "action_link": "/contact",
+      "action_text": "Contact Nawabshah HQ",
+      "is_active": 1,
+      "created_at": "2026-10-27T05:54:32.197Z"
+    },
+    {
+      "id": 4,
+      "question": "Karachi branch ka exact address kya hai?",
+      "answer": "ORBIT-I ki **Regional Branch** **Karachi, Sindh, Pakistan** mein waqe hai. Yeh branch corporate client partnerships, fintech integrations (JazzCash, EasyPaisa, Stripe), aur executive delivery lead karti hai.",
+      "tags": "karachi, branch office, address, fintech, client delivery",
+      "action_link": "/contact",
+      "action_text": "Contact Karachi Branch",
+      "is_active": 1,
+      "created_at": "2026-10-27T05:54:32.197Z"
+    },
+    {
+      "id": 5,
+      "question": "ORBIT-I ki leadership aur founders kaun hain?",
+      "answer": "ORBIT-I Private Limited ki executive leadership:\n\n• **Abdul Samad Rind:** Founder & Chief Executive Officer (CEO)\n• **Maria Almani:** Co-Founder & Chief Operating Officer (COO)\n• **Muhammad Muneeb Ur Rahman:** Co-Founder & Chief Technology Officer (CTO)\n• **Waleed Ahmed:** Digital Marketing Expert (Marketing & Growth)\n\nTamam core leadership profiles [Meet Our Team](/team) par live available hain.",
+      "tags": "founder, ceo, cto, coo, samad, maria, muneeb, waleed, leadership, team",
+      "action_link": "/team",
+      "action_text": "View Leadership Team",
+      "is_active": 1,
+      "created_at": "2026-10-27T05:54:32.197Z"
+    },
+    {
+      "id": 6,
+      "question": "ORBIT-I konsi enterprise services offer karta hai?",
+      "answer": "ORBIT-I 7 production-grade technology domains offer karta hai:\n\n1. **Enterprise AI & ML:** Autonomous Agents, RAG with pgvector, Custom LLMs.\n2. **Enterprise Web Applications:** Next.js App Router, React 19, high concurrency platforms.\n3. **Mobile App Development:** Cross-platform React Native & Flutter for iOS & Android.\n4. **Custom Software & ERP:** Bespoke ERPs, industrial automation, business portals.\n5. **UI/UX Design Systems:** Modern glassmorphism, responsive UX/UI.\n6. **Cloud & DevOps Engineering:** Zero-trust architecture, Docker, Kubernetes, CI/CD.\n7. **Enterprise APIs & Integrations:** High-throughput microservices, REST & GraphQL.",
+      "tags": "services, ai, ml, web, mobile, erp, cloud, devops, ui/ux, api, software",
+      "action_link": "/services",
+      "action_text": "Explore All 7 Services",
+      "is_active": 1,
+      "created_at": "2026-10-27T05:54:32.197Z"
+    },
+    {
+      "id": 7,
+      "question": "Internship certificate verify kaise karein?",
+      "answer": "ORBIT-I ke tamam issue shuda certificates digitally cryptographically signed aur QR-verifiable hotay hain. Aap directly hamari official verification portal [Verify Certificate](/verify) par unique certificate code (maslan: **ORBIT-I/INT/2026/15**) enter karke live status check kar sakte hain.",
+      "tags": "certificate, verify, verification, qr, code, sanad, tasdeeq",
+      "action_link": "/verify",
+      "action_text": "Verify Certificate Live",
+      "is_active": 1,
+      "created_at": "2026-10-27T05:54:32.197Z"
+    },
+    {
+      "id": 8,
+      "question": "Remote internships mein apply karne ka tareeqa kya hai?",
+      "answer": "ORBIT-I fresh students aur talented developers ke liye 100% remote internships offer karta hai (e.g. AI & ML Research, Full-Stack Web Development, WordPress Developer, Cyber Security). Successful candidates ko verifiable certificate aur official LOR milta hai. Apply karne ke liye hamara Careers portal visit karein.",
+      "tags": "internship, careers, jobs, apply, fresh, student, remote, hiring",
+      "action_link": "/careers",
+      "action_text": "View & Apply on Careers Portal",
+      "is_active": 1,
+      "created_at": "2026-10-27T05:54:32.197Z"
+    },
+    {
+      "id": 9,
+      "question": "Project quotation aur technical consultation kaise lein?",
+      "answer": "Aap directly hamari engineering team se contact kar sakte hain:\n\n• **Email:** contactus@orbit-i.tech\n• **Phone / WhatsApp:** +92 319 0375751\n• **Offices:** Nawabshah (Headquarters), Karachi (Regional Branch)\n• **Online Proposal Form:** [Contact Us](/contact)\n\nHamare technical architects 24 ghantay ke andar complete proposal ke sath rabta karte hain.",
+      "tags": "price, cost, quote, quotation, contact, email, phone, whatsapp, consultation",
+      "action_link": "/contact",
+      "action_text": "Request Project Quote",
+      "is_active": 1,
+      "created_at": "2026-10-27T05:54:32.197Z"
+    }
+  ],
+  "chatbot_docs": [
+    {
+      "id": 1,
+      "title": "ORBIT-I Corporate Factsheet & Regional Presence Document",
+      "category": "Company Profile & Regional Hubs",
+      "content_text": "ORBIT-I Private Limited is an SECP registered technology enterprise established in 2026.\nOffices & Physical Hubs in Sindh, Pakistan:\n1. Nawabshah Headquarters: Nawabshah, Sindh, Pakistan. Houses core engineering laboratories, high-density server infrastructure, and company administration.\n2. Karachi Regional Branch: Karachi, Sindh, Pakistan. Focuses on corporate client consulting, fintech gateway integrations, and enterprise delivery.\nNote: ORBIT-I has NO physical office in Hyderabad.\nRemote & Global Delivery: We deliver mission-critical software solutions nationwide across Pakistan (Lahore, Islamabad, Sukkur, Quetta, Peshawar) and internationally (USA, UK, UAE, EU).\nContact Details: Email: contactus@orbit-i.tech | Phone/WhatsApp: +92 319 0375751 | Official Website: https://orbit-i.tech",
+      "created_at": "2026-10-27T05:54:32.197Z"
+    }
+  ],
+  "blog_categories": [
+    {
+      "id": 1,
+      "name": "Artificial Intelligence",
+      "slug": "artificial-intelligence",
+      "description": "Autonomous agents, LLM architectures, and RAG pipelines."
+    },
+    {
+      "id": 2,
+      "name": "Web Engineering",
+      "slug": "web-engineering",
+      "description": "Next.js App Router, React 19, high concurrency, and full-stack performance."
+    },
+    {
+      "id": 3,
+      "name": "Cloud & DevOps",
+      "slug": "cloud-devops",
+      "description": "Zero-trust infrastructure, Docker, Kubernetes, and automated CI/CD."
+    },
+    {
+      "id": 4,
+      "name": "Cyber Security",
+      "slug": "cyber-security",
+      "description": "Enterprise threat protection, OWASP defenses, and cryptographic security."
+    },
+    {
+      "id": 5,
+      "name": "Data Science",
+      "slug": "data-science",
+      "description": "High-dimensional vector embeddings, analytics, and data modeling."
+    },
+    {
+      "id": 6,
+      "name": "Regional Tech & Sindh Corridors",
+      "slug": "regional-tech-corridors",
+      "description": "Technology developments across Nawabshah, Karachi, and Sindh tech corridors."
+    },
+    {
+      "id": 7,
+      "name": "Enterprise Case Studies",
+      "slug": "enterprise-case-studies",
+      "description": "Real-world client software implementations and architectural benchmarks."
+    }
+  ],
+  "analytics_page_views": [
+    {
+      "id": 1,
+      "path": "/",
+      "referrer": "https://google.com",
+      "city": "Nawabshah",
+      "country": "Pakistan",
+      "created_at": "2026-10-27T05:54:32.197Z"
+    },
+    {
+      "id": 2,
+      "path": "/blog",
+      "referrer": "https://linkedin.com",
+      "city": "Karachi",
+      "country": "Pakistan",
+      "created_at": "2026-10-27T05:54:32.197Z"
+    },
+    {
+      "id": 3,
+      "path": "/services",
+      "referrer": "direct",
+      "city": "Karachi",
+      "country": "Pakistan",
+      "created_at": "2026-10-27T05:54:32.197Z"
+    }
+  ]
 }

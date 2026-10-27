@@ -20,7 +20,7 @@ export default function ServicesPage() {
               Engineering Capabilities & <span className="gradient-text-blue">Service Directory</span>
             </h1>
             <p style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.75 }}>
-              Explore our 7 specialized engineering verticals designed for startups, high-growth SMEs, and established enterprises in <strong>Nawabshah, Karachi, Hyderabad, Lahore, Islamabad, Sukkur, Sibi</strong>, and worldwide.
+              Explore our 7 specialized engineering verticals designed for startups, high-growth SMEs, and established enterprises in <strong>Nawabshah, Karachi, Lahore, Islamabad, Sukkur, Sibi</strong>, and worldwide.
             </p>
           </div>
         </section>

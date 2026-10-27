@@ -38,7 +38,7 @@ export default function HomeCTA() {
             Collaborate With Pakistan's Leading <span className="gradient-text-blue">AI & Software Engineering Firm</span>
           </motion.h2>
           <motion.p {...fadeUp(0.2)} style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-            Headquartered in <strong>Nawabshah</strong> with metropolitan operations in <strong>Karachi</strong> and regional engineering in <strong>Hyderabad</strong>. Explore our team or launch your enterprise project with us today.
+            Headquartered in <strong>Nawabshah</strong> with metropolitan operations in <strong>Karachi</strong>. Explore our team or launch your enterprise project with us today.
           </motion.p>
         </div>
 
@@ -75,7 +75,7 @@ export default function HomeCTA() {
                   Meet Our Engineering & Leadership Team
                 </h3>
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 24 }}>
-                  Led by certified system architects, AI researchers, and cloud DevOps specialists across Nawabshah, Karachi, and Hyderabad. Discover their credentials, bios, and technical domain specializations.
+                  Led by certified system architects, AI researchers, and cloud DevOps specialists in Nawabshah and Karachi. Discover their credentials, bios, and technical domain specializations.
                 </p>
 
                 {/* Team Avatars Preview */}

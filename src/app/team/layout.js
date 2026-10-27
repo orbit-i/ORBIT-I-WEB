@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'Executive Leadership & Engineering Team | ORBIT-I Private Limited',
-  description: 'Meet the founders, software architects, AI researchers, and engineering leads driving ORBIT-I Private Limited across Nawabshah, Karachi, and Hyderabad.',
+  description: 'Meet the founders, software architects, AI researchers, and engineering leads driving ORBIT-I Private Limited across Nawabshah and Karachi.',
   keywords: [
     'ORBIT-I team',
     'software architects Nawabshah',

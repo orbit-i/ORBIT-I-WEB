@@ -1,6 +1,7 @@
 import { servicesList } from '@/data/servicesData'
+import { getBlogPosts, getCmsPages } from '@/server/utils/cmsStorage'
 
-export default function sitemap() {
+export default async function sitemap() {
   const baseUrl = 'https://orbit-i.tech'
   const now = new Date()
 
@@ -11,12 +12,12 @@ export default function sitemap() {
     { url: `${baseUrl}/about`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${baseUrl}/locations`, lastModified: now, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${baseUrl}/careers`, lastModified: now, changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${baseUrl}/blog`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
+    { url: `${baseUrl}/blog`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.85 },
     { url: `${baseUrl}/security`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${baseUrl}/verify`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${baseUrl}/verify`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/portal`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
   ]
 
@@ -27,5 +28,31 @@ export default function sitemap() {
     priority: 0.92,
   }))
 
-  return [...staticPages, ...servicePages]
+  let blogPages = []
+  try {
+    const posts = await getBlogPosts()
+    blogPages = (posts || [])
+      .filter((p) => p.status === 'published')
+      .map((p) => ({
+        url: `${baseUrl}/blog/${p.slug}`,
+        lastModified: new Date(p.updated_at || p.created_at || now),
+        changeFrequency: 'weekly',
+        priority: 0.88,
+      }))
+  } catch {}
+
+  let cmsPages = []
+  try {
+    const pages = await getCmsPages()
+    cmsPages = (pages || [])
+      .filter((p) => p.status === 'published')
+      .map((p) => ({
+        url: `${baseUrl}/p/${p.slug}`,
+        lastModified: new Date(p.updated_at || p.created_at || now),
+        changeFrequency: 'monthly',
+        priority: 0.75,
+      }))
+  } catch {}
+
+  return [...staticPages, ...servicePages, ...blogPages, ...cmsPages]
 }

@@ -17,13 +17,12 @@ export async function generateMetadata({ params }) {
   if (!service) return { title: 'Service Not Found' }
 
   return {
-    title: `${service.title} | Top Rated in Nawabshah, Karachi & Hyderabad | ORBIT-I`,
+    title: `${service.title} | Top Rated in Nawabshah & Karachi | ORBIT-I`,
     description: service.metaDesc,
     keywords: [
       ...service.keywords,
       `${service.title} Nawabshah`,
       `${service.title} Karachi`,
-      `${service.title} Hyderabad`,
       'ORBIT-I Private Limited',
       'SECP registered software company',
     ],

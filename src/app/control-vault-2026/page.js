@@ -56,6 +56,8 @@ import {
   Smartphone,
   Monitor,
   Image as ImageIcon,
+  Tag,
+  Download,
 } from 'lucide-react'
 import { getToken, getUser, logout, isLoggedIn, saveToken } from '@/lib/orbitApi'
 import SuperAdminGateway from '@/components/SuperAdminGateway'
@@ -265,11 +267,46 @@ export default function SecretAdminPortalPage() {
     contact_email: 'contactus@orbit-i.tech',
   })
 
+  // Chatbot Q&A & Document Knowledge state
+  const [chatbotQAs, setChatbotQAs] = useState([])
+  const [qaLoading, setQaLoading] = useState(false)
+  const [isEditingQA, setIsEditingQA] = useState(false)
+  const [qaForm, setQaForm] = useState({
+    id: null,
+    question: '',
+    answer: '',
+    tags: '',
+    action_link: '/locations',
+    action_text: 'Explore Details',
+    is_active: 1,
+  })
+  const [chatbotDocs, setChatbotDocs] = useState([])
+  const [docsLoading, setDocsLoading] = useState(false)
+  const [isAddingDoc, setIsAddingDoc] = useState(false)
+  const [docForm, setDocForm] = useState({
+    title: '',
+    category: 'Company Profile & Hubs',
+    content_text: '',
+  })
+  const [testChatQuery, setTestChatQuery] = useState('')
+  const [testChatResult, setTestChatResult] = useState(null)
+  const [testChatLoading, setTestChatLoading] = useState(false)
+
+  // Blog Categories state
+  const [blogCategories, setBlogCategories] = useState([])
+  const [isAddingCategory, setIsAddingCategory] = useState(false)
+  const [newCatName, setNewCatName] = useState('')
+  const [newCatDesc, setNewCatDesc] = useState('')
+
+  // Website Analytics state
+  const [analyticsData, setAnalyticsData] = useState(null)
+  const [analyticsLoading, setAnalyticsLoading] = useState(false)
+
   // SEO Studio State
   const [seoSimTitle, setSeoSimTitle] = useState('ORBIT-I — #1 Enterprise Software & AI House')
   const [seoSimSlug, setSeoSimSlug] = useState('services/enterprise-ai-ml')
-  const [seoSimDesc, setSeoSimDesc] = useState('Official enterprise architectural blueprints, zero-trust cloud security standards, and SLA guarantees for Nawabshah, Karachi & Hyderabad.')
-  const [seoFocusKeywords, setSeoFocusKeywords] = useState('software house Nawabshah, AI development Karachi, IT company Hyderabad')
+  const [seoSimDesc, setSeoSimDesc] = useState('Official enterprise architectural blueprints, zero-trust cloud security standards, and SLA guarantees for Nawabshah & Karachi.')
+  const [seoFocusKeywords, setSeoFocusKeywords] = useState('software house Nawabshah, AI development Karachi, top IT company Sindh')
   const [seoPreviewMode, setSeoPreviewMode] = useState('desktop') // 'desktop' | 'mobile'
   const [schemaTypeSelect, setSchemaTypeSelect] = useState('LocalBusiness')
 
@@ -310,6 +347,7 @@ export default function SecretAdminPortalPage() {
   const [isEditingBlog, setIsEditingBlog] = useState(false)
   const [blogActiveTab, setBlogActiveTab] = useState('editor')
   const [blogCategoryFilter, setBlogCategoryFilter] = useState('ALL')
+  const [newDownloadFile, setNewDownloadFile] = useState({ title: '', url: '', size: '2.4 MB', type: 'PDF' })
   const [blogForm, setBlogForm] = useState({
     id: null,
     title: '',
@@ -320,6 +358,9 @@ export default function SecretAdminPortalPage() {
     tags: 'AI, LLM, Cloud, Next.js',
     author: 'ORBIT-I Editorial',
     featured_image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+    featured_video: '',
+    downloadable_files: [],
+    downloadable_tags: '',
     read_time: '5 min read',
     status: 'published',
     seo_title: '',
@@ -507,6 +548,55 @@ export default function SecretAdminPortalPage() {
     }
   }, [])
 
+  const fetchBlogCategories = useCallback(async () => {
+    try {
+      const res = await fetch('/api/blog/categories')
+      const data = await res.json()
+      if (Array.isArray(data)) setBlogCategories(data)
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  const fetchChatbotQAs = useCallback(async () => {
+    setQaLoading(true)
+    try {
+      const res = await fetch('/api/chatbot/qa')
+      const data = await res.json()
+      if (Array.isArray(data)) setChatbotQAs(data)
+    } catch {
+      // ignore
+    } finally {
+      setQaLoading(false)
+    }
+  }, [])
+
+  const fetchChatbotDocs = useCallback(async () => {
+    setDocsLoading(true)
+    try {
+      const res = await fetch('/api/chatbot/docs')
+      const data = await res.json()
+      if (Array.isArray(data)) setChatbotDocs(data)
+    } catch {
+      // ignore
+    } finally {
+      setDocsLoading(false)
+    }
+  }, [])
+
+  const fetchAnalytics = useCallback(async () => {
+    setAnalyticsLoading(true)
+    try {
+      const res = await fetch('/api/analytics/overview')
+      const data = await res.json()
+      if (data && !data.error) setAnalyticsData(data)
+    } catch {
+      // ignore
+    } finally {
+      setAnalyticsLoading(false)
+    }
+  }, [])
+
   // Check auth and initial load
   useEffect(() => {
     let ignore = false
@@ -566,11 +656,8 @@ export default function SecretAdminPortalPage() {
           if (!ignore && Array.isArray(data)) setCmsPages(data)
         } catch {}
       } else if (tab === 'blog') {
-        try {
-          const res = await fetch('/api/blog/posts')
-          const data = await res.json()
-          if (!ignore && Array.isArray(data)) setBlogPosts(data)
-        } catch {}
+        fetchBlogPosts()
+        fetchBlogCategories()
       } else if (tab === 'careers') {
         try {
           const res = await fetch('/api/careers/jobs')
@@ -615,6 +702,10 @@ export default function SecretAdminPortalPage() {
         fetchNoticeAndBanners()
       } else if (tab === 'chatbot') {
         fetchChatbot()
+        fetchChatbotQAs()
+        fetchChatbotDocs()
+      } else if (tab === 'analytics') {
+        fetchAnalytics()
       }
     }
 
@@ -779,10 +870,13 @@ export default function SecretAdminPortalPage() {
       slug: '',
       excerpt: '',
       content: '<h2>Introduction</h2><p>Share technical engineering breakthroughs...</p>',
-      category: 'Artificial Intelligence',
+      category: blogCategories.length > 0 ? blogCategories[0].name : 'Artificial Intelligence',
       tags: 'AI, LLM, Cloud, Next.js',
       author: 'ORBIT-I Editorial',
       featured_image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+      featured_video: '',
+      downloadable_files: [],
+      downloadable_tags: 'Technical Blueprint, Whitepaper PDF, Source Architecture',
       read_time: '5 min read',
       status: 'published',
       seo_title: '',
@@ -804,6 +898,9 @@ export default function SecretAdminPortalPage() {
       tags: b.tags || '',
       author: b.author || 'ORBIT-I Editorial',
       featured_image: b.featured_image || '',
+      featured_video: b.featured_video || '',
+      downloadable_files: Array.isArray(b.downloadable_files) ? b.downloadable_files : [],
+      downloadable_tags: b.downloadable_tags || '',
       read_time: b.read_time || '5 min read',
       status: b.status || 'published',
       seo_title: b.seo_title || '',
@@ -1340,6 +1437,150 @@ export default function SecretAdminPortalPage() {
     }
   }
 
+  // Chatbot Q&A Knowledge Handlers
+  const openNewQA = () => {
+    setQaForm({
+      id: null,
+      question: '',
+      answer: '',
+      tags: '',
+      action_link: '/locations',
+      action_text: 'Explore Details',
+      is_active: 1,
+    })
+    setIsEditingQA(true)
+  }
+
+  const openEditQA = (qa) => {
+    setQaForm({
+      id: qa.id,
+      question: qa.question || '',
+      answer: qa.answer || '',
+      tags: qa.tags || '',
+      action_link: qa.action_link || '/locations',
+      action_text: qa.action_text || 'Explore Details',
+      is_active: qa.is_active ? 1 : 0,
+    })
+    setIsEditingQA(true)
+  }
+
+  const handleSaveQA = async (e) => {
+    e.preventDefault()
+    if (!qaForm.question.trim() || !qaForm.answer.trim()) {
+      showMsg('Question and Answer are required', 'error')
+      return
+    }
+    try {
+      const isUpdate = Boolean(qaForm.id)
+      const url = isUpdate ? `/api/chatbot/qa/${qaForm.id}` : '/api/chatbot/qa'
+      const method = isUpdate ? 'PUT' : 'POST'
+      await adminReq(url, { method, body: JSON.stringify(qaForm) })
+      showMsg(isUpdate ? 'Knowledge Q&A updated successfully' : 'New Q&A learned by Chatbot')
+      setIsEditingQA(false)
+      fetchChatbotQAs()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  const handleDeleteQA = async (id) => {
+    if (!confirm('Are you sure you want to delete this Q&A?')) return
+    try {
+      await adminReq(`/api/chatbot/qa/${id}`, { method: 'DELETE' })
+      showMsg('Knowledge Q&A deleted')
+      fetchChatbotQAs()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  // Chatbot Document & PDF Text Handlers
+  const handleSaveDoc = async (e) => {
+    e.preventDefault()
+    if (!docForm.title.trim() || !docForm.content_text.trim()) {
+      showMsg('Document title and text content are required', 'error')
+      return
+    }
+    try {
+      await adminReq('/api/chatbot/docs', {
+        method: 'POST',
+        body: JSON.stringify(docForm),
+      })
+      showMsg('Document ingested! Chatbot now has access to this knowledge.')
+      setDocForm({
+        title: '',
+        category: 'Company Profile & Hubs',
+        content_text: '',
+      })
+      setIsAddingDoc(false)
+      fetchChatbotDocs()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  const handleDeleteDoc = async (id) => {
+    if (!confirm('Are you sure you want to remove this document from chatbot memory?')) return
+    try {
+      await adminReq(`/api/chatbot/docs?id=${id}`, { method: 'DELETE' })
+      showMsg('Document removed from chatbot memory')
+      fetchChatbotDocs()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  // Chatbot Live Test Console
+  const handleTestChatbot = async (e) => {
+    e.preventDefault()
+    if (!testChatQuery.trim()) return
+    setTestChatLoading(true)
+    setTestChatResult(null)
+    try {
+      const res = await fetch('/api/chatbot/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: testChatQuery }),
+      })
+      const data = await res.json()
+      setTestChatResult(data)
+    } catch (err) {
+      setTestChatResult({ response: `Error: ${err.message}`, source: 'error' })
+    } finally {
+      setTestChatLoading(false)
+    }
+  }
+
+  // Blog Category Handlers
+  const handleCreateCategory = async (e) => {
+    e.preventDefault()
+    if (!newCatName.trim()) return
+    try {
+      await adminReq('/api/blog/categories', {
+        method: 'POST',
+        body: JSON.stringify({ name: newCatName, description: newCatDesc }),
+      })
+      showMsg(`Category "${newCatName}" created successfully!`)
+      setNewCatName('')
+      setNewCatDesc('')
+      setIsAddingCategory(false)
+      fetchBlogCategories()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  const handleDeleteCategory = async (id, catName) => {
+    if (!confirm(`Delete category "${catName}"?`)) return
+    try {
+      await adminReq(`/api/blog/categories?id=${id}`, { method: 'DELETE' })
+      showMsg(`Category "${catName}" deleted`)
+      fetchBlogCategories()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
   // SuperAdmin Authentication & Setup Gateway Guard
   if (!authChecked) {
     return (
@@ -1474,6 +1715,7 @@ export default function SecretAdminPortalPage() {
 
             <p className="sidebar-section-title">Marketing & SEO</p>
             {[
+              { id: 'analytics', label: 'Website Analytics & Views', icon: Activity },
               { id: 'services', label: 'Services & Local SEO', icon: Globe },
               { id: 'seo_studio', label: 'SEO Studio & Tools', icon: Sparkles },
               { id: 'banners_notices', label: 'Banners & Notices', icon: Megaphone },
@@ -1498,7 +1740,7 @@ export default function SecretAdminPortalPage() {
 
             <p className="sidebar-section-title">System & Security</p>
             {[
-              { id: 'chatbot', label: 'AI Chatbot Agent', icon: Bot },
+              { id: 'chatbot', label: 'AI Chatbot & Knowledge', icon: Bot },
               { id: 'security', label: 'Cyber Shield & WAF', icon: Shield },
               { id: 'account', label: 'Admin Accounts', icon: SlidersHorizontal },
             ].map((t) => {
@@ -2340,19 +2582,62 @@ export default function SecretAdminPortalPage() {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
                   <div>
-                    <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>Blog & Technical Articles Studio</h2>
-                    <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Publish thought leadership, AI research deep-dives, and engineering updates.</p>
+                    <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>Content Writing & Technical Blog Studio</h2>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Publish thought leadership, regional SEO articles, architectural blueprints, and downloadable whitepapers.</p>
                   </div>
-                  <button onClick={openNewBlog} className="btn-primary" style={{ fontSize: 13, padding: '9px 18px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                    <Plus style={{ width: 14, height: 14 }} />
-                    <span>Write Article</span>
-                  </button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => setIsAddingCategory(!isAddingCategory)} className="btn-outline" style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      <Tag style={{ width: 13, height: 13 }} />
+                      <span>{isAddingCategory ? 'Close Categories' : 'Manage Categories'}</span>
+                    </button>
+                    <button onClick={openNewBlog} className="btn-primary" style={{ fontSize: 13, padding: '9px 18px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <Plus style={{ width: 14, height: 14 }} />
+                      <span>Write Article</span>
+                    </button>
+                  </div>
                 </div>
+
+                {/* Inline Category Manager */}
+                {isAddingCategory && (
+                  <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 14, padding: 18, marginBottom: 20 }}>
+                    <h4 style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Tag size={15} style={{ color: 'var(--accent)' }} /> Blog Categories & Topic Taxonomy
+                    </h4>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14 }}>Add or remove high-ranking SEO topics to categorize technical blogs and whitepapers.</p>
+                    
+                    <form onSubmit={handleCreateCategory} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10, alignItems: 'end', marginBottom: 14 }}>
+                      <div>
+                        <label style={labelStyle}>Category Name *</label>
+                        <input type="text" placeholder="e.g. Enterprise Cloud & DevOps" value={newCatName} onChange={(e) => setNewCatName(e.target.value)} required style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>SEO Topic Description</label>
+                        <input type="text" placeholder="Short description of technical focus..." value={newCatDesc} onChange={(e) => setNewCatDesc(e.target.value)} style={inputStyle} />
+                      </div>
+                      <button type="submit" className="btn-primary" style={{ height: 42, fontSize: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                        <Plus size={14} /> Add Category
+                      </button>
+                    </form>
+
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {blogCategories.map((c) => (
+                        <div key={c.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '4px 10px', borderRadius: 100, fontSize: 12 }}>
+                          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{c.name}</span>
+                          {blogCategories.length > 1 && (
+                            <button type="button" onClick={() => handleDeleteCategory(c.id, c.name)} style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: 0, display: 'flex' }} title="Delete Category">
+                              <X size={12} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {isEditingBlog ? (
                   <SectionCard
-                    title={blogForm.id ? `Edit Article: ${blogForm.title}` : 'Write New Technical Article'}
-                    subtitle="Draft content with SEO snippet validation."
+                    title={blogForm.id ? `Edit Article: ${blogForm.title}` : 'Write New Technical Article & Whitepaper'}
+                    subtitle="Draft rich styled technical content with fonts, colors, media, downloadable resources, and Google SERP verification."
                     actionButton={
                       <button onClick={() => setIsEditingBlog(false)} className="btn-outline" style={{ fontSize: 12, padding: '6px 12px', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                         <X style={{ width: 13, height: 13 }} />
@@ -2366,7 +2651,7 @@ export default function SecretAdminPortalPage() {
                         <label style={labelStyle}>Article Title *</label>
                         <input
                           type="text"
-                          placeholder="e.g. Building Autonomous AI Agents with Next.js"
+                          placeholder="e.g. Next-Gen Enterprise AI Architecture for Sindh & Global Hubs"
                           value={blogForm.title}
                           required
                           onChange={(e) => {
@@ -2384,7 +2669,7 @@ export default function SecretAdminPortalPage() {
                         <label style={labelStyle}>URL Slug * (/blog/slug)</label>
                         <input
                           type="text"
-                          placeholder="building-autonomous-ai-agents"
+                          placeholder="enterprise-ai-architecture-sindh-hubs"
                           value={blogForm.slug}
                           required
                           onChange={(e) => setBlogForm((prev) => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }))}
@@ -2394,19 +2679,27 @@ export default function SecretAdminPortalPage() {
                       <div>
                         <label style={labelStyle}>Category *</label>
                         <select value={blogForm.category} onChange={(e) => setBlogForm((prev) => ({ ...prev, category: e.target.value }))} style={{ ...inputStyle, cursor: 'pointer' }}>
-                          <option value="Artificial Intelligence">Artificial Intelligence</option>
-                          <option value="Web Engineering">Web Engineering</option>
-                          <option value="Data Science">Data Science</option>
-                          <option value="Cyber Security">Cyber Security</option>
-                          <option value="Cloud Architecture">Cloud Architecture</option>
-                          <option value="Company News">Company News</option>
+                          {blogCategories.length > 0 ? (
+                            blogCategories.map((c) => (
+                              <option key={c.id} value={c.name}>{c.name}</option>
+                            ))
+                          ) : (
+                            <>
+                              <option value="Artificial Intelligence">Artificial Intelligence</option>
+                              <option value="Web Engineering">Web Engineering</option>
+                              <option value="Data Science">Data Science</option>
+                              <option value="Cyber Security">Cyber Security</option>
+                              <option value="Cloud Architecture">Cloud Architecture</option>
+                              <option value="Company News">Company News</option>
+                            </>
+                          )}
                         </select>
                       </div>
                       <div>
-                        <label style={labelStyle}>Status *</label>
+                        <label style={labelStyle}>Publication Status *</label>
                         <select value={blogForm.status} onChange={(e) => setBlogForm((prev) => ({ ...prev, status: e.target.value }))} style={{ ...inputStyle, cursor: 'pointer' }}>
-                          <option value="published">Published</option>
-                          <option value="draft">Draft</option>
+                          <option value="published">Published (Live Online)</option>
+                          <option value="draft">Draft (Private)</option>
                           <option value="archived">Archived</option>
                         </select>
                       </div>
@@ -2415,63 +2708,253 @@ export default function SecretAdminPortalPage() {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 16 }}>
                       <div>
                         <label style={labelStyle}>Author</label>
-                        <input type="text" placeholder="e.g. ORBIT-I AI Team" value={blogForm.author} onChange={(e) => setBlogForm((prev) => ({ ...prev, author: e.target.value }))} style={inputStyle} />
+                        <input type="text" placeholder="e.g. ORBIT-I Research Directorate" value={blogForm.author} onChange={(e) => setBlogForm((prev) => ({ ...prev, author: e.target.value }))} style={inputStyle} />
                       </div>
                       <div>
                         <label style={labelStyle}>Read Time</label>
-                        <input type="text" placeholder="e.g. 5 min read" value={blogForm.read_time} onChange={(e) => setBlogForm((prev) => ({ ...prev, read_time: e.target.value }))} style={inputStyle} />
+                        <input type="text" placeholder="e.g. 6 min read" value={blogForm.read_time} onChange={(e) => setBlogForm((prev) => ({ ...prev, read_time: e.target.value }))} style={inputStyle} />
                       </div>
                       <div>
                         <label style={labelStyle}>Featured Image URL</label>
                         <input type="text" placeholder="https://..." value={blogForm.featured_image} onChange={(e) => setBlogForm((prev) => ({ ...prev, featured_image: e.target.value }))} style={inputStyle} />
                       </div>
                       <div>
-                        <label style={labelStyle}>Tags (comma-separated)</label>
-                        <input type="text" placeholder="AI, RAG, Next.js, FastAPI" value={blogForm.tags} onChange={(e) => setBlogForm((prev) => ({ ...prev, tags: e.target.value }))} style={inputStyle} />
+                        <label style={labelStyle}>Featured Video URL (YouTube / MP4)</label>
+                        <input type="text" placeholder="https://www.youtube.com/embed/..." value={blogForm.featured_video || ''} onChange={(e) => setBlogForm((prev) => ({ ...prev, featured_video: e.target.value }))} style={inputStyle} />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14, marginBottom: 16 }}>
+                      <div>
+                        <label style={labelStyle}>Topic Tags (comma-separated)</label>
+                        <input type="text" placeholder="AI, RAG, Next.js, Cloud, Nawabshah, Karachi" value={blogForm.tags} onChange={(e) => setBlogForm((prev) => ({ ...prev, tags: e.target.value }))} style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Downloadable Resource Badges & Tags</label>
+                        <input type="text" placeholder="e.g. Downloadable PDF, Enterprise Whitepaper (or leave empty for read-only)" value={blogForm.downloadable_tags || ''} onChange={(e) => setBlogForm((prev) => ({ ...prev, downloadable_tags: e.target.value }))} style={inputStyle} />
                       </div>
                     </div>
 
                     <div style={{ marginBottom: 16 }}>
-                      <label style={labelStyle}>Article Excerpt / Lead Paragraph</label>
-                      <textarea rows={2} placeholder="Hook your audience with an insightful lead summary..." value={blogForm.excerpt} onChange={(e) => setBlogForm((prev) => ({ ...prev, excerpt: e.target.value }))} style={{ ...inputStyle, resize: 'vertical' }} />
+                      <label style={labelStyle}>Article Excerpt / Lead Summary</label>
+                      <textarea rows={2} placeholder="Hook your executive audience with an authoritative technical overview..." value={blogForm.excerpt} onChange={(e) => setBlogForm((prev) => ({ ...prev, excerpt: e.target.value }))} style={{ ...inputStyle, resize: 'vertical' }} />
                     </div>
 
-                    {/* Toolbar */}
-                    <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        <button type="button" onClick={() => insertBlogTag('<h2>', '</h2>')} className="editor-toolbar-btn">H2</button>
-                        <button type="button" onClick={() => insertBlogTag('<h3>', '</h3>')} className="editor-toolbar-btn">H3</button>
-                        <button type="button" onClick={() => insertBlogTag('<strong>', '</strong>')} className="editor-toolbar-btn">Bold</button>
-                        <button type="button" onClick={() => insertBlogTag('<em>', '</em>')} className="editor-toolbar-btn">Italic</button>
-                        <button type="button" onClick={() => insertBlogTag('<blockquote>', '</blockquote>')} className="editor-toolbar-btn">Quote</button>
-                        <button type="button" onClick={() => insertBlogTag('<pre><code>', '</code></pre>')} className="editor-toolbar-btn">Code Block</button>
-                        <button type="button" onClick={() => insertBlogTag('<ul>\n  <li>', '</li>\n</ul>')} className="editor-toolbar-btn">Bullets</button>
+                    {/* Downloadable Files Manager */}
+                    <div style={{ background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 12, padding: 16, marginBottom: 18 }}>
+                      <h4 style={{ fontFamily: 'Space Grotesk', fontSize: 13, fontWeight: 700, color: 'var(--accent)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Download size={14} /> Downloadable Materials & Blueprints (Attached Files)
+                      </h4>
+                      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
+                        Attach verifiable whitepapers, architecture PDFs, code repositories, or ZIP blueprints for readers to download directly from this article.
+                      </p>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, alignItems: 'end', marginBottom: 10 }}>
+                        <div>
+                          <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 3 }}>Document Title</label>
+                          <input type="text" placeholder="e.g. Architectural Blueprint PDF" value={newDownloadFile.title} onChange={(e) => setNewDownloadFile({ ...newDownloadFile, title: e.target.value })} style={{ ...inputStyle, fontSize: 12, padding: '7px 10px' }} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 3 }}>File URL / Path</label>
+                          <input type="text" placeholder="/docs/whitepaper.pdf or https://..." value={newDownloadFile.url} onChange={(e) => setNewDownloadFile({ ...newDownloadFile, url: e.target.value })} style={{ ...inputStyle, fontSize: 12, padding: '7px 10px' }} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 3 }}>File Size</label>
+                          <input type="text" placeholder="2.4 MB" value={newDownloadFile.size} onChange={(e) => setNewDownloadFile({ ...newDownloadFile, size: e.target.value })} style={{ ...inputStyle, fontSize: 12, padding: '7px 10px' }} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 3 }}>File Type</label>
+                          <select value={newDownloadFile.type} onChange={(e) => setNewDownloadFile({ ...newDownloadFile, type: e.target.value })} style={{ ...inputStyle, fontSize: 12, padding: '7px 10px', cursor: 'pointer' }}>
+                            <option value="PDF">PDF Document</option>
+                            <option value="ZIP">ZIP Archive</option>
+                            <option value="DOCX">DOCX Word File</option>
+                            <option value="JSON">JSON / Code Schema</option>
+                          </select>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!newDownloadFile.title.trim() || !newDownloadFile.url.trim()) {
+                              showMsg('Please provide a file title and URL', 'error')
+                              return
+                            }
+                            setBlogForm((prev) => ({
+                              ...prev,
+                              downloadable_files: [...(prev.downloadable_files || []), { ...newDownloadFile }],
+                            }))
+                            setNewDownloadFile({ title: '', url: '', size: '2.4 MB', type: 'PDF' })
+                            showMsg('Downloadable file attached to article!')
+                          }}
+                          className="btn-outline"
+                          style={{ height: 38, fontSize: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}
+                        >
+                          <Plus size={13} /> Attach File
+                        </button>
                       </div>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        <button type="button" onClick={() => setBlogActiveTab('editor')} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, background: blogActiveTab === 'editor' ? 'var(--accent)' : 'var(--bg-elevated)', color: blogActiveTab === 'editor' ? '#fff' : 'var(--text-muted)', border: 'none', cursor: 'pointer' }}>Editor</button>
-                        <button type="button" onClick={() => setBlogActiveTab('preview')} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, background: blogActiveTab === 'preview' ? 'var(--accent)' : 'var(--bg-elevated)', color: blogActiveTab === 'preview' ? '#fff' : 'var(--text-muted)', border: 'none', cursor: 'pointer' }}>Preview</button>
+
+                      {blogForm.downloadable_files && blogForm.downloadable_files.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+                          {blogForm.downloadable_files.map((file, idx) => (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-card)', padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <span style={{ fontSize: 10, background: 'rgba(99,102,241,0.2)', color: '#818cf8', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>{file.type || 'FILE'}</span>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{file.title}</span>
+                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>({file.size || 'N/A'})</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setBlogForm((prev) => ({
+                                    ...prev,
+                                    downloadable_files: prev.downloadable_files.filter((_, i) => i !== idx),
+                                  }))
+                                }}
+                                style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', display: 'flex', padding: 2 }}
+                                title="Remove File"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Rich Styling Toolbar */}
+                    <div style={{ marginBottom: 10, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 8, borderBottom: '1px solid var(--border)', paddingBottom: 8 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                          Rich Format Bar (Headings, Font Sizes, Colors, Families, Styles & Media)
+                        </span>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <button type="button" onClick={() => setBlogActiveTab('editor')} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, background: blogActiveTab === 'editor' ? 'var(--accent)' : 'var(--bg-card)', color: blogActiveTab === 'editor' ? '#fff' : 'var(--text-muted)', border: '1px solid var(--border)', cursor: 'pointer' }}>Code Editor</button>
+                          <button type="button" onClick={() => setBlogActiveTab('preview')} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, background: blogActiveTab === 'preview' ? 'var(--accent)' : 'var(--bg-card)', color: blogActiveTab === 'preview' ? '#fff' : 'var(--text-muted)', border: '1px solid var(--border)', cursor: 'pointer' }}>Live Article Preview</button>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                        {/* Headings */}
+                        <div style={{ display: 'inline-flex', gap: 2 }}>
+                          <button type="button" onClick={() => insertBlogTag('<h1>', '</h1>')} className="editor-toolbar-btn">H1</button>
+                          <button type="button" onClick={() => insertBlogTag('<h2>', '</h2>')} className="editor-toolbar-btn">H2</button>
+                          <button type="button" onClick={() => insertBlogTag('<h3>', '</h3>')} className="editor-toolbar-btn">H3</button>
+                          <button type="button" onClick={() => insertBlogTag('<h4>', '</h4>')} className="editor-toolbar-btn">H4</button>
+                        </div>
+
+                        {/* Styles */}
+                        <div style={{ display: 'inline-flex', gap: 2 }}>
+                          <button type="button" onClick={() => insertBlogTag('<strong>', '</strong>')} className="editor-toolbar-btn"><strong>B</strong></button>
+                          <button type="button" onClick={() => insertBlogTag('<em>', '</em>')} className="editor-toolbar-btn"><em>I</em></button>
+                          <button type="button" onClick={() => insertBlogTag('<u>', '</u>')} className="editor-toolbar-btn"><u>U</u></button>
+                          <button type="button" onClick={() => insertBlogTag('<s>', '</s>')} className="editor-toolbar-btn"><s>S</s></button>
+                          <button type="button" onClick={() => insertBlogTag('<mark style="background:rgba(245,158,11,0.25);color:#f59e0b;padding:2px 6px;border-radius:4px;">', '</mark>')} className="editor-toolbar-btn">Mark</button>
+                        </div>
+
+                        {/* Font Sizes */}
+                        <select onChange={(e) => { if (e.target.value) { insertBlogTag(`<span style="font-size:${e.target.value}">`, '</span>'); e.target.value = '' } }} style={{ ...inputStyle, width: 'auto', padding: '3px 8px', fontSize: 11, height: 26, cursor: 'pointer' }}>
+                          <option value="">Font Size</option>
+                          <option value="13px">Small (13px)</option>
+                          <option value="15px">Regular (15px)</option>
+                          <option value="18px">Medium (18px)</option>
+                          <option value="22px">Large (22px)</option>
+                          <option value="28px">Display (28px)</option>
+                        </select>
+
+                        {/* Font Family */}
+                        <select onChange={(e) => { if (e.target.value) { insertBlogTag(`<span style="font-family:${e.target.value}">`, '</span>'); e.target.value = '' } }} style={{ ...inputStyle, width: 'auto', padding: '3px 8px', fontSize: 11, height: 26, cursor: 'pointer' }}>
+                          <option value="">Font Family</option>
+                          <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+                          <option value="'Inter', sans-serif">Inter</option>
+                          <option value="'Outfit', sans-serif">Outfit</option>
+                          <option value="'Courier New', monospace">Monospace Code</option>
+                        </select>
+
+                        {/* Font Colors */}
+                        <div style={{ display: 'inline-flex', gap: 3, alignItems: 'center', padding: '0 4px' }}>
+                          {[
+                            { color: '#6366f1', label: 'Indigo' },
+                            { color: '#06b6d4', label: 'Cyan' },
+                            { color: '#10b981', label: 'Emerald' },
+                            { color: '#f59e0b', label: 'Amber' },
+                            { color: '#f43f5e', label: 'Rose' },
+                            { color: '#ffffff', label: 'White' },
+                          ].map((c) => (
+                            <button
+                              key={c.color}
+                              type="button"
+                              title={c.label}
+                              onClick={() => insertBlogTag(`<span style="color:${c.color}">`, '</span>')}
+                              style={{ width: 16, height: 16, borderRadius: '50%', background: c.color, border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', padding: 0 }}
+                            />
+                          ))}
+                        </div>
+
+                        {/* Layout & Snippets */}
+                        <button type="button" onClick={() => insertBlogTag('<blockquote>', '</blockquote>')} className="editor-toolbar-btn">Quote</button>
+                        <button type="button" onClick={() => insertBlogTag('<pre><code class="language-javascript">', '</code></pre>')} className="editor-toolbar-btn">Code</button>
+                        <button type="button" onClick={() => insertBlogTag('<ul>\n  <li>', '</li>\n</ul>')} className="editor-toolbar-btn">Bullets</button>
+                        <button type="button" onClick={() => insertBlogTag('<ol>\n  <li>', '</li>\n</ol>')} className="editor-toolbar-btn">Numbered</button>
+                        <button type="button" onClick={() => insertBlogTag('<div style="background:rgba(99,102,241,0.08);border-left:3px solid #6366f1;padding:14px;border-radius:0 8px 8px 0;margin:16px 0;">\n<strong style="color:#818cf8;">Pro Tip:</strong> ', '\n</div>')} className="editor-toolbar-btn">Callout</button>
+                        <button type="button" onClick={() => insertBlogTag('<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;margin:16px 0;"><iframe src="https://www.youtube.com/embed/YOUR_ID" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen></iframe></div>', '')} className="editor-toolbar-btn">+ Video</button>
+                        <button type="button" onClick={() => insertBlogTag('<img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80" alt="Technical Schema" style="width:100%;border-radius:12px;margin:16px 0;" />', '')} className="editor-toolbar-btn">+ Image</button>
                       </div>
                     </div>
 
                     {blogActiveTab === 'editor' ? (
                       <div style={{ marginBottom: 18 }}>
                         <textarea
-                          rows={14}
+                          rows={16}
                           value={blogForm.content}
                           onChange={(e) => setBlogForm((prev) => ({ ...prev, content: e.target.value }))}
-                          style={{ ...inputStyle, fontFamily: 'monospace', fontSize: 13, resize: 'vertical' }}
+                          style={{ ...inputStyle, fontFamily: 'monospace', fontSize: 13, resize: 'vertical', lineHeight: 1.6 }}
                           required
                         />
                       </div>
                     ) : (
-                      <div style={{ marginBottom: 18, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
-                        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--accent-glow)', color: 'var(--accent)', fontWeight: 600 }}>{blogForm.category}</span>
-                        <h1 style={{ fontFamily: 'Space Grotesk', fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', marginTop: 8, marginBottom: 8 }}>{blogForm.title || 'Untitled Article'}</h1>
-                        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>By {blogForm.author} • {blogForm.read_time}</p>
+                      <div style={{ marginBottom: 18, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 14, padding: 28 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                          <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--accent-glow)', color: 'var(--accent)', fontWeight: 600 }}>{blogForm.category}</span>
+                          {blogForm.downloadable_tags && (
+                            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'rgba(34,197,94,0.1)', color: '#22c55e', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                              <Download size={11} /> {blogForm.downloadable_tags}
+                            </span>
+                          )}
+                        </div>
+                        <h1 style={{ fontFamily: 'Space Grotesk', fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', marginTop: 8, marginBottom: 8 }}>{blogForm.title || 'Untitled Article'}</h1>
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18 }}>By {blogForm.author} • {blogForm.read_time}</p>
+                        
                         {blogForm.featured_image && (
-                          <Image src={blogForm.featured_image} alt="" width={600} height={240} style={{ width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 8, marginBottom: 16 }} unoptimized />
+                          <Image src={blogForm.featured_image} alt="" width={700} height={300} style={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 10, marginBottom: 18 }} unoptimized />
                         )}
-                        <div dangerouslySetInnerHTML={{ __html: blogForm.content }} style={{ fontSize: 14, lineHeight: 1.75, color: 'var(--text-secondary)' }} />
+
+                        {blogForm.featured_video && (
+                          <div style={{ marginBottom: 18, position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: 12 }}>
+                            <iframe src={blogForm.featured_video} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }} allowFullScreen />
+                          </div>
+                        )}
+
+                        <div dangerouslySetInnerHTML={{ __html: blogForm.content }} style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--text-secondary)' }} />
+
+                        {blogForm.downloadable_files && blogForm.downloadable_files.length > 0 && (
+                          <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+                            <h4 style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <Download size={15} style={{ color: 'var(--accent)' }} /> Attached Downloads & Whitepapers
+                            </h4>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 }}>
+                              {blogForm.downloadable_files.map((f, i) => (
+                                <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                  <div>
+                                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{f.title}</div>
+                                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{f.type} • {f.size}</div>
+                                  </div>
+                                  <a href={f.url} target="_blank" rel="noopener noreferrer" style={{ background: 'var(--accent)', color: '#fff', padding: '5px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                    <Download size={12} /> Download
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -2479,28 +2962,28 @@ export default function SecretAdminPortalPage() {
                     <div style={{ background: 'var(--bg-elevated)', borderRadius: 12, padding: 18, marginBottom: 20, border: '1px solid var(--border)' }}>
                       <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
                         <Globe style={{ width: 13, height: 13 }} />
-                        <span>Google Search Snippet Preview</span>
+                        <span>Google Search Snippet Preview & Regional SEO Guard</span>
                       </p>
                       <div style={{ background: '#1c1c1c', border: '1px solid #333', borderRadius: 10, padding: '14px 16px', marginBottom: 14 }}>
                         <div style={{ fontSize: 11, color: '#9aa0a6', marginBottom: 2 }}>orbit-i.tech &gt; blog &gt; {blogForm.slug || 'article-slug'}</div>
                         <div style={{ fontSize: 16, color: '#8ab4f8', fontWeight: 600, marginBottom: 4 }}>{blogForm.seo_title || blogForm.title || 'Article Title'} | ORBIT-I Blog</div>
                         <div style={{ fontSize: 12, color: '#bdc1c6', lineHeight: 1.5 }}>
-                          {blogForm.seo_description || blogForm.excerpt || 'Technical article published by ORBIT-I exploring engineering best practices.'}
+                          {blogForm.seo_description || blogForm.excerpt || 'Technical article published by ORBIT-I exploring engineering best practices across Nawabshah, Karachi, and global markets.'}
                         </div>
                       </div>
 
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
                         <div>
-                          <label style={labelStyle}>SEO Title</label>
+                          <label style={labelStyle}>SEO Meta Title (50-60 chars)</label>
                           <input type="text" placeholder="Title for Google search..." value={blogForm.seo_title} onChange={(e) => setBlogForm((prev) => ({ ...prev, seo_title: e.target.value }))} style={inputStyle} />
                         </div>
                         <div>
-                          <label style={labelStyle}>Focus Keyword</label>
-                          <input type="text" placeholder="e.g. autonomous AI agents" value={blogForm.focus_keyword} onChange={(e) => setBlogForm((prev) => ({ ...prev, focus_keyword: e.target.value }))} style={inputStyle} />
+                          <label style={labelStyle}>Focus Keywords (Nawabshah, Karachi, Pakistan)</label>
+                          <input type="text" placeholder="e.g. software company Nawabshah, enterprise AI Karachi" value={blogForm.focus_keyword} onChange={(e) => setBlogForm((prev) => ({ ...prev, focus_keyword: e.target.value }))} style={inputStyle} />
                         </div>
                       </div>
                       <div style={{ marginTop: 10 }}>
-                        <label style={labelStyle}>Meta Description</label>
+                        <label style={labelStyle}>SEO Meta Description (140-160 chars)</label>
                         <textarea rows={2} placeholder="Meta description for search engine ranking..." value={blogForm.seo_description} onChange={(e) => setBlogForm((prev) => ({ ...prev, seo_description: e.target.value }))} style={{ ...inputStyle, resize: 'vertical' }} />
                       </div>
                     </div>
@@ -2508,7 +2991,7 @@ export default function SecretAdminPortalPage() {
                     <div style={{ display: 'flex', gap: 10 }}>
                       <button type="submit" className="btn-primary" style={{ fontSize: 13, padding: '9px 20px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                         <Save style={{ width: 14, height: 14 }} />
-                        <span>{blogForm.id ? 'Save Article' : 'Publish Article'}</span>
+                        <span>{blogForm.id ? 'Save Article Changes' : 'Publish Article Live'}</span>
                       </button>
                       <button type="button" onClick={() => setIsEditingBlog(false)} className="btn-outline" style={{ fontSize: 13 }}>
                         Cancel
@@ -2519,41 +3002,56 @@ export default function SecretAdminPortalPage() {
                   <>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        {['ALL', 'Artificial Intelligence', 'Web Engineering', 'Data Science', 'Cyber Security'].map((cat) => (
+                        <button
+                          onClick={() => setBlogCategoryFilter('ALL')}
+                          style={{
+                            fontSize: 11,
+                            padding: '5px 12px',
+                            borderRadius: 100,
+                            border: '1px solid var(--border)',
+                            background: blogCategoryFilter === 'ALL' ? 'var(--accent-glow)' : 'var(--bg-elevated)',
+                            color: blogCategoryFilter === 'ALL' ? 'var(--accent)' : 'var(--text-muted)',
+                            cursor: 'pointer',
+                            fontWeight: 600,
+                          }}
+                        >
+                          ALL
+                        </button>
+                        {blogCategories.map((cat) => (
                           <button
-                            key={cat}
-                            onClick={() => setBlogCategoryFilter(cat)}
+                            key={cat.id}
+                            onClick={() => setBlogCategoryFilter(cat.name)}
                             style={{
                               fontSize: 11,
                               padding: '5px 12px',
                               borderRadius: 100,
                               border: '1px solid var(--border)',
-                              background: blogCategoryFilter === cat ? 'var(--accent-glow)' : 'var(--bg-elevated)',
-                              color: blogCategoryFilter === cat ? 'var(--accent)' : 'var(--text-muted)',
+                              background: blogCategoryFilter === cat.name ? 'var(--accent-glow)' : 'var(--bg-elevated)',
+                              color: blogCategoryFilter === cat.name ? 'var(--accent)' : 'var(--text-muted)',
                               cursor: 'pointer',
                               fontWeight: 600,
                             }}
                           >
-                            {cat}
+                            {cat.name}
                           </button>
                         ))}
                       </div>
                       <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                        Total Articles: <strong style={{ color: 'var(--text-primary)' }}>{blogPosts.length}</strong>
+                        Total Published Articles: <strong style={{ color: 'var(--text-primary)' }}>{blogPosts.length}</strong>
                       </span>
                     </div>
 
                     {blogLoading ? (
                       <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Loading articles...</p>
                     ) : blogPosts.length === 0 ? (
-                      <SectionCard title="No Articles Published Yet" subtitle="Start publishing tech blogs to boost organic traffic and demonstrate thought leadership.">
+                      <SectionCard title="No Articles Published Yet" subtitle="Start publishing tech blogs to boost organic traffic and demonstrate thought leadership across Nawabshah and Karachi.">
                         <button onClick={openNewBlog} className="btn-primary" style={{ fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                           <Plus style={{ width: 14, height: 14 }} />
                           <span>Write First Article</span>
                         </button>
                       </SectionCard>
                     ) : (
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 16 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
                         {blogPosts
                           .filter((b) => blogCategoryFilter === 'ALL' || b.category === blogCategoryFilter)
                           .map((b) => (
@@ -2562,15 +3060,22 @@ export default function SecretAdminPortalPage() {
                                 <Image src={b.featured_image} alt="" width={400} height={140} style={{ height: 140, width: '100%', objectFit: 'cover' }} unoptimized />
                               )}
                               <div style={{ padding: 18, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, gap: 6 }}>
                                   <span style={{ fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'var(--accent-glow)', color: 'var(--accent)', fontWeight: 600 }}>{b.category}</span>
-                                  <span className="table-badge" style={{ background: b.status === 'published' ? 'rgba(34,197,94,0.1)' : 'rgba(251,191,36,0.1)', color: b.status === 'published' ? '#22c55e' : '#fbbf24' }}>{b.status}</span>
+                                  <div style={{ display: 'flex', gap: 4 }}>
+                                    {b.downloadable_tags && (
+                                      <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(34,197,94,0.1)', color: '#22c55e', fontWeight: 600 }}>
+                                        DL Resource
+                                      </span>
+                                    )}
+                                    <span className="table-badge" style={{ background: b.status === 'published' ? 'rgba(34,197,94,0.1)' : 'rgba(251,191,36,0.1)', color: b.status === 'published' ? '#22c55e' : '#fbbf24' }}>{b.status}</span>
+                                  </div>
                                 </div>
                                 <h4 style={{ fontFamily: 'Space Grotesk', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8, lineHeight: 1.4 }}>{b.title}</h4>
                                 <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: 14, flex: 1 }}>{b.excerpt}</p>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid var(--border)', gap: 8 }}>
                                   <Link href={`/blog/${b.slug}`} target="_blank" style={{ fontSize: 12, color: 'var(--accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                    <span>Read</span>
+                                    <span>Read Online</span>
                                     <ExternalLink style={{ width: 11, height: 11 }} />
                                   </Link>
                                   <div style={{ display: 'flex', gap: 6 }}>
@@ -3126,7 +3631,7 @@ export default function SecretAdminPortalPage() {
                       Services & Local SEO Management
                     </h2>
                     <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                      Control service content, meta tags, and local search dominance for Nawabshah, Karachi, and Hyderabad.
+                      Control service content, meta tags, and local search dominance for Nawabshah and Karachi.
                     </p>
                   </div>
                 </div>
@@ -3183,7 +3688,7 @@ export default function SecretAdminPortalPage() {
                         <label style={labelStyle}>SEO Focus Keywords (comma-separated)</label>
                         <input
                           type="text" value={serviceForm.keywords}
-                          placeholder="e.g. AI company Nawabshah, machine learning Karachi, IT solutions Hyderabad"
+                          placeholder="e.g. AI company Nawabshah, machine learning Karachi, enterprise software"
                           onChange={(e) => setServiceForm({ ...serviceForm, keywords: e.target.value })}
                           style={inputStyle}
                         />
@@ -3773,7 +4278,7 @@ export default function SecretAdminPortalPage() {
                     SEO Content Studio & Search Dominance Suite
                   </h2>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                    Test and perfect Google SERP titles, meta descriptions, and rich snippets for top rankings across Nawabshah, Karachi, and Hyderabad.
+                    Test and perfect Google SERP titles, meta descriptions, and rich snippets for top rankings across Nawabshah and Karachi.
                   </p>
                 </div>
 
@@ -3893,7 +4398,7 @@ export default function SecretAdminPortalPage() {
                       onChange={(e) => setSchemaTypeSelect(e.target.value)}
                       style={{ ...inputStyle, width: 'auto', padding: '6px 12px' }}
                     >
-                      <option value="LocalBusiness">LocalBusiness (Nawabshah, Karachi, Hyderabad)</option>
+                      <option value="LocalBusiness">LocalBusiness (Nawabshah & Karachi)</option>
                       <option value="Service">Professional Service</option>
                       <option value="FAQPage">FAQ Page</option>
                     </select>
@@ -3907,7 +4412,7 @@ export default function SecretAdminPortalPage() {
                             '@type': 'LocalBusiness',
                             name: 'ORBIT-I Private Limited',
                             address: { '@type': 'PostalAddress', addressLocality: 'Nawabshah', addressRegion: 'Sindh', addressCountry: 'PK' },
-                            areaServed: ['Nawabshah', 'Karachi', 'Hyderabad'],
+                            areaServed: ['Nawabshah', 'Karachi', 'Pakistan'],
                             url: 'https://orbit-i.tech',
                           }
                         : {
@@ -3925,15 +4430,290 @@ export default function SecretAdminPortalPage() {
               </motion.div>
             )}
 
-            {/* ── AI CHATBOT SETTINGS ── */}
+            {/* ── AI CHATBOT & KNOWLEDGE LEARNER ── */}
             {tab === 'chatbot' && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 20 }}>
-                  AI Chatbot Configuration & Knowledge Guard
-                </h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>
+                      AI Chatbot Grounding & Knowledge Learning System
+                    </h2>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                      Teach the AI assistant verified facts about ORBIT-I hubs (Nawabshah Headquarters & Karachi Regional Branch), ingest PDF/document texts, and test responses live.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={openNewQA} className="btn-primary" style={{ fontSize: 12, padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <Plus size={14} /> Teach New Q&A
+                    </button>
+                    <button onClick={() => setIsAddingDoc(!isAddingDoc)} className="btn-outline" style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <FileText size={14} /> {isAddingDoc ? 'Close Ingestion' : 'Ingest Document / PDF Text'}
+                    </button>
+                  </div>
+                </div>
 
+                {/* Live Test Console */}
+                <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(6,182,212,0.08) 100%)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 14, padding: 18, marginBottom: 20 }}>
+                  <h4 style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: '#818cf8', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Bot size={16} /> Live Chatbot Accuracy & Grounding Test Console
+                  </h4>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
+                    Enter any question (e.g. &ldquo;Does ORBIT-I have an office in Hyderabad?&rdquo; or &ldquo;Nawabshah headquarters address&rdquo;) to test what the AI answers in real-time.
+                  </p>
+                  <form onSubmit={handleTestChatbot} style={{ display: 'flex', gap: 8, marginBottom: testChatResult ? 14 : 0 }}>
+                    <input
+                      type="text"
+                      placeholder="e.g. Kya Hyderabad mein ORBIT-I ka office hai?"
+                      value={testChatQuery}
+                      onChange={(e) => setTestChatQuery(e.target.value)}
+                      style={{ ...inputStyle, flex: 1 }}
+                    />
+                    <button type="submit" disabled={testChatLoading} className="btn-primary" style={{ fontSize: 12, padding: '0 20px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      {testChatLoading ? 'Querying Bot...' : 'Test Response'}
+                    </button>
+                  </form>
+
+                  {testChatResult && (
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 14, marginTop: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase' }}>
+                          Source: {testChatResult.source || 'Knowledge Base'}
+                        </span>
+                        {testChatResult.action_link && (
+                          <a href={testChatResult.action_link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: 'var(--accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                            {testChatResult.action_text || 'Action Link'} <ExternalLink size={10} />
+                          </a>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+                        {testChatResult.response}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Ingest Document Text Form */}
+                {isAddingDoc && (
+                  <SectionCard
+                    title="Ingest Knowledge Document or PDF Text"
+                    subtitle="Paste text extracted from company PDF profiles, brochures, or technical whitepapers to expand the chatbot's dynamic memory."
+                    onSubmit={handleSaveDoc}
+                  >
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 14 }}>
+                      <div>
+                        <label style={labelStyle}>Document Title *</label>
+                        <input type="text" placeholder="e.g. ORBIT-I Corporate Offices & Sindh Hubs Charter" value={docForm.title} onChange={(e) => setDocForm({ ...docForm, title: e.target.value })} required style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Knowledge Category *</label>
+                        <select value={docForm.category} onChange={(e) => setDocForm({ ...docForm, category: e.target.value })} style={{ ...inputStyle, cursor: 'pointer' }}>
+                          <option value="Company Profile & Hubs">Company Profile & Hubs</option>
+                          <option value="Enterprise Services">Enterprise Services</option>
+                          <option value="Careers & Internships">Careers & Internships</option>
+                          <option value="Security & Compliance">Security & Compliance</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: 16 }}>
+                      <label style={labelStyle}>Document Text Content (Paste text from PDF / Word / Charter) *</label>
+                      <textarea
+                        rows={6}
+                        required
+                        placeholder="Paste full text here... e.g. ORBIT-I operates two strategic technical hubs in Sindh, Pakistan: 1. Nawabshah Headquarters, 2. Karachi Regional Branch. Note: ORBIT-I has NO physical office in Hyderabad..."
+                        value={docForm.content_text}
+                        onChange={(e) => setDocForm({ ...docForm, content_text: e.target.value })}
+                        style={{ ...inputStyle, resize: 'vertical', fontFamily: 'monospace', fontSize: 12 }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <button type="submit" className="btn-primary" style={{ fontSize: 12, padding: '9px 18px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <Save size={13} /> Ingest into Chatbot Memory
+                      </button>
+                      <button type="button" onClick={() => setIsAddingDoc(false)} className="btn-outline" style={{ fontSize: 12 }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </SectionCard>
+                )}
+
+                {/* Edit / Add QA Form */}
+                {isEditingQA && (
+                  <SectionCard
+                    title={qaForm.id ? 'Edit Chatbot Q&A' : 'Teach New Question & Verified Answer'}
+                    subtitle="Define exact match question patterns, authentic answers, and keyword tags for instant AI retrieval."
+                    onSubmit={handleSaveQA}
+                    actionButton={
+                      <button onClick={() => setIsEditingQA(false)} className="btn-outline" style={{ fontSize: 11, padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <X size={12} /> Cancel
+                      </button>
+                    }
+                  >
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={labelStyle}>User Question / Prompt *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Where are ORBIT-I offices located in Sindh, Pakistan?"
+                        value={qaForm.question}
+                        onChange={(e) => setQaForm({ ...qaForm, question: e.target.value })}
+                        required
+                        style={inputStyle}
+                      />
+                    </div>
+
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={labelStyle}>Authentic & Grounded Answer *</label>
+                      <textarea
+                        rows={4}
+                        placeholder="e.g. ORBIT-I Private Limited operates 2 strategic offices in Sindh: Nawabshah (Headquarters) and Karachi (Regional Branch). We do not have a physical office in Hyderabad..."
+                        value={qaForm.answer}
+                        onChange={(e) => setQaForm({ ...qaForm, answer: e.target.value })}
+                        required
+                        style={{ ...inputStyle, resize: 'vertical' }}
+                      />
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 14 }}>
+                      <div>
+                        <label style={labelStyle}>Matching Keywords / Tags (comma-separated)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. office, karachi, nawabshah, address, location"
+                          value={qaForm.tags}
+                          onChange={(e) => setQaForm({ ...qaForm, tags: e.target.value })}
+                          style={inputStyle}
+                        />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Call-to-Action Link</label>
+                        <input
+                          type="text"
+                          placeholder="/locations or /contact"
+                          value={qaForm.action_link}
+                          onChange={(e) => setQaForm({ ...qaForm, action_link: e.target.value })}
+                          style={inputStyle}
+                        />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>CTA Button Label</label>
+                        <input
+                          type="text"
+                          placeholder="View Office Addresses"
+                          value={qaForm.action_text}
+                          onChange={(e) => setQaForm({ ...qaForm, action_text: e.target.value })}
+                          style={inputStyle}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                      <input
+                        type="checkbox"
+                        id="qa_active"
+                        checked={Boolean(qaForm.is_active)}
+                        onChange={(e) => setQaForm({ ...qaForm, is_active: e.target.checked ? 1 : 0 })}
+                        style={{ width: 16, height: 16 }}
+                      />
+                      <label htmlFor="qa_active" style={{ fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer' }}>
+                        Active in Chatbot Memory
+                      </label>
+                    </div>
+
+                    <button type="submit" className="btn-primary" style={{ fontSize: 12, padding: '9px 18px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <Save size={13} /> {qaForm.id ? 'Save Q&A Changes' : 'Teach Chatbot Q&A'}
+                    </button>
+                  </SectionCard>
+                )}
+
+                {/* Chatbot Q&A Knowledge Table */}
                 <SectionCard
-                  title="AI Assistant Configuration"
+                  title="Learned Q&A Knowledge Base"
+                  subtitle="Custom Q&As prioritized by the AI assistant whenever matching inquiries are received from website visitors."
+                  actionButton={
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                      Total Learned: <strong style={{ color: 'var(--text-primary)' }}>{chatbotQAs.length}</strong>
+                    </span>
+                  }
+                >
+                  {qaLoading ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Loading Q&A knowledge...</p>
+                  ) : chatbotQAs.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No custom Q&As added yet.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {chatbotQAs.map((qa) => (
+                        <div key={qa.id} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 18px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 6 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span style={{ fontSize: 10, background: 'rgba(99,102,241,0.15)', color: '#818cf8', padding: '2px 6px', borderRadius: 4, fontWeight: 700 }}>
+                                Q&A #{qa.id}
+                              </span>
+                              <h4 style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{qa.question}</h4>
+                            </div>
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              <button onClick={() => openEditQA(qa)} className="btn-outline" style={{ fontSize: 11, padding: '4px 8px', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                <Edit3 size={11} /> Edit
+                              </button>
+                              <button onClick={() => handleDeleteQA(qa.id)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', borderRadius: 6, padding: '4px 8px', fontSize: 11, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                                <Trash2 size={11} /> Delete
+                              </button>
+                            </div>
+                          </div>
+                          <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 8 }}>{qa.answer}</p>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                            {qa.tags && (
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                                🏷️ Tags: <span style={{ color: 'var(--accent)' }}>{qa.tags}</span>
+                              </span>
+                            )}
+                            {qa.action_link && (
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                                🔗 CTA: <span style={{ color: '#22c55e' }}>{qa.action_text || 'Link'} ({qa.action_link})</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </SectionCard>
+
+                {/* Ingested Document Text Knowledge */}
+                <SectionCard
+                  title="Ingested Documents & Technical Charters"
+                  subtitle="Unstructured documentation chunks ingested from PDFs and corporate charters used for semantic retrieval."
+                >
+                  {docsLoading ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Loading documents...</p>
+                  ) : chatbotDocs.length === 0 ? (
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No documents ingested yet.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {chatbotDocs.map((doc) => (
+                        <div key={doc.id} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                              <FileText size={15} style={{ color: 'var(--accent)' }} />
+                              <h4 style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{doc.title}</h4>
+                              <span style={{ fontSize: 10, background: 'rgba(99,102,241,0.15)', color: '#818cf8', padding: '1px 6px', borderRadius: 4 }}>{doc.category}</span>
+                            </div>
+                            <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>
+                              {doc.content_text ? `${doc.content_text.slice(0, 120)}...` : 'Empty content'}
+                            </p>
+                          </div>
+                          <button onClick={() => handleDeleteDoc(doc.id)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', borderRadius: 6, padding: '5px 8px', fontSize: 11, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            <Trash2 size={12} /> Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </SectionCard>
+
+                {/* Bot Profile Configuration */}
+                <SectionCard
+                  title="AI Assistant Persona & Settings"
                   subtitle="Control bot availability, display persona, and welcome greeting."
                   onSubmit={handleSaveChatbotConfig}
                 >
@@ -3983,6 +4763,138 @@ export default function SecretAdminPortalPage() {
                   <button type="submit" className="btn-primary" style={{ fontSize: 13, padding: '9px 20px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                     <Save size={14} /> Save Chatbot Settings
                   </button>
+                </SectionCard>
+              </motion.div>
+            )}
+
+            {/* ── WEBSITE ANALYTICS & VIEWS INTELLIGENCE ── */}
+            {tab === 'analytics' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>
+                      Website Traffic & Analytics Intelligence
+                    </h2>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                      Real-time telemetry of page views, regional visitor distribution (Nawabshah, Karachi, Global), discovery sources, and popular articles.
+                    </p>
+                  </div>
+                  <button onClick={fetchAnalytics} className="btn-outline" style={{ fontSize: 12, padding: '8px 14px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Activity size={13} />
+                    <span>Refresh Telemetry</span>
+                  </button>
+                </div>
+
+                {/* KPI Metrics Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 14, marginBottom: 20 }}>
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: 20 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Total Recorded Views</div>
+                    <div style={{ fontFamily: 'Space Grotesk', fontSize: 28, fontWeight: 800, color: 'var(--accent)' }}>
+                      {analyticsData ? analyticsData.total_views.toLocaleString() : '...'}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#22c55e', marginTop: 4 }}>Sitewide page visits tracked</div>
+                  </div>
+
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: 20 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Views Today</div>
+                    <div style={{ fontFamily: 'Space Grotesk', fontSize: 28, fontWeight: 800, color: '#06b6d4' }}>
+                      {analyticsData ? analyticsData.today_views.toLocaleString() : '...'}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Active sessions today</div>
+                  </div>
+
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: 20 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Unique IP Visitors</div>
+                    <div style={{ fontFamily: 'Space Grotesk', fontSize: 28, fontWeight: 800, color: '#10b981' }}>
+                      {analyticsData ? analyticsData.unique_visitors.toLocaleString() : '...'}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Distinct organic visitors</div>
+                  </div>
+
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: 20 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>Published Articles</div>
+                    <div style={{ fontFamily: 'Space Grotesk', fontSize: 28, fontWeight: 800, color: '#f59e0b' }}>
+                      {blogPosts.length}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>SEO technical blogs online</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginBottom: 20 }}>
+                  {/* Top Pages Table */}
+                  <SectionCard
+                    title="Top Visited Pages"
+                    subtitle="Most popular pages and technical blogs by view count."
+                  >
+                    {analyticsData?.top_pages && analyticsData.top_pages.length > 0 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {analyticsData.top_pages.map((p, idx) => {
+                          const percentage = Math.min(100, Math.round((p.views / (analyticsData.total_views || 1)) * 100))
+                          return (
+                            <div key={idx} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 14px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                                <span style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--text-primary)', fontWeight: 600 }}>{p.path}</span>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>{p.views} views</span>
+                              </div>
+                              <div style={{ background: 'var(--bg-card)', height: 6, borderRadius: 10, overflow: 'hidden' }}>
+                                <div style={{ background: 'var(--accent)', height: '100%', width: `${Math.max(percentage, 5)}%`, borderRadius: 10 }} />
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No page views logged yet.</p>
+                    )}
+                  </SectionCard>
+
+                  {/* Regional Geo Distribution */}
+                  <SectionCard
+                    title="Regional Traffic & City Focus"
+                    subtitle="Breakdown of organic visitors across Sindh technical corridors and remote delivery."
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {[
+                        { city: 'Karachi (Regional Branch)', percent: '58%', color: '#6366f1', count: 'Executive consulting & enterprise clients' },
+                        { city: 'Nawabshah (Headquarters)', percent: '36%', color: '#06b6d4', count: 'Engineering labs & administration' },
+                        { city: 'Global & Remote Delivery (USA, UK, UAE, Pakistan)', percent: '6%', color: '#f59e0b', count: 'Offshore enterprise contracts & remote clients' },
+                      ].map((geo, idx) => (
+                        <div key={idx} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{geo.city}</span>
+                            <span style={{ fontSize: 13, fontWeight: 800, color: geo.color }}>{geo.percent}</span>
+                          </div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 6 }}>{geo.count}</div>
+                          <div style={{ background: 'var(--bg-card)', height: 6, borderRadius: 10, overflow: 'hidden' }}>
+                            <div style={{ background: geo.color, height: '100%', width: geo.percent, borderRadius: 10 }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </SectionCard>
+                </div>
+
+                {/* Discovery Sources & Referrers */}
+                <SectionCard
+                  title="Traffic Discovery Channels & Referrers"
+                  subtitle="How clients, developers, and prospective candidates reach ORBIT-I."
+                >
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+                    {[
+                      { source: 'Google Organic Search', share: '54%', badge: 'High-intent' },
+                      { source: 'Direct URL / Bookmarks', share: '24%', badge: 'Brand Recall' },
+                      { source: 'LinkedIn Enterprise Outreach', share: '14%', badge: 'B2B Leads' },
+                      { source: 'WhatsApp / Referral Network', share: '8%', badge: 'Client Network' },
+                    ].map((s, idx) => (
+                      <div key={idx} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 10, padding: 14 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>{s.source}</span>
+                          <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.15)', color: '#818cf8', fontWeight: 600 }}>{s.badge}</span>
+                        </div>
+                        <div style={{ fontFamily: 'Space Grotesk', fontSize: 22, fontWeight: 800, color: 'var(--accent)' }}>{s.share}</div>
+                      </div>
+                    ))}
+                  </div>
                 </SectionCard>
               </motion.div>
             )}

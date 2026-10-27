@@ -6,6 +6,15 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageSquare, X, Send, Sparkles, ExternalLink, RefreshCw, ShieldCheck } from 'lucide-react'
 
+function renderFormattedText(text) {
+  if (!text) return null
+  // Replace links [title](url)
+  const withLinks = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color:var(--accent);text-decoration:underline;font-weight:600;">$1</a>')
+  // Replace bold **text**
+  const withBold = withLinks.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  return <div dangerouslySetInnerHTML={{ __html: withBold }} style={{ margin: 0, whiteSpace: 'pre-line' }} />
+}
+
 export default function AIChatbot() {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState([
@@ -94,7 +103,7 @@ export default function AIChatbot() {
     { label: '🔍 Verify Certificate', query: 'Internship Certificate verify kaise karein?' },
     { label: '💼 Open Internships', query: 'Kya internships available hain aur kaise apply karein?' },
     { label: '⚡ Enterprise AI Services', query: 'ORBIT-I konsi enterprise services aur tech stack offer karta hai?' },
-    { label: '📍 Offices & Locations', query: 'Nawabshah, Karachi aur Hyderabad office kahan hain?' },
+    { label: '📍 Offices & Locations', query: 'Nawabshah aur Karachi office kahan hain?' },
   ]
 
   return (
@@ -313,7 +322,7 @@ export default function AIChatbot() {
               {messages.map((m) => (
                 <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: m.sender === 'user' ? 'flex-end' : 'flex-start' }}>
                   <div className={`chat-bubble ${m.sender === 'user' ? 'chat-bubble-user' : 'chat-bubble-bot'}`}>
-                    <p style={{ margin: 0, whiteSpace: 'pre-line' }}>{m.text}</p>
+                    {renderFormattedText(m.text)}
                     {m.actionLink && (
                       <div style={{ marginTop: 8 }}>
                         <Link

@@ -65,7 +65,7 @@ export default function ContactPage() {
               Contact <span className="gradient-text-blue">ORBIT-I Private Limited</span>
             </h1>
             <p style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-              Connect with our corporate headquarters in <strong>Nawabshah</strong> or branch office in <strong>Karachi</strong>. We respond to all commercial and technical inquiries within 24 hours.
+              Connect with our corporate headquarters in <strong>Nawabshah</strong> or regional branch in <strong>Karachi</strong>. We deliver enterprise software across Pakistan and globally (USA, UK, UAE, EU).
             </p>
           </div>
         </section>
@@ -77,34 +77,34 @@ export default function ContactPage() {
               {/* Left Column: Office Details */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {/* Nawabshah HQ */}
-                <TiltCard style={{ background: 'var(--bg-card)', border: '1px solid var(--border-hover)', borderRadius: 20, padding: 28 }}>
+                <TiltCard style={{ background: 'var(--bg-card)', border: '1px solid var(--border-hover)', borderRadius: 20, padding: 24 }}>
                   <span style={{ fontSize: 10, padding: '4px 10px', background: 'var(--accent-glow)', border: '1px solid var(--border-hover)', borderRadius: 100, color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase' }}>
                     Corporate Headquarters
                   </span>
-                  <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginTop: 12, marginBottom: 6 }}>
-                    Nawabshah Office
+                  <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 19, fontWeight: 700, color: 'var(--text-primary)', marginTop: 10, marginBottom: 6 }}>
+                    Nawabshah Headquarters
                   </h2>
-                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <MapPin size={16} color="var(--accent)" style={{ flexShrink: 0 }} /> Nawabshah, Sindh, Pakistan
                   </p>
-                  <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                    Engineering Labs, Research, Core Server Operations & Administration.
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    Core engineering laboratories, AI research centers, cloud cluster operations, and corporate administration.
                   </p>
                 </TiltCard>
 
                 {/* Karachi Branch */}
-                <TiltCard style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: 28 }}>
+                <TiltCard style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: 24 }}>
                   <span style={{ fontSize: 10, padding: '4px 10px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 100, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>
-                    Branch Office
+                    Regional Branch Office
                   </span>
-                  <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginTop: 12, marginBottom: 6 }}>
-                    Karachi Office
+                  <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 19, fontWeight: 700, color: 'var(--text-primary)', marginTop: 10, marginBottom: 6 }}>
+                    Karachi Branch Office
                   </h2>
-                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <MapPin size={16} color="var(--accent)" style={{ flexShrink: 0 }} /> Karachi, Sindh, Pakistan
                   </p>
-                  <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                    Executive Client Consulting, Corporate Partnerships & Metropolitan Operations.
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    Executive client consulting, corporate partnerships, fintech gateways (JazzCash, EasyPaisa, Stripe), and client delivery.
                   </p>
                 </TiltCard>
 

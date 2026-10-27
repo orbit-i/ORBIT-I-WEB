@@ -151,22 +151,22 @@
 }
 
 .nav-hamburger {
-  display: flex;
+  display: flex !important;
 }
 
 @media (min-width: 900px) {
   .nav-links {
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 4px;
     flex: 1;
     justify-content: center;
   }
   .nav-contact-btn {
-    display: inline-flex;
+    display: inline-flex !important;
   }
   .nav-hamburger {
-    display: none;
+    display: none !important;
   }
 }
 

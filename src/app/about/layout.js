@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'About ORBIT-I Private Limited — SECP Registered Technology Enterprise',
-  description: 'Learn about ORBIT-I Private Limited (Est. 2026), SECP registered IT enterprise with corporate headquarters in Nawabshah and branches in Karachi & Hyderabad, delivering enterprise AI and custom cloud platforms.',
+  description: 'Learn about ORBIT-I Private Limited (Est. 2026), SECP registered IT enterprise with corporate headquarters in Nawabshah and regional branch in Karachi, delivering enterprise AI and custom cloud platforms.',
   keywords: [
     'about ORBIT-I',
     'software company Nawabshah',
