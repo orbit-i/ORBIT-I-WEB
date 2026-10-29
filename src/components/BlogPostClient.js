@@ -294,12 +294,22 @@ export default function BlogPostClient({ post }) {
                   allowFullScreen
                 />
               </div>
-            ) : post.featured_video.endsWith('.mp4') ? (
-              <video controls style={{ width: '100%', display: 'block', maxHeight: 460 }}>
-                <source src={post.featured_video} type="video/mp4" />
+            ) : post.featured_video.includes('vimeo.com') ? (
+              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
+                <iframe
+                  src={post.featured_video.replace('vimeo.com/', 'player.vimeo.com/video/')}
+                  title="Article Video"
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <video controls playsInline style={{ width: '100%', display: 'block', maxHeight: 500, background: '#000' }}>
+                <source src={post.featured_video} />
                 Your browser does not support the video tag.
               </video>
-            ) : null}
+            )}
           </div>
         )}
 

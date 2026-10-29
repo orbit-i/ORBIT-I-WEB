@@ -58,6 +58,7 @@ import {
   Image as ImageIcon,
   Tag,
   Download,
+  Video,
 } from 'lucide-react'
 import { getToken, getUser, logout, isLoggedIn, saveToken } from '@/lib/orbitApi'
 import SuperAdminGateway from '@/components/SuperAdminGateway'
@@ -374,6 +375,87 @@ export default function SecretAdminPortalPage() {
     seo_description: '',
     focus_keyword: '',
   })
+
+  // Media upload refs & states for Featured Media (Laptop / Phone direct upload)
+  const featuredImageInputRef = useRef(null)
+  const featuredVideoInputRef = useRef(null)
+  const downloadFileInputRef = useRef(null)
+  const [isUploadingFeaturedImg, setIsUploadingFeaturedImg] = useState(false)
+  const [isUploadingFeaturedVid, setIsUploadingFeaturedVid] = useState(false)
+  const [isUploadingDownloadDoc, setIsUploadingDownloadDoc] = useState(false)
+
+  const uploadMediaFile = async (file, mediaType = 'image') => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('type', mediaType)
+    const token = getToken()
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    })
+    const data = await res.json()
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Upload failed')
+    }
+    return data
+  }
+
+  const handleFeaturedImageUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      setIsUploadingFeaturedImg(true)
+      const data = await uploadMediaFile(file, 'image')
+      setBlogForm((prev) => ({ ...prev, featured_image: data.fileUrl }))
+      showMsg('Featured Image uploaded from laptop/phone successfully!')
+    } catch (err) {
+      showMsg(err.message || 'Image upload failed', 'error')
+    } finally {
+      setIsUploadingFeaturedImg(false)
+      if (e.target) e.target.value = ''
+    }
+  }
+
+  const handleFeaturedVideoUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      setIsUploadingFeaturedVid(true)
+      const data = await uploadMediaFile(file, 'video')
+      setBlogForm((prev) => ({ ...prev, featured_video: data.fileUrl }))
+      showMsg('Featured Video uploaded from laptop/phone successfully!')
+    } catch (err) {
+      showMsg(err.message || 'Video upload failed', 'error')
+    } finally {
+      setIsUploadingFeaturedVid(false)
+      if (e.target) e.target.value = ''
+    }
+  }
+
+  const handleDownloadFileUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      setIsUploadingDownloadDoc(true)
+      const data = await uploadMediaFile(file, 'document')
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(1) + ' MB'
+      const ext = (file.name.split('.').pop() || 'PDF').toUpperCase()
+      setNewDownloadFile((prev) => ({
+        ...prev,
+        title: prev.title || file.name.replace(/\.[^/.]+$/, ''),
+        url: data.fileUrl,
+        size: sizeMb,
+        type: ['PDF', 'ZIP', 'DOCX', 'JSON'].includes(ext) ? ext : 'PDF',
+      }))
+      showMsg('Attachment uploaded from device!')
+    } catch (err) {
+      showMsg(err.message || 'Attachment upload failed', 'error')
+    } finally {
+      setIsUploadingDownloadDoc(false)
+      if (e.target) e.target.value = ''
+    }
+  }
 
   // Careers state
   const [careerJobs, setCareerJobs] = useState([])
@@ -2701,6 +2783,7 @@ export default function SecretAdminPortalPage() {
                       </div>
                     </div>
 
+                    {/* Author & Read Time */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 16 }}>
                       <div>
                         <label style={labelStyle}>Author</label>
@@ -2710,13 +2793,260 @@ export default function SecretAdminPortalPage() {
                         <label style={labelStyle}>Read Time</label>
                         <input type="text" placeholder="e.g. 6 min read" value={blogForm.read_time} onChange={(e) => setBlogForm((prev) => ({ ...prev, read_time: e.target.value }))} style={inputStyle} />
                       </div>
-                      <div>
-                        <label style={labelStyle}>Featured Image URL</label>
-                        <input type="text" placeholder="https://..." value={blogForm.featured_image} onChange={(e) => setBlogForm((prev) => ({ ...prev, featured_image: e.target.value }))} style={inputStyle} />
+                    </div>
+
+                    {/* Featured Media Suite: Direct Laptop/Phone Uploads & External Links */}
+                    <input ref={featuredImageInputRef} type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif,image/*" onChange={handleFeaturedImageUpload} style={{ display: 'none' }} />
+                    <input ref={featuredVideoInputRef} type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/*" onChange={handleFeaturedVideoUpload} style={{ display: 'none' }} />
+                    <input ref={downloadFileInputRef} type="file" accept=".pdf,.zip,.docx,.doc,.json" onChange={handleDownloadFileUpload} style={{ display: 'none' }} />
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 14, marginBottom: 18 }}>
+                      {/* Featured Image Studio Card */}
+                      <div style={{ background: 'rgba(15, 23, 42, 0.65)', border: '1px solid var(--border)', borderRadius: 12, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                          <label style={{ ...labelStyle, marginBottom: 0, display: 'inline-flex', alignItems: 'center', gap: 6, color: '#818cf8', fontWeight: 700 }}>
+                            <ImageIcon size={14} /> Featured Article Image
+                          </label>
+                          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Direct Laptop/Phone or Link</span>
+                        </div>
+
+                        {/* Direct Upload Button & Format Hint */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => featuredImageInputRef.current?.click()}
+                            disabled={isUploadingFeaturedImg}
+                            style={{
+                              background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: 8,
+                              padding: '8px 14px',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: isUploadingFeaturedImg ? 'wait' : 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              boxShadow: '0 4px 12px rgba(99,102,241,0.25)',
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
+                            {isUploadingFeaturedImg ? (
+                              <>
+                                <RefreshCw size={13} className="spin-slow" />
+                                <span>Uploading Image from Device...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload size={13} />
+                                <span>📁 Upload Image (Laptop / Phone)</span>
+                              </>
+                            )}
+                          </button>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>PNG, JPG, WEBP, GIF (Max 100MB)</span>
+                        </div>
+
+                        {/* URL Input */}
+                        <div style={{ position: 'relative' }}>
+                          <input
+                            type="text"
+                            placeholder="Or paste external image link (https://images.unsplash.com/...)"
+                            value={blogForm.featured_image || ''}
+                            onChange={(e) => setBlogForm((prev) => ({ ...prev, featured_image: e.target.value }))}
+                            style={{ ...inputStyle, paddingRight: blogForm.featured_image ? 30 : 12, fontSize: 12 }}
+                          />
+                          {blogForm.featured_image && (
+                            <button
+                              type="button"
+                              onClick={() => setBlogForm((prev) => ({ ...prev, featured_image: '' }))}
+                              title="Clear Image"
+                              style={{
+                                position: 'absolute',
+                                right: 8,
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--text-muted)',
+                                cursor: 'pointer',
+                                padding: 2,
+                              }}
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Live Image Preview */}
+                        {blogForm.featured_image ? (
+                          <div style={{ display: 'flex', gap: 12, alignItems: 'center', background: 'rgba(0,0,0,0.35)', borderRadius: 8, padding: 8, border: '1px solid rgba(255,255,255,0.06)' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={blogForm.featured_image}
+                              alt="Featured Preview"
+                              style={{ width: 110, height: 70, objectFit: 'cover', borderRadius: 6, border: '1px solid rgba(99,102,241,0.3)' }}
+                              onError={(e) => { e.currentTarget.style.display = 'none' }}
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: '#10b981', display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                                <CheckCircle2 size={12} /> Active Featured Image
+                              </div>
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {blogForm.featured_image}
+                              </div>
+                              <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
+                                <button
+                                  type="button"
+                                  onClick={() => featuredImageInputRef.current?.click()}
+                                  style={{ fontSize: 11, color: '#818cf8', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                                >
+                                  Change Image
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setBlogForm((prev) => ({ ...prev, featured_image: '' }))}
+                                  style={{ fontSize: 11, color: '#f87171', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', padding: '6px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: 6 }}>
+                            💡 Click &quot;Upload Image (Laptop / Phone)&quot; to choose directly from device, or paste a link.
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <label style={labelStyle}>Featured Video URL (YouTube / MP4)</label>
-                        <input type="text" placeholder="https://www.youtube.com/embed/..." value={blogForm.featured_video || ''} onChange={(e) => setBlogForm((prev) => ({ ...prev, featured_video: e.target.value }))} style={inputStyle} />
+
+                      {/* Featured Video Studio Card */}
+                      <div style={{ background: 'rgba(15, 23, 42, 0.65)', border: '1px solid var(--border)', borderRadius: 12, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
+                          <label style={{ ...labelStyle, marginBottom: 0, display: 'inline-flex', alignItems: 'center', gap: 6, color: '#38bdf8', fontWeight: 700 }}>
+                            <Video size={14} /> Featured Article Video
+                          </label>
+                          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Direct Laptop/Phone or YouTube/MP4</span>
+                        </div>
+
+                        {/* Direct Upload Button & Format Hint */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => featuredVideoInputRef.current?.click()}
+                            disabled={isUploadingFeaturedVid}
+                            style={{
+                              background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: 8,
+                              padding: '8px 14px',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: isUploadingFeaturedVid ? 'wait' : 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              boxShadow: '0 4px 12px rgba(2,132,199,0.25)',
+                              transition: 'all 0.2s ease',
+                            }}
+                          >
+                            {isUploadingFeaturedVid ? (
+                              <>
+                                <RefreshCw size={13} className="spin-slow" />
+                                <span>Uploading Video from Device...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Upload size={13} />
+                                <span>🎬 Upload Video (Laptop / Phone)</span>
+                              </>
+                            )}
+                          </button>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>MP4, WebM, MOV (Max 100MB)</span>
+                        </div>
+
+                        {/* URL Input */}
+                        <div style={{ position: 'relative' }}>
+                          <input
+                            type="text"
+                            placeholder="Or paste YouTube / Vimeo / MP4 URL (https://...)"
+                            value={blogForm.featured_video || ''}
+                            onChange={(e) => setBlogForm((prev) => ({ ...prev, featured_video: e.target.value }))}
+                            style={{ ...inputStyle, paddingRight: blogForm.featured_video ? 30 : 12, fontSize: 12 }}
+                          />
+                          {blogForm.featured_video && (
+                            <button
+                              type="button"
+                              onClick={() => setBlogForm((prev) => ({ ...prev, featured_video: '' }))}
+                              title="Clear Video"
+                              style={{
+                                position: 'absolute',
+                                right: 8,
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'transparent',
+                                border: 'none',
+                                color: 'var(--text-muted)',
+                                cursor: 'pointer',
+                                padding: 2,
+                              }}
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Live Video Preview */}
+                        {blogForm.featured_video ? (
+                          <div style={{ display: 'flex', gap: 12, alignItems: 'center', background: 'rgba(0,0,0,0.35)', borderRadius: 8, padding: 8, border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div style={{ width: 120, height: 70, background: '#000', borderRadius: 6, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              {blogForm.featured_video.includes('youtube.com') || blogForm.featured_video.includes('youtu.be') ? (
+                                <iframe
+                                  src={
+                                    blogForm.featured_video.includes('watch?v=')
+                                      ? blogForm.featured_video.replace('watch?v=', 'embed/')
+                                      : blogForm.featured_video.includes('youtu.be/')
+                                      ? blogForm.featured_video.replace('youtu.be/', 'www.youtube.com/embed/')
+                                      : blogForm.featured_video
+                                  }
+                                  title="Video Preview"
+                                  style={{ width: '100%', height: '100%', border: 'none' }}
+                                />
+                              ) : (
+                                <video src={blogForm.featured_video} controls style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              )}
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                                <CheckCircle2 size={12} /> Active Featured Video
+                              </div>
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {blogForm.featured_video}
+                              </div>
+                              <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
+                                <button
+                                  type="button"
+                                  onClick={() => featuredVideoInputRef.current?.click()}
+                                  style={{ fontSize: 11, color: '#38bdf8', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                                >
+                                  Change Video
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setBlogForm((prev) => ({ ...prev, featured_video: '' }))}
+                                  style={{ fontSize: 11, color: '#f87171', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic', padding: '6px 8px', background: 'rgba(255,255,255,0.02)', borderRadius: 6 }}>
+                            💡 Optional: Click &quot;Upload Video (Laptop / Phone)&quot; or paste YouTube/MP4 URL.
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -2752,7 +3082,32 @@ export default function SecretAdminPortalPage() {
                         </div>
                         <div>
                           <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 3 }}>File URL / Path</label>
-                          <input type="text" placeholder="/docs/whitepaper.pdf or https://..." value={newDownloadFile.url} onChange={(e) => setNewDownloadFile({ ...newDownloadFile, url: e.target.value })} style={{ ...inputStyle, fontSize: 12, padding: '7px 10px' }} />
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <input type="text" placeholder="/docs/whitepaper.pdf or https://..." value={newDownloadFile.url} onChange={(e) => setNewDownloadFile({ ...newDownloadFile, url: e.target.value })} style={{ ...inputStyle, fontSize: 12, padding: '7px 10px', flex: 1 }} />
+                            <button
+                              type="button"
+                              onClick={() => downloadFileInputRef.current?.click()}
+                              disabled={isUploadingDownloadDoc}
+                              title="Upload Document from Laptop / Phone"
+                              style={{
+                                background: 'rgba(99,102,241,0.15)',
+                                color: '#818cf8',
+                                border: '1px solid rgba(99,102,241,0.3)',
+                                borderRadius: 8,
+                                padding: '0 10px',
+                                fontSize: 11,
+                                fontWeight: 600,
+                                cursor: isUploadingDownloadDoc ? 'wait' : 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {isUploadingDownloadDoc ? <RefreshCw size={12} className="spin-slow" /> : <Upload size={12} />}
+                              <span>Upload</span>
+                            </button>
+                          </div>
                         </div>
                         <div>
                           <label style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 3 }}>File Size</label>
