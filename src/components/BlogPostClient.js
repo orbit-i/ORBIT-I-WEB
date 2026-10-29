@@ -87,6 +87,35 @@ export default function BlogPostClient({ post }) {
           margin: 24px 0;
           border: 1px solid var(--border);
         }
+        .article-body a {
+          color: var(--accent, #6366f1);
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          font-weight: 600;
+          transition: all 0.15s ease;
+        }
+        .article-body a:hover {
+          color: #818cf8;
+          text-decoration: underline;
+        }
+        .article-body video {
+          max-width: 100%;
+          height: auto;
+          border-radius: 14px;
+          margin: 24px auto;
+          display: block;
+          border: 1px solid var(--border);
+        }
+        .article-body figure {
+          margin: 24px auto;
+          text-align: center;
+        }
+        .article-body figcaption {
+          font-size: 13px;
+          color: var(--text-muted);
+          margin-top: 8px;
+          font-style: italic;
+        }
         .share-btn {
           display: inline-flex;
           align-items: center;

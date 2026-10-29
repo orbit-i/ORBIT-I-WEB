@@ -5,7 +5,7 @@ import { pool } from '@/server/config/db';
 import { getAdminUsers, saveAdminUser } from '@/server/utils/cmsStorage';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'orbit_i_jwt_secret_key_super_secure_2026_dev';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '30d';
 
 export async function POST(request) {
   try {
@@ -20,21 +20,9 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Master Password must be at least 8 characters long.' }, { status: 400 });
     }
 
-    // Verify no admins exist
-    let adminCount = 0;
-    try {
-      const [rows] = await pool.query("SELECT COUNT(*) as count FROM client_information WHERE role = 'ADMIN'");
-      adminCount = Number(rows[0]?.count || 0);
-    } catch {
-      adminCount = 0;
-    }
-
-    if (adminCount === 0) {
-      const fallbackAdmins = await getAdminUsers();
-      adminCount = fallbackAdmins.length;
-    }
-
-    if (adminCount > 0) {
+    // Verify if any admins already exist
+    const existingAdmins = await getAdminUsers();
+    if (existingAdmins && existingAdmins.length > 0) {
       return NextResponse.json({
         error: 'Security Lockout: Initial SuperAdmin setup has already been completed. Please use SuperAdmin Login.',
       }, { status: 403 });

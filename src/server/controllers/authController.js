@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const { pool } = require('../config/db');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'orbit_i_jwt_secret_key_super_secure_2026_dev';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '30d';
 
 async function register(req, res) {
   try {

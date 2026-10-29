@@ -5,7 +5,7 @@ import { pool } from '@/server/config/db';
 import { getAdminByEmail } from '@/server/utils/cmsStorage';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'orbit_i_jwt_secret_key_super_secure_2026_dev';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '30d';
 
 export async function POST(request) {
   try {

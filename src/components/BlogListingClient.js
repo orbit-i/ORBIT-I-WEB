@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Search, Tag, Download, BookOpen, Clock, Calendar, ArrowRight, Sparkles } from 'lucide-react'
@@ -8,6 +8,16 @@ import { Search, Tag, Download, BookOpen, Clock, Calendar, ArrowRight, Sparkles 
 export default function BlogListingClient({ initialPosts = [], categories = [] }) {
   const [selectedCategory, setSelectedCategory] = useState('ALL')
   const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const catParam = params.get('category')
+      if (catParam) {
+        setSelectedCategory(catParam)
+      }
+    }
+  }, [])
 
   const categoryList = useMemo(() => {
     const defaultCats = ['ALL', 'Artificial Intelligence', 'Web Engineering', 'Cloud & DevOps', 'Cyber Security', 'Regional Tech & Sindh Hubs', 'Data Science']

@@ -56,8 +56,41 @@ export const getUser = () => {
 }
 
 export const logout = () => {
-  localStorage.removeItem('orbit_token')
-  localStorage.removeItem('orbit_user')
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('orbit_token')
+    localStorage.removeItem('orbit_user')
+  }
 }
 
-export const isLoggedIn = () => !!getToken()
+export const isTokenExpired = (token) => {
+  if (!token) return true
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return false
+    const base64Url = parts[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    )
+    const payload = JSON.parse(jsonPayload)
+    if (payload.exp && Date.now() >= payload.exp * 1000) {
+      return true
+    }
+    return false
+  } catch {
+    return false
+  }
+}
+
+export const isLoggedIn = () => {
+  const token = getToken()
+  if (!token) return false
+  if (isTokenExpired(token)) {
+    logout()
+    return false
+  }
+  return true
+}

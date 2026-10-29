@@ -6,24 +6,25 @@ const { getSecurityStats, clearBannedIp } = require('../middleware/security');
 const { globalCache } = require('../utils/cache');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'orbit_i_jwt_secret_key_super_secure_2026_dev';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '30d';
 
 /**
  * Check if initial SuperAdmin setup is required (no admin account exists)
  */
 async function getSetupStatus(req, res) {
   try {
-    const [rows] = await pool.query("SELECT COUNT(*) as count FROM client_information WHERE role = 'ADMIN'");
-    const adminCount = rows[0]?.count || 0;
+    const { getAdminUsers } = require('../utils/cmsStorage');
+    const admins = await getAdminUsers();
+    const adminCount = Array.isArray(admins) ? admins.length : 0;
     return res.status(200).json({
-      setupRequired: Number(adminCount) === 0,
-      adminCount: Number(adminCount),
+      setupRequired: adminCount === 0,
+      adminCount,
     });
   } catch (error) {
-    // If DB is offline or not created yet, return setup required so user can initialize
     return res.status(200).json({
-      setupRequired: true,
-      note: 'Database connecting or initializing',
+      setupRequired: false,
+      adminCount: 1,
+      note: 'Protected gateway active',
     });
   }
 }

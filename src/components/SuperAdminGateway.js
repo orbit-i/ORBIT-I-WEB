@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -21,7 +21,7 @@ import {
 import { saveToken, loginClient } from '@/lib/orbitApi'
 
 export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
-  const [isSetup, setIsSetup] = useState(setupRequired)
+  const [isSetup, setIsSetup] = useState(Boolean(setupRequired))
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
     name: '',
@@ -33,6 +33,19 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
   const [error, setError] = useState('')
   const [rateLimitCountdown, setRateLimitCountdown] = useState(null)
   const [focused, setFocused] = useState(null)
+
+  useEffect(() => {
+    setIsSetup(Boolean(setupRequired))
+  }, [setupRequired])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedEmail = localStorage.getItem('orbit_admin_last_email')
+      if (savedEmail) {
+        setForm((prev) => ({ ...prev, email: savedEmail }))
+      }
+    }
+  }, [])
 
   // Calculate password strength
   const calcStrength = (pwd) => {
@@ -86,7 +99,17 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
           if (res.status === 429) {
             setRateLimitCountdown(data.retryAfter || 60)
           }
+          if (data.error && data.error.includes('already been completed')) {
+            setIsSetup(false)
+            setError('SuperAdmin account is already initialized! Switched to Login mode below.')
+            setStatus('idle')
+            return
+          }
           throw new Error(data.error || 'Setup rejected.')
+        }
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('orbit_admin_last_email', data.email)
         }
 
         saveToken(data.token, { name: data.name, email: data.email, role: 'ADMIN' })
@@ -108,6 +131,10 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
 
         if (data.role !== 'ADMIN') {
           throw new Error('Access Denied: Administrator role privileges required.')
+        }
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('orbit_admin_last_email', data.email)
         }
 
         saveToken(data.token, { name: data.name, email: data.email, role: data.role })
@@ -196,6 +223,55 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
               marginBottom: 16,
             }}>
               {isSetup ? <Sparkles size={26} /> : <Lock size={26} />}
+            </div>
+
+            <div style={{ display: 'flex', background: 'var(--bg-elevated)', padding: 4, borderRadius: 12, marginBottom: 18, border: '1px solid var(--border)' }}>
+              <button
+                type="button"
+                onClick={() => { setIsSetup(false); setError(''); }}
+                style={{
+                  flex: 1,
+                  padding: '9px 12px',
+                  borderRadius: 9,
+                  border: 'none',
+                  background: !isSetup ? 'var(--accent)' : 'transparent',
+                  color: !isSetup ? '#fff' : 'var(--text-muted)',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+              >
+                <Lock size={13} /> SuperAdmin Login
+              </button>
+              {setupRequired && (
+                <button
+                  type="button"
+                  onClick={() => { setIsSetup(true); setError(''); }}
+                  style={{
+                    flex: 1,
+                    padding: '9px 12px',
+                    borderRadius: 9,
+                    border: 'none',
+                    background: isSetup ? 'var(--accent)' : 'transparent',
+                    color: isSetup ? '#fff' : 'var(--text-muted)',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <Sparkles size={13} /> Initial Setup
+                </button>
+              )}
             </div>
 
             <span className="tag" style={{ display: 'inline-flex', marginBottom: 10, fontSize: 10 }}>

@@ -1101,10 +1101,55 @@ async function deleteCertificate(codeOrId) {
 async function getAdminUsers() {
   return executeDbOrFallback(
     async () => {
-      const [rows] = await pool.query(
-        'SELECT id, name, email, role, approved, avatar_url, created_at FROM client_information WHERE role = "ADMIN" ORDER BY id ASC'
-      );
-      return rows;
+      let rows = [];
+      try {
+        const [r] = await pool.query(
+          'SELECT id, name, email, role, approved, avatar_url, created_at FROM client_information WHERE role = "ADMIN" ORDER BY id ASC'
+        );
+        rows = r;
+      } catch (colErr) {
+        // Fallback if avatar_url column does not exist in MySQL table
+        try {
+          const [r] = await pool.query(
+            'SELECT id, name, email, role, approved, created_at FROM client_information WHERE role = "ADMIN" ORDER BY id ASC'
+          );
+          rows = r;
+        } catch {
+          rows = [];
+        }
+      }
+
+      if (rows && rows.length > 0) {
+        return rows;
+      }
+
+      // If MySQL table had 0 admin rows, check the file fallback store!
+      const store = readFallbackStore();
+      const fallbackList = (store.admin_users || []).map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role || 'ADMIN',
+        approved: 1,
+        avatar_url: u.avatar_url || '',
+        created_at: u.created_at,
+      }));
+
+      // If fallback store has admins, sync them to MySQL so future queries find them
+      if (fallbackList.length > 0) {
+        for (const adm of store.admin_users) {
+          try {
+            await pool.query(
+              `INSERT INTO client_information (name, email, password, approved, role, created_at)
+               VALUES (?, ?, ?, 1, 'ADMIN', NOW())
+               ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password)`,
+              [adm.name, adm.email, adm.password]
+            );
+          } catch {}
+        }
+      }
+
+      return fallbackList;
     },
     () => {
       const store = readFallbackStore();
@@ -1126,12 +1171,23 @@ async function getAdminByEmail(email) {
   const cleanEmail = email.trim().toLowerCase();
 
   try {
-    const [rows] = await pool.query('SELECT * FROM client_information WHERE email = ? AND role = "ADMIN"', [cleanEmail]);
+    const [rows] = await pool.query('SELECT * FROM client_information WHERE LOWER(email) = ? AND role = "ADMIN"', [cleanEmail]);
     if (rows && rows.length > 0) return rows[0];
   } catch {}
 
   const store = readFallbackStore();
-  return (store.admin_users || []).find((u) => u.email.toLowerCase() === cleanEmail) || null;
+  const fallback = (store.admin_users || []).find((u) => u.email.toLowerCase() === cleanEmail) || null;
+  if (fallback) {
+    try {
+      await pool.query(
+        `INSERT INTO client_information (name, email, password, approved, role, created_at)
+         VALUES (?, ?, ?, 1, 'ADMIN', NOW())
+         ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password)`,
+        [fallback.name, fallback.email, fallback.password]
+      );
+    } catch {}
+  }
+  return fallback;
 }
 
 async function saveAdminUser(data) {
@@ -1140,6 +1196,7 @@ async function saveAdminUser(data) {
 
   // Always write to fallback store
   const store = readFallbackStore();
+  if (!Array.isArray(store.admin_users)) store.admin_users = [];
   const id = Date.now();
   const adminObj = {
     id,
@@ -1159,19 +1216,32 @@ async function saveAdminUser(data) {
   }
   writeFallbackStore(store);
 
-  // Also try MySQL
+  // Also try MySQL - attempt with avatar_url, fall back to without avatar_url
   try {
+    try {
+      await pool.query('ALTER TABLE client_information ADD COLUMN avatar_url VARCHAR(500) NULL AFTER role');
+    } catch {}
+
     await pool.query(
       `INSERT INTO client_information (name, email, password, approved, role, avatar_url, created_at)
        VALUES (?, ?, ?, 1, 'ADMIN', ?, NOW())
        ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), avatar_url = VALUES(avatar_url)`,
       [name.trim(), cleanEmail, password, avatar_url || null]
     );
-  } catch (err) {
-    console.warn('⚠️ Note: MySQL write skipped for admin, saved in secure fallback vault:', err.message);
+  } catch {
+    try {
+      await pool.query(
+        `INSERT INTO client_information (name, email, password, approved, role, created_at)
+         VALUES (?, ?, ?, 1, 'ADMIN', NOW())
+         ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password)`,
+        [name.trim(), cleanEmail, password]
+      );
+    } catch (err) {
+      console.warn('⚠️ Note: MySQL write skipped for admin, saved in secure fallback vault:', err.message);
+    }
   }
 
-  return { id, name, email: cleanEmail, role: 'ADMIN', avatar_url: avatar_url || '' };
+  return { id, name: name.trim(), email: cleanEmail, role: 'ADMIN', avatar_url: avatar_url || '' };
 }
 
 async function updateAdminUser(idOrEmail, data) {

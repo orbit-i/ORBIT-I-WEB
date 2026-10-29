@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `client_information` (
   `company` VARCHAR(255) DEFAULT NULL,
   `approved` TINYINT(1) NOT NULL DEFAULT 0,
   `role` VARCHAR(20) NOT NULL DEFAULT 'CLIENT',
+  `avatar_url` VARCHAR(500) DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX `idx_client_email` (`email`),

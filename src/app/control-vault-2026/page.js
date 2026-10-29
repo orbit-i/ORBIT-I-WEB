@@ -61,16 +61,23 @@ import {
 } from 'lucide-react'
 import { getToken, getUser, logout, isLoggedIn, saveToken } from '@/lib/orbitApi'
 import SuperAdminGateway from '@/components/SuperAdminGateway'
+import RichContentEditor from '@/components/RichContentEditor'
 
 const BASE = process.env.NEXT_PUBLIC_ORBIT_API || ''
 
 async function adminReq(path, options = {}) {
+  const token = getToken()
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}`, ...options.headers },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...options.headers },
     ...options,
   })
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.error || 'Request failed')
+  if (!res.ok) {
+    if (res.status === 401 && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('orbit-unauthorized'))
+    }
+    throw new Error(data.error || 'Request failed')
+  }
   return data
 }
 
@@ -638,6 +645,19 @@ export default function SecretAdminPortalPage() {
     }
   }, [fetchClients, fetchOverview])
 
+  // Handle session expiration
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      logout()
+      setCurrentUser(null)
+      showMsg('Your administrator session expired. Please sign in again.', 'error')
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('orbit-unauthorized', handleUnauthorized)
+      return () => window.removeEventListener('orbit-unauthorized', handleUnauthorized)
+    }
+  }, [])
+
   // Tab change triggers
   useEffect(() => {
     let ignore = false
@@ -655,7 +675,7 @@ export default function SecretAdminPortalPage() {
           const data = await res.json()
           if (!ignore && Array.isArray(data)) setCmsPages(data)
         } catch {}
-      } else if (tab === 'blog') {
+      } else if (tab === 'blog' || tab === 'categories') {
         fetchBlogPosts()
         fetchBlogCategories()
       } else if (tab === 'careers') {
@@ -1690,6 +1710,7 @@ export default function SecretAdminPortalPage() {
             {[
               { id: 'cms', label: 'All Pages CMS', icon: FileText },
               { id: 'blog', label: 'Blog & Articles', icon: PenTool },
+              { id: 'categories', label: 'Blog Categories', icon: Tag },
               { id: 'careers', label: 'Careers & Jobs', icon: Briefcase },
               { id: 'teams', label: 'Team Profiles', icon: UserCheck },
               { id: 'testimonials', label: 'Testimonials', icon: Star },
@@ -2437,40 +2458,15 @@ export default function SecretAdminPortalPage() {
                       />
                     </div>
 
-                    {/* Toolbar */}
-                    <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        <button type="button" onClick={() => insertCmsTag('<h2>', '</h2>')} className="editor-toolbar-btn">H2</button>
-                        <button type="button" onClick={() => insertCmsTag('<h3>', '</h3>')} className="editor-toolbar-btn">H3</button>
-                        <button type="button" onClick={() => insertCmsTag('<strong>', '</strong>')} className="editor-toolbar-btn">Bold</button>
-                        <button type="button" onClick={() => insertCmsTag('<em>', '</em>')} className="editor-toolbar-btn">Italic</button>
-                        <button type="button" onClick={() => insertCmsTag('<blockquote>', '</blockquote>')} className="editor-toolbar-btn">Quote</button>
-                        <button type="button" onClick={() => insertCmsTag('<code>', '</code>')} className="editor-toolbar-btn">Code</button>
-                        <button type="button" onClick={() => insertCmsTag('<ul>\n  <li>', '</li>\n</ul>')} className="editor-toolbar-btn">List</button>
-                      </div>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        <button type="button" onClick={() => setCmsActiveTab('editor')} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, background: cmsActiveTab === 'editor' ? 'var(--accent)' : 'var(--bg-elevated)', color: cmsActiveTab === 'editor' ? '#fff' : 'var(--text-muted)', border: 'none', cursor: 'pointer' }}>Editor</button>
-                        <button type="button" onClick={() => setCmsActiveTab('preview')} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, background: cmsActiveTab === 'preview' ? 'var(--accent)' : 'var(--bg-elevated)', color: cmsActiveTab === 'preview' ? '#fff' : 'var(--text-muted)', border: 'none', cursor: 'pointer' }}>Preview</button>
-                      </div>
+                    <div style={{ marginBottom: 20 }}>
+                      <label style={labelStyle}>Page Content (HTML & Media) *</label>
+                      <RichContentEditor
+                        value={cmsForm.content_html}
+                        onChange={(newHtml) => setCmsForm((prev) => ({ ...prev, content_html: newHtml }))}
+                        placeholder="Page content with styled HTML, headings, media, and lists..."
+                        minHeight={360}
+                      />
                     </div>
-
-                    {cmsActiveTab === 'editor' ? (
-                      <div style={{ marginBottom: 18 }}>
-                        <textarea
-                          rows={12}
-                          value={cmsForm.content_html}
-                          onChange={(e) => setCmsForm((prev) => ({ ...prev, content_html: e.target.value }))}
-                          style={{ ...inputStyle, fontFamily: 'monospace', fontSize: 13, resize: 'vertical' }}
-                          required
-                        />
-                      </div>
-                    ) : (
-                      <div style={{ marginBottom: 18, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 12, padding: 24 }}>
-                        <h1 style={{ fontFamily: 'Space Grotesk', fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10 }}>{cmsForm.title || 'Untitled Page'}</h1>
-                        <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 16 }}>{cmsForm.excerpt}</p>
-                        <div dangerouslySetInnerHTML={{ __html: cmsForm.content_html }} style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)' }} />
-                      </div>
-                    )}
 
                     {/* SEO Meta Box */}
                     <div style={{ background: 'var(--bg-elevated)', borderRadius: 12, padding: 16, marginBottom: 20, border: '1px solid var(--border)' }}>
@@ -2820,143 +2816,15 @@ export default function SecretAdminPortalPage() {
                       )}
                     </div>
 
-                    {/* Rich Styling Toolbar */}
-                    <div style={{ marginBottom: 10, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 8, borderBottom: '1px solid var(--border)', paddingBottom: 8 }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                          Rich Format Bar (Headings, Font Sizes, Colors, Families, Styles & Media)
-                        </span>
-                        <div style={{ display: 'flex', gap: 4 }}>
-                          <button type="button" onClick={() => setBlogActiveTab('editor')} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, background: blogActiveTab === 'editor' ? 'var(--accent)' : 'var(--bg-card)', color: blogActiveTab === 'editor' ? '#fff' : 'var(--text-muted)', border: '1px solid var(--border)', cursor: 'pointer' }}>Code Editor</button>
-                          <button type="button" onClick={() => setBlogActiveTab('preview')} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, background: blogActiveTab === 'preview' ? 'var(--accent)' : 'var(--bg-card)', color: blogActiveTab === 'preview' ? '#fff' : 'var(--text-muted)', border: '1px solid var(--border)', cursor: 'pointer' }}>Live Article Preview</button>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-                        {/* Headings */}
-                        <div style={{ display: 'inline-flex', gap: 2 }}>
-                          <button type="button" onClick={() => insertBlogTag('<h1>', '</h1>')} className="editor-toolbar-btn">H1</button>
-                          <button type="button" onClick={() => insertBlogTag('<h2>', '</h2>')} className="editor-toolbar-btn">H2</button>
-                          <button type="button" onClick={() => insertBlogTag('<h3>', '</h3>')} className="editor-toolbar-btn">H3</button>
-                          <button type="button" onClick={() => insertBlogTag('<h4>', '</h4>')} className="editor-toolbar-btn">H4</button>
-                        </div>
-
-                        {/* Styles */}
-                        <div style={{ display: 'inline-flex', gap: 2 }}>
-                          <button type="button" onClick={() => insertBlogTag('<strong>', '</strong>')} className="editor-toolbar-btn"><strong>B</strong></button>
-                          <button type="button" onClick={() => insertBlogTag('<em>', '</em>')} className="editor-toolbar-btn"><em>I</em></button>
-                          <button type="button" onClick={() => insertBlogTag('<u>', '</u>')} className="editor-toolbar-btn"><u>U</u></button>
-                          <button type="button" onClick={() => insertBlogTag('<s>', '</s>')} className="editor-toolbar-btn"><s>S</s></button>
-                          <button type="button" onClick={() => insertBlogTag('<mark style="background:rgba(245,158,11,0.25);color:#f59e0b;padding:2px 6px;border-radius:4px;">', '</mark>')} className="editor-toolbar-btn">Mark</button>
-                        </div>
-
-                        {/* Font Sizes */}
-                        <select onChange={(e) => { if (e.target.value) { insertBlogTag(`<span style="font-size:${e.target.value}">`, '</span>'); e.target.value = '' } }} style={{ ...inputStyle, width: 'auto', padding: '3px 8px', fontSize: 11, height: 26, cursor: 'pointer' }}>
-                          <option value="">Font Size</option>
-                          <option value="13px">Small (13px)</option>
-                          <option value="15px">Regular (15px)</option>
-                          <option value="18px">Medium (18px)</option>
-                          <option value="22px">Large (22px)</option>
-                          <option value="28px">Display (28px)</option>
-                        </select>
-
-                        {/* Font Family */}
-                        <select onChange={(e) => { if (e.target.value) { insertBlogTag(`<span style="font-family:${e.target.value}">`, '</span>'); e.target.value = '' } }} style={{ ...inputStyle, width: 'auto', padding: '3px 8px', fontSize: 11, height: 26, cursor: 'pointer' }}>
-                          <option value="">Font Family</option>
-                          <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
-                          <option value="'Inter', sans-serif">Inter</option>
-                          <option value="'Outfit', sans-serif">Outfit</option>
-                          <option value="'Courier New', monospace">Monospace Code</option>
-                        </select>
-
-                        {/* Font Colors */}
-                        <div style={{ display: 'inline-flex', gap: 3, alignItems: 'center', padding: '0 4px' }}>
-                          {[
-                            { color: '#6366f1', label: 'Indigo' },
-                            { color: '#06b6d4', label: 'Cyan' },
-                            { color: '#10b981', label: 'Emerald' },
-                            { color: '#f59e0b', label: 'Amber' },
-                            { color: '#f43f5e', label: 'Rose' },
-                            { color: '#ffffff', label: 'White' },
-                          ].map((c) => (
-                            <button
-                              key={c.color}
-                              type="button"
-                              title={c.label}
-                              onClick={() => insertBlogTag(`<span style="color:${c.color}">`, '</span>')}
-                              style={{ width: 16, height: 16, borderRadius: '50%', background: c.color, border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', padding: 0 }}
-                            />
-                          ))}
-                        </div>
-
-                        {/* Layout & Snippets */}
-                        <button type="button" onClick={() => insertBlogTag('<blockquote>', '</blockquote>')} className="editor-toolbar-btn">Quote</button>
-                        <button type="button" onClick={() => insertBlogTag('<pre><code class="language-javascript">', '</code></pre>')} className="editor-toolbar-btn">Code</button>
-                        <button type="button" onClick={() => insertBlogTag('<ul>\n  <li>', '</li>\n</ul>')} className="editor-toolbar-btn">Bullets</button>
-                        <button type="button" onClick={() => insertBlogTag('<ol>\n  <li>', '</li>\n</ol>')} className="editor-toolbar-btn">Numbered</button>
-                        <button type="button" onClick={() => insertBlogTag('<div style="background:rgba(99,102,241,0.08);border-left:3px solid #6366f1;padding:14px;border-radius:0 8px 8px 0;margin:16px 0;">\n<strong style="color:#818cf8;">Pro Tip:</strong> ', '\n</div>')} className="editor-toolbar-btn">Callout</button>
-                        <button type="button" onClick={() => insertBlogTag('<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;margin:16px 0;"><iframe src="https://www.youtube.com/embed/YOUR_ID" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;" allowfullscreen></iframe></div>', '')} className="editor-toolbar-btn">+ Video</button>
-                        <button type="button" onClick={() => insertBlogTag('<img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80" alt="Technical Schema" style="width:100%;border-radius:12px;margin:16px 0;" />', '')} className="editor-toolbar-btn">+ Image</button>
-                      </div>
+                    <div style={{ marginBottom: 20 }}>
+                      <label style={labelStyle}>Article Body & Rich Media Content *</label>
+                      <RichContentEditor
+                        value={blogForm.content}
+                        onChange={(newHtml) => setBlogForm((prev) => ({ ...prev, content: newHtml }))}
+                        placeholder="Write or format comprehensive technical content with headings, code blocks, images, and videos..."
+                        minHeight={480}
+                      />
                     </div>
-
-                    {blogActiveTab === 'editor' ? (
-                      <div style={{ marginBottom: 18 }}>
-                        <textarea
-                          rows={16}
-                          value={blogForm.content}
-                          onChange={(e) => setBlogForm((prev) => ({ ...prev, content: e.target.value }))}
-                          style={{ ...inputStyle, fontFamily: 'monospace', fontSize: 13, resize: 'vertical', lineHeight: 1.6 }}
-                          required
-                        />
-                      </div>
-                    ) : (
-                      <div style={{ marginBottom: 18, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 14, padding: 28 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                          <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--accent-glow)', color: 'var(--accent)', fontWeight: 600 }}>{blogForm.category}</span>
-                          {blogForm.downloadable_tags && (
-                            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'rgba(34,197,94,0.1)', color: '#22c55e', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                              <Download size={11} /> {blogForm.downloadable_tags}
-                            </span>
-                          )}
-                        </div>
-                        <h1 style={{ fontFamily: 'Space Grotesk', fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', marginTop: 8, marginBottom: 8 }}>{blogForm.title || 'Untitled Article'}</h1>
-                        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18 }}>By {blogForm.author} • {blogForm.read_time}</p>
-                        
-                        {blogForm.featured_image && (
-                          <Image src={blogForm.featured_image} alt="" width={700} height={300} style={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 10, marginBottom: 18 }} unoptimized />
-                        )}
-
-                        {blogForm.featured_video && (
-                          <div style={{ marginBottom: 18, position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: 12 }}>
-                            <iframe src={blogForm.featured_video} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }} allowFullScreen />
-                          </div>
-                        )}
-
-                        <div dangerouslySetInnerHTML={{ __html: blogForm.content }} style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--text-secondary)' }} />
-
-                        {blogForm.downloadable_files && blogForm.downloadable_files.length > 0 && (
-                          <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
-                            <h4 style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <Download size={15} style={{ color: 'var(--accent)' }} /> Attached Downloads & Whitepapers
-                            </h4>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 }}>
-                              {blogForm.downloadable_files.map((f, i) => (
-                                <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                  <div>
-                                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{f.title}</div>
-                                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{f.type} • {f.size}</div>
-                                  </div>
-                                  <a href={f.url} target="_blank" rel="noopener noreferrer" style={{ background: 'var(--accent)', color: '#fff', padding: '5px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                                    <Download size={12} /> Download
-                                  </a>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
 
                     {/* SEO Search Result Snippet */}
                     <div style={{ background: 'var(--bg-elevated)', borderRadius: 12, padding: 18, marginBottom: 20, border: '1px solid var(--border)' }}>
@@ -3096,6 +2964,186 @@ export default function SecretAdminPortalPage() {
                     )}
                   </>
                 )}
+              </motion.div>
+            )}
+
+            {/* ── BLOG CATEGORIES & TAXONOMY (CRUD) ── */}
+            {tab === 'categories' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                  <div>
+                    <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 22, fontWeight: 800, color: 'var(--text-primary)' }}>
+                      Blog Categories & Taxonomy Studio
+                    </h2>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                      Manage SEO topical clusters, navigation dropdown tags, and blog archive categories.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => { setTab('blog'); openNewBlog(); }}
+                    className="btn-primary"
+                    style={{ fontSize: 13, padding: '9px 18px', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <Plus style={{ width: 14, height: 14 }} />
+                    <span>Write Article for Category</span>
+                  </button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20, marginBottom: 24 }}>
+                  {/* Create Category Form */}
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 22 }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Tag size={16} style={{ color: 'var(--accent)' }} /> Add New Category
+                    </h3>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
+                      New categories automatically show up in the website navigation, blog search filters, and article editor.
+                    </p>
+
+                    <form onSubmit={handleCreateCategory} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <div>
+                        <label style={labelStyle}>Category Name *</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Enterprise Cloud & DevOps"
+                          value={newCatName}
+                          onChange={(e) => setNewCatName(e.target.value)}
+                          style={inputStyle}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={labelStyle}>SEO Topic Description</label>
+                        <textarea
+                          rows={3}
+                          placeholder="Short description of this technical domain for search engines and readers..."
+                          value={newCatDesc}
+                          onChange={(e) => setNewCatDesc(e.target.value)}
+                          style={{ ...inputStyle, resize: 'vertical' }}
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="btn-primary"
+                        style={{ padding: '11px', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 4 }}
+                      >
+                        <Plus size={15} /> Create Category
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Summary / Stats Card */}
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 22, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Sparkles size={16} style={{ color: '#f59e0b' }} /> Taxonomy Overview
+                      </h3>
+                      <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18 }}>
+                        Topical categorization signals semantic depth and domain authority to Google & AI Search bots.
+                      </p>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <div style={{ background: 'var(--bg-elevated)', padding: 14, borderRadius: 12, border: '1px solid var(--border)' }}>
+                          <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--accent)' }}>{blogCategories.length}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>Active Categories</div>
+                        </div>
+                        <div style={{ background: 'var(--bg-elevated)', padding: 14, borderRadius: 12, border: '1px solid var(--border)' }}>
+                          <div style={{ fontSize: 24, fontWeight: 800, color: '#10b981' }}>{blogPosts.length}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>Total Articles</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)', fontSize: 12, color: 'var(--text-muted)' }}>
+                      💡 Tip: Click on any category card below to filter and inspect articles tagged in that category.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Categories List Cards */}
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 14 }}>
+                  All Active Blog Categories ({blogCategories.length})
+                </h3>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+                  {blogCategories.map((c) => {
+                    const postCount = blogPosts.filter((b) => b.category === c.name).length
+                    return (
+                      <div
+                        key={c.id}
+                        style={{
+                          background: 'var(--bg-card)',
+                          border: '1px solid var(--border)',
+                          borderRadius: 14,
+                          padding: '16px 18px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          gap: 12,
+                        }}
+                      >
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8, gap: 8 }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{c.name}</span>
+                            <span style={{ fontSize: 10, background: 'var(--accent-glow)', color: 'var(--accent)', padding: '2px 8px', borderRadius: 100, fontWeight: 700, whiteSpace: 'nowrap' }}>
+                              {postCount} {postCount === 1 ? 'Article' : 'Articles'}
+                            </span>
+                          </div>
+                          <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                            {c.description || 'No description added.'}
+                          </p>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBlogCategoryFilter(c.name)
+                              setTab('blog')
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--accent)',
+                              fontSize: 11,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              padding: 0,
+                            }}
+                          >
+                            <span>View Articles</span> &rarr;
+                          </button>
+
+                          {blogCategories.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteCategory(c.id, c.name)}
+                              style={{
+                                border: 'none',
+                                background: 'transparent',
+                                color: '#ef4444',
+                                cursor: 'pointer',
+                                fontSize: 11,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 3,
+                                padding: '2px 6px',
+                                borderRadius: 4,
+                              }}
+                              title="Delete Category"
+                            >
+                              <Trash2 size={12} /> Delete
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </motion.div>
             )}
 
