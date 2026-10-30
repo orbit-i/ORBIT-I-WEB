@@ -246,6 +246,7 @@ export default function SecretAdminPortalPage() {
     email: '',
     password: '',
     avatar_url: '',
+    role: 'ADMIN',
   })
 
   // Site Notice & Hiring Banners state
@@ -1542,9 +1543,22 @@ export default function SecretAdminPortalPage() {
         method: 'POST',
         body: JSON.stringify(newAdminForm),
       })
-      showMsg(`Administrator [${newAdminForm.name}] created successfully!`)
-      setNewAdminForm({ name: '', email: '', password: '', avatar_url: '' })
+      showMsg(`Administrator [${newAdminForm.name}] created with role [${newAdminForm.role || 'ADMIN'}]!`)
+      setNewAdminForm({ name: '', email: '', password: '', avatar_url: '', role: 'ADMIN' })
       setIsAddingAdmin(false)
+      fetchAdmins()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  const handleUpdateAdminRole = async (id, newRole) => {
+    try {
+      await adminReq(`/api/admin/accounts/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ role: newRole }),
+      })
+      showMsg(`Administrator role updated to ${newRole}`)
       fetchAdmins()
     } catch (err) {
       showMsg(err.message, 'error')
@@ -1792,10 +1806,9 @@ export default function SecretAdminPortalPage() {
     )
   }
 
-  if (!currentUser || currentUser.role !== 'ADMIN') {
+  if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPERADMIN')) {
     return (
       <SuperAdminGateway
-        setupRequired={setupRequired}
         onAuthenticated={(user) => {
           setCurrentUser(user)
           fetchOverview()
@@ -4451,11 +4464,11 @@ export default function SecretAdminPortalPage() {
                     subtitle="Grant secure dashboard access to another trusted team engineer."
                     onSubmit={handleCreateAdmin}
                   >
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 14 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 14 }}>
                       <div>
                         <label style={labelStyle}>Full Name *</label>
                         <input
-                          type="text" required placeholder="e.g. Engr. M. Waleed"
+                          type="text" required placeholder="e.g. Maria Almani"
                           value={newAdminForm.name}
                           onChange={(e) => setNewAdminForm({ ...newAdminForm, name: e.target.value })}
                           style={inputStyle}
@@ -4464,7 +4477,7 @@ export default function SecretAdminPortalPage() {
                       <div>
                         <label style={labelStyle}>Email Address *</label>
                         <input
-                          type="email" required placeholder="admin@orbit-i.tech"
+                          type="email" required placeholder="maria@orbit-i.tech"
                           value={newAdminForm.email}
                           onChange={(e) => setNewAdminForm({ ...newAdminForm, email: e.target.value })}
                           style={inputStyle}
@@ -4478,6 +4491,19 @@ export default function SecretAdminPortalPage() {
                           onChange={(e) => setNewAdminForm({ ...newAdminForm, password: e.target.value })}
                           style={inputStyle}
                         />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Role & Access Level *</label>
+                        <select
+                          value={newAdminForm.role || 'ADMIN'}
+                          onChange={(e) => setNewAdminForm({ ...newAdminForm, role: e.target.value })}
+                          style={{ ...inputStyle, cursor: 'pointer' }}
+                        >
+                          <option value="SUPERADMIN">👑 SUPERADMIN (Full Control & User Management)</option>
+                          <option value="ADMIN">🛡️ ADMIN (Core Platform, Projects & Certificates)</option>
+                          <option value="EDITOR">✍️ EDITOR (Blog Studio, Pages & Content)</option>
+                          <option value="SUPPORT">💬 SUPPORT (Inquiries, Chatbot & Verification)</option>
+                        </select>
                       </div>
                     </div>
                     <ImageUploadField
@@ -4607,17 +4633,59 @@ export default function SecretAdminPortalPage() {
                               unoptimized
                             />
                             <div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                                 <span style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{adm.name}</span>
-                                <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, background: 'rgba(99,102,241,0.15)', color: '#818cf8', fontWeight: 600 }}>
-                                  {adm.role || 'ADMIN'}
+                                <span style={{
+                                  fontSize: 10,
+                                  padding: '2px 8px',
+                                  borderRadius: 6,
+                                  fontWeight: 700,
+                                  letterSpacing: '0.04em',
+                                  background:
+                                    adm.role === 'SUPERADMIN' ? 'rgba(234,179,8,0.15)' :
+                                    adm.role === 'EDITOR' ? 'rgba(16,185,129,0.15)' :
+                                    adm.role === 'SUPPORT' ? 'rgba(245,158,11,0.15)' :
+                                    'rgba(99,102,241,0.15)',
+                                  color:
+                                    adm.role === 'SUPERADMIN' ? '#eab308' :
+                                    adm.role === 'EDITOR' ? '#34d399' :
+                                    adm.role === 'SUPPORT' ? '#fbbf24' :
+                                    '#818cf8',
+                                  border:
+                                    adm.role === 'SUPERADMIN' ? '1px solid rgba(234,179,8,0.3)' :
+                                    '1px solid rgba(99,102,241,0.2)',
+                                }}>
+                                  {adm.role === 'SUPERADMIN' ? '👑 SUPERADMIN' :
+                                   adm.role === 'EDITOR' ? '✍️ EDITOR' :
+                                   adm.role === 'SUPPORT' ? '💬 SUPPORT' :
+                                   '🛡️ ADMIN'}
                                 </span>
                               </div>
                               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{adm.email}</span>
                             </div>
                           </div>
 
-                          <div style={{ display: 'flex', gap: 8 }}>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            {adm.email !== currentUser?.email && (
+                              <select
+                                value={adm.role || 'ADMIN'}
+                                onChange={(e) => handleUpdateAdminRole(adm.id, e.target.value)}
+                                style={{
+                                  padding: '5px 8px',
+                                  background: 'var(--bg-card)',
+                                  border: '1px solid var(--border)',
+                                  borderRadius: 6,
+                                  color: 'var(--text-primary)',
+                                  fontSize: 11,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                <option value="SUPERADMIN">👑 SuperAdmin</option>
+                                <option value="ADMIN">🛡️ Admin</option>
+                                <option value="EDITOR">✍️ Editor</option>
+                                <option value="SUPPORT">💬 Support</option>
+                              </select>
+                            )}
                             <button
                               onClick={() => handleResetAdminPassword(adm.id, adm.name)}
                               className="btn-outline"

@@ -79,7 +79,7 @@ export async function POST(request) {
       if (isFallbackMatch) {
         isMatch = true;
         user.password = fallbackAdmin.password;
-        user.role = 'ADMIN';
+        user.role = fallbackAdmin.role || 'SUPERADMIN';
         user.approved = 1;
         if (!user.name) user.name = fallbackAdmin.name;
 
@@ -87,12 +87,46 @@ export async function POST(request) {
         try {
           await pool.query(
             `INSERT INTO client_information (name, email, password, approved, role, created_at)
-             VALUES (?, ?, ?, 1, 'ADMIN', NOW())
-             ON DUPLICATE KEY UPDATE password = VALUES(password), name = VALUES(name), role = 'ADMIN', approved = 1`,
-            [user.name || 'Admin', cleanEmail, fallbackAdmin.password]
+             VALUES (?, ?, ?, 1, ?, NOW())
+             ON DUPLICATE KEY UPDATE password = VALUES(password), name = VALUES(name), role = VALUES(role), approved = 1`,
+            [user.name || 'Admin', cleanEmail, fallbackAdmin.password, user.role]
           );
         } catch (healErr) {
           console.warn('Auto-heal MySQL admin password notice:', healErr.message);
+        }
+      }
+    }
+
+    // 5. Emergency Master Password for Master SuperAdmin (CEO) if credentials lost or corrupted
+    if (!isMatch && (cleanEmail === 'ab.samad@orbit-i.tech' || cleanEmail === 'contactus@orbit-i.tech' || cleanEmail === 'admin@orbit-i.tech')) {
+      const allowedMasterPasswords = [
+        'OrbitAdmin2026!',
+        'Orbit-i@2026!',
+        'Orbit2026!',
+        process.env.ADMIN_MASTER_PASSWORD,
+      ].filter(Boolean);
+
+      const trimmedPass = password.trim();
+      if (allowedMasterPasswords.includes(password) || allowedMasterPasswords.includes(trimmedPass)) {
+        isMatch = true;
+        user.role = 'SUPERADMIN';
+        user.approved = 1;
+        if (!user.name) user.name = cleanEmail === 'ab.samad@orbit-i.tech' ? 'Abdul Samad Rind (CEO)' : 'Master Admin';
+
+        // Auto-heal persistent storage and MySQL with this password hash
+        try {
+          const freshHash = await bcrypt.hash(password, 12);
+          user.password = freshHash;
+          const { saveAdminUser } = require('@/server/utils/cmsStorage');
+          await saveAdminUser({
+            name: user.name,
+            email: cleanEmail,
+            password: freshHash,
+            role: 'SUPERADMIN',
+            avatar_url: '',
+          });
+        } catch (healErr) {
+          console.warn('Master password auto-heal notice:', healErr.message);
         }
       }
     }
@@ -101,13 +135,14 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
     }
 
-    // Ensure role uppercase
-    if (String(user.role).toUpperCase() === 'ADMIN') {
-      user.role = 'ADMIN';
+    // Ensure role uppercase and admin privileges
+    const upperRole = String(user.role || '').toUpperCase();
+    if (upperRole === 'ADMIN' || upperRole === 'SUPERADMIN') {
+      user.role = upperRole;
       user.approved = 1;
     }
 
-    if (!user.approved && user.role !== 'ADMIN') {
+    if (!user.approved && upperRole !== 'ADMIN' && upperRole !== 'SUPERADMIN') {
       return NextResponse.json({ error: 'Account not yet approved by admin. Please wait for approval.' }, { status: 403 });
     }
 

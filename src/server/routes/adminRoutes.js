@@ -11,8 +11,12 @@ router.post('/setup', loginRateLimiter, adminController.initialSuperAdminSetup);
 // 2. All subsequent admin routes protected by JWT + ADMIN role verification
 router.use(authenticateToken, requireAdmin);
 
-// Account Settings
+// Account Settings & Access Control
 router.put('/account', adminController.updateAdminAccount);
+router.get('/accounts', adminController.getAllAdminAccounts);
+router.post('/accounts', adminController.createAdminAccount);
+router.put('/accounts/:id', adminController.updateAdminAccountDetails);
+router.delete('/accounts/:id', adminController.deleteAdminAccount);
 
 // Security Shield Telemetry & Cache Management
 router.get('/security/stats', adminController.getSecurityTelemetry);

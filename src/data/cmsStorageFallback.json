@@ -588,19 +588,19 @@
   ],
   "admin_users": [
     {
-      "id": 1,
+      "id": 1793384601953,
       "name": "Abdul Samad Rind (CEO)",
       "email": "ab.samad@orbit-i.tech",
-      "password": "$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS",
-      "role": "ADMIN",
+      "password": "$2a$12$BdIGWQioa1UdYdN7UEsZPepbNuOLagyLlKmyhpdby8ZD99Q9EFrJ2",
+      "role": "SUPERADMIN",
       "avatar_url": "",
-      "created_at": "2026-10-14T12:00:00.000Z"
+      "created_at": "2026-10-30T18:23:21.953Z"
     },
     {
       "id": 2,
       "name": "ORBIT-I Master Admin",
       "email": "contactus@orbit-i.tech",
-      "password": "$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS",
+      "password": "$2a$12$ajggGQ7SVUZPREAu6ODk0euiWWgKUX4zr74T3sVWxfxKDAj.JUE9S",
       "role": "ADMIN",
       "avatar_url": "",
       "created_at": "2026-10-14T12:00:00.000Z"
@@ -609,7 +609,7 @@
       "id": 3,
       "name": "ORBIT-I SuperAdmin",
       "email": "admin@orbit-i.tech",
-      "password": "$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS",
+      "password": "$2a$12$ajggGQ7SVUZPREAu6ODk0euiWWgKUX4zr74T3sVWxfxKDAj.JUE9S",
       "role": "ADMIN",
       "avatar_url": "",
       "created_at": "2026-10-14T12:00:00.000Z"
@@ -814,5 +814,18 @@
       "country": "Pakistan",
       "created_at": "2026-10-27T05:54:32.197Z"
     }
-  ]
+  ],
+  "maintenance_mode": {
+    "enabled": false,
+    "title": "System Upgrades in Progress",
+    "message": "ORBIT-I systems are currently undergoing scheduled upgrades & performance enhancements. Select public portals remain fully accessible.",
+    "estimated_return": "1-2 Hours",
+    "allowed_routes": [
+      "/careers",
+      "/contact",
+      "/verify"
+    ],
+    "custom_allowed_routes": "",
+    "updated_at": "2026-10-30T17:33:03.962Z"
+  }
 }

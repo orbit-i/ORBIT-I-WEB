@@ -6,32 +6,23 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   Shield,
-  Key,
   Lock,
-  ArrowRight,
   ArrowLeft,
   CheckCircle2,
   AlertCircle,
   Eye,
   EyeOff,
-  Sparkles,
-  Server,
-  Zap,
 } from 'lucide-react'
 import { saveToken, loginClient } from '@/lib/orbitApi'
 
-export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
-  const [isSetup, setIsSetup] = useState(false)
+export default function SuperAdminGateway({ onAuthenticated }) {
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
-    name: 'Abdul Samad Rind',
     email: 'ab.samad@orbit-i.tech',
     password: '',
-    confirmPassword: '',
   })
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
-  const [rateLimitCountdown, setRateLimitCountdown] = useState(null)
   const [focused, setFocused] = useState(null)
 
   useEffect(() => {
@@ -43,107 +34,35 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
     }
   }, [])
 
-  // Calculate password strength
-  const calcStrength = (pwd) => {
-    if (!pwd) return { score: 0, text: 'None', color: '#6b7280' }
-    let score = 0
-    if (pwd.length >= 8) score += 25
-    if (pwd.length >= 12) score += 15
-    if (/[A-Z]/.test(pwd)) score += 20
-    if (/[0-9]/.test(pwd)) score += 20
-    if (/[^A-Za-z0-9]/.test(pwd)) score += 20
-
-    if (score < 40) return { score, text: 'Weak', color: '#ef4444' }
-    if (score < 75) return { score, text: 'Moderate', color: '#f59e0b' }
-    return { score: 100, text: 'Military-Grade Strong', color: '#22c55e' }
-  }
-
-  const pwdStrength = calcStrength(form.password)
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setStatus('loading')
 
-    if (isSetup) {
-      // 1. Initial Setup Flow — User sets their OWN credentials
-      if (form.password !== form.confirmPassword) {
-        setError('Passwords do not match.')
-        setStatus('idle')
-        return
+    try {
+      const data = await loginClient({
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+      })
+
+      if (data.role !== 'ADMIN' && data.role !== 'SUPERADMIN') {
+        throw new Error('Access Denied: Administrator role privileges required.')
       }
 
-      if (form.password.length < 8) {
-        setError('Master Password must be at least 8 characters long.')
-        setStatus('idle')
-        return
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('orbit_admin_last_email', data.email)
       }
 
-      try {
-        const res = await fetch('/api/admin/setup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: form.name.trim(),
-            email: form.email.trim().toLowerCase(),
-            password: form.password,
-          }),
-        })
-
-        const data = await res.json()
-        if (!res.ok) {
-          if (res.status === 429) {
-            setRateLimitCountdown(data.retryAfter || 60)
-          }
-          if (data.error && data.error.includes('already been completed')) {
-            setIsSetup(false)
-            setError('SuperAdmin account is already initialized! Switched to Login mode below.')
-            setStatus('idle')
-            return
-          }
-          throw new Error(data.error || 'Setup rejected.')
-        }
-
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('orbit_admin_last_email', data.email)
-        }
-
-        saveToken(data.token, { name: data.name, email: data.email, role: 'ADMIN' })
-        setStatus('success')
-        setTimeout(() => {
-          onAuthenticated({ name: data.name, email: data.email, role: 'ADMIN' })
-        }, 800)
-      } catch (err) {
-        setError(err.message)
-        setStatus('idle')
-      }
-    } else {
-      // 2. Master Login Flow — Protected by loginRateLimiter
-      try {
-        const data = await loginClient({
-          email: form.email.trim().toLowerCase(),
-          password: form.password,
-        })
-
-        if (data.role !== 'ADMIN') {
-          throw new Error('Access Denied: Administrator role privileges required.')
-        }
-
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('orbit_admin_last_email', data.email)
-        }
-
-        saveToken(data.token, { name: data.name, email: data.email, role: data.role })
-        setStatus('success')
-        setTimeout(() => {
-          onAuthenticated({ name: data.name, email: data.email, role: data.role })
-        }, 800)
-      } catch (err) {
-        const msg = err.message || 'Invalid administrator credentials.'
-        const isDbLeak = /access denied|database|mysql|connection|sql|table|host/i.test(msg)
-        setError(isDbLeak ? 'Invalid credentials or authentication service offline.' : msg)
-        setStatus('idle')
-      }
+      saveToken(data.token, { name: data.name, email: data.email, role: data.role })
+      setStatus('success')
+      setTimeout(() => {
+        onAuthenticated({ name: data.name, email: data.email, role: data.role })
+      }, 700)
+    } catch (err) {
+      const msg = err.message || 'Invalid administrator credentials.'
+      const isDbLeak = /access denied|database|mysql|connection|sql|table|host/i.test(msg)
+      setError(isDbLeak ? 'Invalid credentials or authentication service offline.' : msg)
+      setStatus('idle')
     }
   }
 
@@ -195,7 +114,7 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
           transition={{ duration: 0.4 }}
           style={{
             width: '100%',
-            maxWidth: 480,
+            maxWidth: 440,
             background: 'var(--bg-card)',
             border: '1px solid var(--border-hover)',
             borderRadius: 24,
@@ -218,91 +137,26 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
               color: 'var(--accent)',
               marginBottom: 16,
             }}>
-              {isSetup ? <Sparkles size={26} /> : <Lock size={26} />}
+              <Lock size={26} />
             </div>
 
-            <div style={{ display: 'flex', background: 'var(--bg-elevated)', padding: 4, borderRadius: 12, marginBottom: 18, border: '1px solid var(--border)' }}>
-              <button
-                type="button"
-                onClick={() => { setIsSetup(false); setError(''); }}
-                style={{
-                  flex: 1,
-                  padding: '9px 12px',
-                  borderRadius: 9,
-                  border: 'none',
-                  background: !isSetup ? 'var(--accent)' : 'transparent',
-                  color: !isSetup ? '#fff' : 'var(--text-muted)',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                }}
-              >
-                <Lock size={13} /> SuperAdmin Login
-              </button>
-              <button
-                type="button"
-                onClick={() => { setIsSetup(true); setError(''); }}
-                style={{
-                  flex: 1,
-                  padding: '9px 12px',
-                  borderRadius: 9,
-                  border: 'none',
-                  background: isSetup ? 'var(--accent)' : 'transparent',
-                  color: isSetup ? '#fff' : 'var(--text-muted)',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                }}
-              >
-                <Sparkles size={13} /> Setup / Reset Password
-              </button>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: 100, marginBottom: 12 }}>
+              <span className="dot" style={{ background: '#22c55e' }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#818cf8', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                CYBER SHIELD ENFORCED ACCESS
+              </span>
             </div>
-
-            <span className="tag" style={{ display: 'inline-flex', marginBottom: 10, fontSize: 10 }}>
-              <span className="dot" />
-              {isSetup ? 'First-Time SuperAdmin Master Setup' : 'Cyber Shield Enforced Access'}
-            </span>
 
             <h1 style={{ fontFamily: 'Space Grotesk', fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 8 }}>
-              {isSetup ? 'Create Master Credentials' : 'SuperAdmin Portal Login'}
+              SuperAdmin Portal Login
             </h1>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-              {isSetup
-                ? 'No default credentials exist. Set your own private administrator credentials to initialize and permanently lock this control vault.'
-                : 'Sign in with your private administrator credentials. Protected against brute-force attacks by sliding-window rate limiters.'}
+              Sign in with your private administrator credentials. Protected against brute-force attacks by sliding-window rate limiters.
             </p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {isSetup && (
-              <div>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  SuperAdmin Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Master Administrator"
-                  value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  onFocus={() => setFocused('name')}
-                  onBlur={() => setFocused(null)}
-                  style={inputStyle('name')}
-                />
-              </div>
-            )}
-
             <div>
               <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Master Administrator Email *
@@ -322,13 +176,8 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                 <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  {isSetup ? 'Choose Master Password *' : 'Master Password *'}
+                  Master Password *
                 </label>
-                {isSetup && form.password && (
-                  <span style={{ fontSize: 11, fontWeight: 600, color: pwdStrength.color }}>
-                    Strength: {pwdStrength.text}
-                  </span>
-                )}
               </div>
 
               <div style={{ position: 'relative' }}>
@@ -350,31 +199,7 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-
-              {isSetup && form.password && (
-                <div style={{ width: '100%', height: 4, background: 'var(--bg-elevated)', borderRadius: 2, marginTop: 6, overflow: 'hidden' }}>
-                  <div style={{ width: `${pwdStrength.score}%`, height: '100%', background: pwdStrength.color, transition: 'all 0.3s' }} />
-                </div>
-              )}
             </div>
-
-            {isSetup && (
-              <div>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Confirm Master Password *
-                </label>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  placeholder="••••••••••••"
-                  value={form.confirmPassword}
-                  onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-                  onFocus={() => setFocused('confirmPassword')}
-                  onBlur={() => setFocused(null)}
-                  style={inputStyle('confirmPassword')}
-                />
-              </div>
-            )}
 
             {/* Error Message */}
             <AnimatePresence>
@@ -391,40 +216,12 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
                     color: '#ef4444',
                     fontSize: 13,
                     display: 'flex',
-                    flexDirection: 'column',
+                    alignItems: 'center',
                     gap: 8,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <AlertCircle size={15} style={{ flexShrink: 0 }} />
-                    <span>{error}</span>
-                  </div>
-                  {!isSetup && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsSetup(true);
-                        setError('');
-                      }}
-                      style={{
-                        alignSelf: 'flex-start',
-                        background: 'rgba(59,130,246,0.15)',
-                        border: '1px solid rgba(59,130,246,0.3)',
-                        color: '#93c5fd',
-                        fontSize: 12,
-                        fontWeight: 600,
-                        padding: '6px 12px',
-                        borderRadius: 8,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        marginTop: 2,
-                      }}
-                    >
-                      <Sparkles size={12} /> Set / Reset Master Password for {form.email || 'this account'} &rarr;
-                    </button>
-                  )}
+                  <AlertCircle size={15} style={{ flexShrink: 0 }} />
+                  <span>{error}</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -454,28 +251,18 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
             >
               {status === 'loading' ? (
                 'Authenticating with Cyber Shield...'
-              ) : isSetup ? (
-                <>Lock & Initialize Master Account <ArrowRight size={15} /></>
               ) : (
-                <>Enter SuperAdmin Control Vault <ArrowRight size={15} /></>
+                <>
+                  <span>Enter SuperAdmin Control Vault</span>
+                  <Lock size={15} />
+                </>
               )}
             </button>
           </form>
 
-          {/* Toggle between setup and login if needed */}
-          <div style={{ marginTop: 20, textAlign: 'center', fontSize: 12, color: 'var(--text-muted)' }}>
-            {isSetup ? (
-              <button
-                onClick={() => { setIsSetup(false); setError('') }}
-                style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: 12 }}
-              >
-                Already initialized? Switch to SuperAdmin Login
-              </button>
-            ) : (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <Shield size={12} color="var(--accent)" /> Protected by ORBIT-I WAF & Rate Limiter
-              </span>
-            )}
+          {/* Footer note */}
+          <div style={{ marginTop: 24, textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
+            🔒 Protected by ORBIT-I Military-Grade WAF & Sliding-Window Rate Limiter
           </div>
         </motion.div>
       </main>

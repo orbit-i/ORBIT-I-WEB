@@ -26,7 +26,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { name, email, password, avatar_url } = body;
+    const { name, email, password, avatar_url, role } = body;
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Name, email, and password are required' }, { status: 400 });
@@ -42,12 +42,14 @@ export async function POST(request) {
       return NextResponse.json({ error: `An admin with email ${cleanEmail} already exists` }, { status: 400 });
     }
 
+    const assignedRole = role ? String(role).toUpperCase().trim() : 'ADMIN';
     const hashedPassword = await bcrypt.hash(password, 12);
     const newAdmin = await saveAdminUser({
       name: name.trim(),
       email: cleanEmail,
       password: hashedPassword,
       avatar_url: avatar_url || '',
+      role: assignedRole,
     });
 
     return NextResponse.json(
@@ -57,7 +59,7 @@ export async function POST(request) {
           id: newAdmin.id,
           name: newAdmin.name,
           email: newAdmin.email,
-          role: 'ADMIN',
+          role: assignedRole,
           avatar_url: newAdmin.avatar_url,
         },
       },

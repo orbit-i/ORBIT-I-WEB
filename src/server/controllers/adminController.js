@@ -9,115 +9,23 @@ const JWT_SECRET = process.env.JWT_SECRET || 'orbit_i_jwt_secret_key_super_secur
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '30d';
 
 /**
- * Check if initial SuperAdmin setup is required (no admin account exists)
+ * Check if initial SuperAdmin setup is required (Permanently locked after master account creation)
  */
 async function getSetupStatus(req, res) {
-  try {
-    const { getAdminUsers } = require('../utils/cmsStorage');
-    const admins = await getAdminUsers();
-    const adminCount = Array.isArray(admins) ? admins.length : 0;
-    return res.status(200).json({
-      setupRequired: adminCount === 0,
-      adminCount,
-    });
-  } catch (error) {
-    return res.status(200).json({
-      setupRequired: false,
-      adminCount: 1,
-      note: 'Protected gateway active',
-    });
-  }
+  return res.status(200).json({
+    setupRequired: false,
+    isLocked: true,
+    adminCount: 1,
+  });
 }
 
 /**
- * First-Time SuperAdmin Initialization
- * Only allowed if ZERO admins exist! Permanently locks once first admin is registered.
+ * First-Time SuperAdmin Initialization — Permanently locked down for security
  */
 async function initialSuperAdminSetup(req, res) {
-  try {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Name, email, and strong password are required.' });
-    }
-
-    if (password.length < 8) {
-      return res.status(400).json({ error: 'Master Password must be at least 8 characters long.' });
-    }
-
-    const { getAdminUsers, saveAdminUser, getAdminByEmail } = require('../utils/cmsStorage');
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanName = name.trim();
-
-    // Check if user already exists
-    const existingUser = await getAdminByEmail(cleanEmail);
-    if (existingUser) {
-      // Update password for existing admin and authenticate them immediately
-      const hashedPassword = await bcrypt.hash(password, 12);
-      await saveAdminUser({
-        name: cleanName || existingUser.name,
-        email: cleanEmail,
-        password: hashedPassword,
-        avatar_url: existingUser.avatar_url || '',
-      });
-
-      const token = jwt.sign(
-        {
-          sub: cleanEmail,
-          email: cleanEmail,
-          name: cleanName || existingUser.name,
-          role: 'ADMIN',
-        },
-        JWT_SECRET,
-        { expiresIn: JWT_EXPIRES_IN }
-      );
-
-      console.log(`🛡️  SuperAdmin [${cleanEmail}] master credentials updated and authenticated!`);
-
-      return res.status(200).json({
-        message: 'Master Administrator account updated and authenticated successfully.',
-        token,
-        name: cleanName || existingUser.name,
-        email: cleanEmail,
-        role: 'ADMIN',
-      });
-    }
-
-    // Hash with 12 rounds of bcrypt
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Save to both resilient fallback store and MySQL
-    await saveAdminUser({
-      name: cleanName,
-      email: cleanEmail,
-      password: hashedPassword,
-      avatar_url: '',
-    });
-
-    const token = jwt.sign(
-      {
-        sub: cleanEmail,
-        email: cleanEmail,
-        name: cleanName,
-        role: 'ADMIN',
-      },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
-    );
-
-    console.log(`🛡️  Initial SuperAdmin [${cleanEmail}] successfully initialized and secured!`);
-
-    return res.status(201).json({
-      message: 'SuperAdmin Master Account created successfully.',
-      token,
-      name: cleanName,
-      email: cleanEmail,
-      role: 'ADMIN',
-    });
-  } catch (error) {
-    console.error('initialSuperAdminSetup error:', error);
-    return res.status(500).json({ error: error.message || 'Server error during SuperAdmin setup' });
-  }
+  return res.status(403).json({
+    error: 'Security Lockout: Public administrator setup is permanently disabled. Administrator accounts can only be created by an authenticated SuperAdmin inside the Control Vault.',
+  });
 }
 
 /**
@@ -367,6 +275,99 @@ async function getAdminOverview(req, res) {
   }
 }
 
+// ─── ADMINISTRATOR ACCOUNTS & ACCESS CONTROL ─────────────────────────────
+async function getAllAdminAccounts(req, res) {
+  try {
+    const { getAdminUsers } = require('../utils/cmsStorage');
+    const admins = await getAdminUsers();
+    return res.status(200).json(admins);
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Server error' });
+  }
+}
+
+async function createAdminAccount(req, res) {
+  try {
+    const { name, email, password, avatar_url, role } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+    }
+
+    const { getAdminByEmail, saveAdminUser } = require('../utils/cmsStorage');
+    const cleanEmail = email.trim().toLowerCase();
+    const existing = await getAdminByEmail(cleanEmail);
+    if (existing) {
+      return res.status(400).json({ error: `An admin with email ${cleanEmail} already exists` });
+    }
+
+    const assignedRole = role ? String(role).toUpperCase().trim() : 'ADMIN';
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const newAdmin = await saveAdminUser({
+      name: name.trim(),
+      email: cleanEmail,
+      password: hashedPassword,
+      avatar_url: avatar_url || '',
+      role: assignedRole,
+    });
+
+    return res.status(201).json({
+      message: 'New administrator account created successfully',
+      admin: {
+        id: newAdmin.id,
+        name: newAdmin.name,
+        email: newAdmin.email,
+        role: assignedRole,
+        avatar_url: newAdmin.avatar_url,
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Server error creating admin' });
+  }
+}
+
+async function updateAdminAccountDetails(req, res) {
+  try {
+    const { id } = req.params;
+    const { name, email, password, avatar_url, role } = req.body;
+    const { updateAdminUser } = require('../utils/cmsStorage');
+
+    const updates = {};
+    if (name) updates.name = name.trim();
+    if (email) updates.email = email.trim().toLowerCase();
+    if (role) updates.role = String(role).toUpperCase().trim();
+    if (avatar_url !== undefined) updates.avatar_url = avatar_url;
+    if (password) {
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+      }
+      updates.password = await bcrypt.hash(password, 12);
+    }
+
+    await updateAdminUser(id, updates);
+    return res.status(200).json({ message: 'Administrator account updated successfully' });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Server error updating admin' });
+  }
+}
+
+async function deleteAdminAccount(req, res) {
+  try {
+    const { id } = req.params;
+    const { getAdminUsers, deleteAdminUser } = require('../utils/cmsStorage');
+    const allAdmins = await getAdminUsers();
+    if (allAdmins.length <= 1) {
+      return res.status(400).json({ error: 'Cannot delete the sole remaining administrator' });
+    }
+    await deleteAdminUser(id);
+    return res.status(200).json({ message: 'Administrator account removed successfully' });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Server error deleting admin' });
+  }
+}
+
 module.exports = {
   getSetupStatus,
   initialSuperAdminSetup,
@@ -378,4 +379,8 @@ module.exports = {
   approveClient,
   getAllProjects,
   getAdminOverview,
+  getAllAdminAccounts,
+  createAdminAccount,
+  updateAdminAccountDetails,
+  deleteAdminAccount,
 };

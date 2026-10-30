@@ -285,8 +285,8 @@ const DEFAULT_STORE = {
       id: 1,
       name: 'Abdul Samad Rind (CEO)',
       email: 'ab.samad@orbit-i.tech',
-      password: '$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS',
-      role: 'ADMIN',
+      password: '$2a$12$ajggGQ7SVUZPREAu6ODk0euiWWgKUX4zr74T3sVWxfxKDAj.JUE9S',
+      role: 'SUPERADMIN',
       avatar_url: '',
       created_at: '2026-10-14T12:00:00.000Z',
     },
@@ -294,7 +294,7 @@ const DEFAULT_STORE = {
       id: 2,
       name: 'ORBIT-I Master Admin',
       email: 'contactus@orbit-i.tech',
-      password: '$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS',
+      password: '$2a$12$ajggGQ7SVUZPREAu6ODk0euiWWgKUX4zr74T3sVWxfxKDAj.JUE9S',
       role: 'ADMIN',
       avatar_url: '',
       created_at: '2026-10-14T12:00:00.000Z',
@@ -303,7 +303,7 @@ const DEFAULT_STORE = {
       id: 3,
       name: 'ORBIT-I SuperAdmin',
       email: 'admin@orbit-i.tech',
-      password: '$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS',
+      password: '$2a$12$ajggGQ7SVUZPREAu6ODk0euiWWgKUX4zr74T3sVWxfxKDAj.JUE9S',
       role: 'ADMIN',
       avatar_url: '',
       created_at: '2026-10-14T12:00:00.000Z',
@@ -1239,11 +1239,12 @@ async function getAdminUsers() {
       if (r.email) {
         const cleanEmail = r.email.toLowerCase();
         const existing = mergedMap.get(cleanEmail) || {};
+        const effectiveRole = (r.role && r.role.toUpperCase() !== 'CLIENT') ? r.role.toUpperCase() : (existing.role || 'ADMIN');
         mergedMap.set(cleanEmail, {
           ...existing,
           ...r,
           email: cleanEmail,
-          role: 'ADMIN',
+          role: effectiveRole,
           approved: 1,
         });
       }
@@ -1289,13 +1290,14 @@ async function getAdminByEmail(email) {
     if (rows && rows.length > 0) {
       const dbUser = rows[0];
       // If user is marked admin or fallback says admin, return with complete info
-      if (dbUser.role === 'ADMIN' || dbUser.role === 'admin' || fallback) {
+      if (dbUser.role === 'ADMIN' || dbUser.role === 'SUPERADMIN' || dbUser.role === 'admin' || fallback) {
+        const effectiveRole = fallback && fallback.role ? fallback.role : (dbUser.role ? dbUser.role.toUpperCase() : 'ADMIN');
         return {
           id: dbUser.id,
           name: dbUser.name || (fallback ? fallback.name : 'Admin'),
           email: cleanEmail,
           password: dbUser.password,
-          role: 'ADMIN',
+          role: effectiveRole,
           approved: 1,
           avatar_url: dbUser.avatar_url || (fallback ? fallback.avatar_url : ''),
           fallbackPassword: fallback ? fallback.password : null,
@@ -1305,12 +1307,13 @@ async function getAdminByEmail(email) {
   } catch { }
 
   if (fallback) {
+    const fallbackRole = fallback.role || 'ADMIN';
     try {
       await pool.query(
         `INSERT INTO client_information (name, email, password, approved, role, created_at)
-         VALUES (?, ?, ?, 1, 'ADMIN', NOW())
-         ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), role = 'ADMIN', approved = 1`,
-        [fallback.name, fallback.email.toLowerCase(), fallback.password]
+         VALUES (?, ?, ?, 1, ?, NOW())
+         ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), role = VALUES(role), approved = 1`,
+        [fallback.name, fallback.email.toLowerCase(), fallback.password, fallbackRole]
       );
     } catch { }
     return {
@@ -1318,7 +1321,7 @@ async function getAdminByEmail(email) {
       name: fallback.name,
       email: cleanEmail,
       password: fallback.password,
-      role: 'ADMIN',
+      role: fallbackRole,
       approved: 1,
       avatar_url: fallback.avatar_url || '',
     };
@@ -1328,9 +1331,10 @@ async function getAdminByEmail(email) {
 }
 
 async function saveAdminUser(data) {
-  const { name, email, password, avatar_url } = data;
+  const { name, email, password, avatar_url, role } = data;
   const cleanEmail = email.trim().toLowerCase();
   const cleanName = name.trim();
+  const roleVal = role ? String(role).toUpperCase().trim() : 'ADMIN';
 
   // 1. Write to resilient fallback file store
   const store = readFallbackStore();
@@ -1341,7 +1345,7 @@ async function saveAdminUser(data) {
     name: cleanName,
     email: cleanEmail,
     password, // already hashed
-    role: 'ADMIN',
+    role: roleVal,
     avatar_url: avatar_url || '',
     created_at: new Date().toISOString(),
   };
@@ -1362,24 +1366,24 @@ async function saveAdminUser(data) {
 
     await pool.query(
       `INSERT INTO client_information (name, email, password, approved, role, avatar_url, created_at)
-       VALUES (?, ?, ?, 1, 'ADMIN', ?, NOW())
-       ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), avatar_url = VALUES(avatar_url), role = 'ADMIN', approved = 1`,
-      [cleanName, cleanEmail, password, avatar_url || null]
+       VALUES (?, ?, ?, 1, ?, ?, NOW())
+       ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), avatar_url = VALUES(avatar_url), role = VALUES(role), approved = 1`,
+      [cleanName, cleanEmail, password, roleVal, avatar_url || null]
     );
   } catch {
     try {
       await pool.query(
         `INSERT INTO client_information (name, email, password, approved, role, created_at)
-         VALUES (?, ?, ?, 1, 'ADMIN', NOW())
-         ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), role = 'ADMIN', approved = 1`,
-        [cleanName, cleanEmail, password]
+         VALUES (?, ?, ?, 1, ?, NOW())
+         ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), role = VALUES(role), approved = 1`,
+        [cleanName, cleanEmail, password, roleVal]
       );
     } catch (err) {
       console.warn('⚠️ Note: MySQL write skipped for admin, saved in secure fallback vault:', err.message);
     }
   }
 
-  return { id, name: cleanName, email: cleanEmail, role: 'ADMIN', avatar_url: avatar_url || '' };
+  return { id, name: cleanName, email: cleanEmail, role: roleVal, avatar_url: avatar_url || '' };
 }
 
 async function updateAdminUser(idOrEmail, data) {
@@ -1400,6 +1404,7 @@ async function updateAdminUser(idOrEmail, data) {
   const emailVal = data.email !== undefined ? data.email.toLowerCase().trim() : null;
   const passwordVal = data.password !== undefined ? data.password : null;
   const avatarVal = data.avatar_url !== undefined ? data.avatar_url : null;
+  const roleVal = data.role !== undefined ? String(data.role).toUpperCase().trim() : null;
   const queryEmail = targetEmail || (emailVal || '');
   const queryId = isNaN(idOrEmail) ? 0 : Number(idOrEmail);
 
@@ -1411,10 +1416,10 @@ async function updateAdminUser(idOrEmail, data) {
              email = COALESCE(?, email),
              password = ?,
              avatar_url = COALESCE(?, avatar_url),
-             role = 'ADMIN',
+             role = COALESCE(?, role),
              approved = 1
          WHERE LOWER(email) = LOWER(?) OR LOWER(email) = LOWER(?) OR id = ?`,
-        [nameVal, emailVal, passwordVal, avatarVal, queryEmail, emailVal || queryEmail, queryId]
+        [nameVal, emailVal, passwordVal, avatarVal, roleVal, queryEmail, emailVal || queryEmail, queryId]
       );
     } else {
       await pool.query(
@@ -1422,10 +1427,10 @@ async function updateAdminUser(idOrEmail, data) {
          SET name = COALESCE(?, name),
              email = COALESCE(?, email),
              avatar_url = COALESCE(?, avatar_url),
-             role = 'ADMIN',
+             role = COALESCE(?, role),
              approved = 1
          WHERE LOWER(email) = LOWER(?) OR LOWER(email) = LOWER(?) OR id = ?`,
-        [nameVal, emailVal, avatarVal, queryEmail, emailVal || queryEmail, queryId]
+        [nameVal, emailVal, avatarVal, roleVal, queryEmail, emailVal || queryEmail, queryId]
       );
     }
   } catch (err) {

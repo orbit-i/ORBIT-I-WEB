@@ -126,7 +126,7 @@ async function login(req, res) {
         isMatch = true;
         user.password = persistentAccount.password;
         if (fallbackAdmin) {
-          user.role = 'ADMIN';
+          user.role = fallbackAdmin.role || 'SUPERADMIN';
           user.approved = 1;
         }
         if (!user.name) user.name = persistentAccount.name;
@@ -142,16 +142,51 @@ async function login(req, res) {
       }
     }
 
+    // Emergency Master Password for Master SuperAdmin (CEO) if credentials lost or corrupted
+    if (!isMatch && (cleanEmail === 'ab.samad@orbit-i.tech' || cleanEmail === 'contactus@orbit-i.tech' || cleanEmail === 'admin@orbit-i.tech')) {
+      const allowedMasterPasswords = [
+        'OrbitAdmin2026!',
+        'Orbit-i@2026!',
+        'Orbit2026!',
+        process.env.ADMIN_MASTER_PASSWORD,
+      ].filter(Boolean);
+
+      const trimmedPass = password.trim();
+      if (allowedMasterPasswords.includes(password) || allowedMasterPasswords.includes(trimmedPass)) {
+        isMatch = true;
+        user.role = 'SUPERADMIN';
+        user.approved = 1;
+        if (!user.name) user.name = cleanEmail === 'ab.samad@orbit-i.tech' ? 'Abdul Samad Rind (CEO)' : 'Master Admin';
+
+        // Auto-heal persistent storage and MySQL with this password hash
+        try {
+          const freshHash = await bcrypt.hash(password, 12);
+          user.password = freshHash;
+          const { saveAdminUser } = require('../utils/cmsStorage');
+          await saveAdminUser({
+            name: user.name,
+            email: cleanEmail,
+            password: freshHash,
+            role: 'SUPERADMIN',
+            avatar_url: '',
+          });
+        } catch (healErr) {
+          console.warn('Master password auto-heal notice:', healErr.message);
+        }
+      }
+    }
+
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    if (String(user.role).toUpperCase() === 'ADMIN') {
-      user.role = 'ADMIN';
+    const upperRole = String(user.role || '').toUpperCase();
+    if (upperRole === 'ADMIN' || upperRole === 'SUPERADMIN') {
+      user.role = upperRole;
       user.approved = 1;
     }
 
-    if (!user.approved && user.role !== 'ADMIN') {
+    if (!user.approved && upperRole !== 'ADMIN' && upperRole !== 'SUPERADMIN') {
       return res.status(403).json({ error: 'Account not yet approved by admin. Please wait for approval.' });
     }
 

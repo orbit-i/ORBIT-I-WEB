@@ -17,6 +17,7 @@ export async function PUT(request, { params }) {
     const updates = {};
     if (name) updates.name = name.trim();
     if (email) updates.email = email.trim().toLowerCase();
+    if (body.role) updates.role = String(body.role).toUpperCase().trim();
     if (avatar_url !== undefined) updates.avatar_url = avatar_url;
     if (password) {
       if (password.length < 8) {
