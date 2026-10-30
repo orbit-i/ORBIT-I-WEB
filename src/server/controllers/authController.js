@@ -13,19 +13,37 @@ async function register(req, res) {
       return res.status(400).json({ error: 'Name, email, and password are required' });
     }
 
-    // Check if email already exists
-    const [existing] = await pool.query('SELECT id FROM client_information WHERE email = ?', [email]);
-    if (existing.length > 0) {
+    const { getClientByEmail, saveClientUser, getAdminByEmail } = require('../utils/cmsStorage');
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Check if email already registered in MySQL
+    let emailExists = false;
+    try {
+      const [existing] = await pool.query('SELECT id FROM client_information WHERE LOWER(email) = ?', [cleanEmail]);
+      if (existing && existing.length > 0) emailExists = true;
+    } catch {}
+
+    // Check if email already registered in persistent vault
+    if (!emailExists) {
+      const existingClient = await getClientByEmail(cleanEmail);
+      const existingAdmin = await getAdminByEmail(cleanEmail);
+      if (existingClient || existingAdmin) emailExists = true;
+    }
+
+    if (emailExists) {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await pool.query(
-      `INSERT INTO client_information (name, email, password, phone, company, approved, role, created_at)
-       VALUES (?, ?, ?, ?, ?, 0, 'CLIENT', NOW())`,
-      [name, email, hashedPassword, phone || null, company || null]
-    );
+    // Persist to untracked persistent vault (survives all git deployments)
+    await saveClientUser({
+      name: name.trim(),
+      email: cleanEmail,
+      password: hashedPassword,
+      phone: phone ? phone.trim() : null,
+      company: company ? company.trim() : null,
+    });
 
     return res.status(200).send('Registration successful. Please wait for admin approval.');
   } catch (error) {
@@ -55,21 +73,34 @@ async function login(req, res) {
         user = rows[0];
       }
     } catch (dbErr) {
-      console.warn('MySQL auth query unavailable, checking fallback store:', dbErr.message);
+      console.warn('MySQL auth query unavailable, checking persistent vault:', dbErr.message);
     }
 
-    // 2. Fallback to admin storage
-    const { getAdminByEmail } = require('../utils/cmsStorage');
+    // 2. Check persistent admin storage & client storage
+    const { getAdminByEmail, getClientByEmail } = require('../utils/cmsStorage');
     const fallbackAdmin = await getAdminByEmail(cleanEmail);
-    if (!user && fallbackAdmin) {
-      user = {
-        id: fallbackAdmin.id,
-        name: fallbackAdmin.name,
-        email: fallbackAdmin.email,
-        password: fallbackAdmin.password,
-        role: fallbackAdmin.role || 'ADMIN',
-        approved: 1,
-      };
+    const fallbackClient = !fallbackAdmin ? await getClientByEmail(cleanEmail) : null;
+
+    if (!user) {
+      if (fallbackAdmin) {
+        user = {
+          id: fallbackAdmin.id,
+          name: fallbackAdmin.name,
+          email: fallbackAdmin.email,
+          password: fallbackAdmin.password,
+          role: fallbackAdmin.role || 'ADMIN',
+          approved: 1,
+        };
+      } else if (fallbackClient) {
+        user = {
+          id: fallbackClient.id,
+          name: fallbackClient.name,
+          email: fallbackClient.email,
+          password: fallbackClient.password,
+          role: fallbackClient.role || 'CLIENT',
+          approved: fallbackClient.approved ? 1 : 0,
+        };
+      }
     }
 
     if (!user) {
@@ -84,25 +115,28 @@ async function login(req, res) {
       }
     }
 
-    // Auto-healing from fallback admin store
-    if (!isMatch && fallbackAdmin && fallbackAdmin.password) {
+    // Auto-healing from persistent store if DB had outdated password
+    const persistentAccount = fallbackAdmin || fallbackClient;
+    if (!isMatch && persistentAccount && persistentAccount.password) {
       const isFallbackMatch =
-        (await bcrypt.compare(password, fallbackAdmin.password)) ||
-        (password !== password.trim() && (await bcrypt.compare(password.trim(), fallbackAdmin.password)));
+        (await bcrypt.compare(password, persistentAccount.password)) ||
+        (password !== password.trim() && (await bcrypt.compare(password.trim(), persistentAccount.password)));
 
       if (isFallbackMatch) {
         isMatch = true;
-        user.password = fallbackAdmin.password;
-        user.role = 'ADMIN';
-        user.approved = 1;
-        if (!user.name) user.name = fallbackAdmin.name;
+        user.password = persistentAccount.password;
+        if (fallbackAdmin) {
+          user.role = 'ADMIN';
+          user.approved = 1;
+        }
+        if (!user.name) user.name = persistentAccount.name;
 
         try {
           await pool.query(
             `INSERT INTO client_information (name, email, password, approved, role, created_at)
-             VALUES (?, ?, ?, 1, 'ADMIN', NOW())
-             ON DUPLICATE KEY UPDATE password = VALUES(password), name = VALUES(name), role = 'ADMIN', approved = 1`,
-            [user.name || 'Admin', cleanEmail, fallbackAdmin.password]
+             VALUES (?, ?, ?, ?, ?, NOW())
+             ON DUPLICATE KEY UPDATE password = VALUES(password), name = VALUES(name), role = VALUES(role), approved = VALUES(approved)`,
+            [user.name || 'User', cleanEmail, persistentAccount.password, user.approved || 0, user.role || 'CLIENT']
           );
         } catch {}
       }

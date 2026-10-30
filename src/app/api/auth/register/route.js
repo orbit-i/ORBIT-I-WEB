@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { pool } from '@/server/config/db';
+import { getClientByEmail, saveClientUser, getAdminByEmail } from '@/server/utils/cmsStorage';
 
 export async function POST(request) {
   try {
@@ -11,18 +12,36 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Name, email, and password are required' }, { status: 400 });
     }
 
-    const [existing] = await pool.query('SELECT id FROM client_information WHERE email = ?', [email]);
-    if (existing.length > 0) {
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Check MySQL
+    let emailExists = false;
+    try {
+      const [existing] = await pool.query('SELECT id FROM client_information WHERE LOWER(email) = ?', [cleanEmail]);
+      if (existing && existing.length > 0) emailExists = true;
+    } catch {}
+
+    // Check persistent vault
+    if (!emailExists) {
+      const existingClient = await getClientByEmail(cleanEmail);
+      const existingAdmin = await getAdminByEmail(cleanEmail);
+      if (existingClient || existingAdmin) emailExists = true;
+    }
+
+    if (emailExists) {
       return NextResponse.json({ error: 'Email already registered' }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await pool.query(
-      `INSERT INTO client_information (name, email, password, phone, company, approved, role, created_at)
-       VALUES (?, ?, ?, ?, ?, 0, 'CLIENT', NOW())`,
-      [name, email, hashedPassword, phone || null, company || null]
-    );
+    // Save to persistent vault
+    await saveClientUser({
+      name: name.trim(),
+      email: cleanEmail,
+      password: hashedPassword,
+      phone: phone ? phone.trim() : null,
+      company: company ? company.trim() : null,
+    });
 
     return new Response('Registration successful. Please wait for admin approval.', { status: 200 });
   } catch (error) {

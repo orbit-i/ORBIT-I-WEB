@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { pool } from '@/server/config/db';
 import { verifyAdmin } from '@/lib/authServer';
+import { approveClientUser } from '@/server/utils/cmsStorage';
 
 export async function PUT(request, { params }) {
   try {
@@ -10,13 +10,7 @@ export async function PUT(request, { params }) {
     }
 
     const { id } = await params;
-
-    const [clients] = await pool.query('SELECT id FROM client_information WHERE id = ?', [id]);
-    if (clients.length === 0) {
-      return NextResponse.json({ error: 'Client not found' }, { status: 404 });
-    }
-
-    await pool.query('UPDATE client_information SET approved = 1 WHERE id = ?', [id]);
+    await approveClientUser(id);
 
     return new Response('Client approved successfully', { status: 200 });
   } catch (error) {

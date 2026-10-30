@@ -52,32 +52,34 @@ async function initialSuperAdminSetup(req, res) {
     // Check if user already exists
     const existingUser = await getAdminByEmail(cleanEmail);
     if (existingUser) {
-      const isMatch = (await bcrypt.compare(password, existingUser.password)) ||
-        (password !== password.trim() && (await bcrypt.compare(password.trim(), existingUser.password)));
+      // Update password for existing admin and authenticate them immediately
+      const hashedPassword = await bcrypt.hash(password, 12);
+      await saveAdminUser({
+        name: cleanName || existingUser.name,
+        email: cleanEmail,
+        password: hashedPassword,
+        avatar_url: existingUser.avatar_url || '',
+      });
 
-      if (isMatch) {
-        const token = jwt.sign(
-          {
-            sub: cleanEmail,
-            email: cleanEmail,
-            name: existingUser.name,
-            role: 'ADMIN',
-          },
-          JWT_SECRET,
-          { expiresIn: JWT_EXPIRES_IN }
-        );
-
-        return res.status(200).json({
-          message: 'Authenticated successfully with existing administrator credentials.',
-          token,
-          name: existingUser.name,
+      const token = jwt.sign(
+        {
+          sub: cleanEmail,
           email: cleanEmail,
+          name: cleanName || existingUser.name,
           role: 'ADMIN',
-        });
-      }
+        },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+      );
 
-      return res.status(403).json({
-        error: 'Admin account already registered with this email. Please log in using the Admin Login form.',
+      console.log(`🛡️  SuperAdmin [${cleanEmail}] master credentials updated and authenticated!`);
+
+      return res.status(200).json({
+        message: 'Master Administrator account updated and authenticated successfully.',
+        token,
+        name: cleanName || existingUser.name,
+        email: cleanEmail,
+        role: 'ADMIN',
       });
     }
 
@@ -222,13 +224,10 @@ function clearCache(req, res) {
 // Admin — Get all registered clients
 async function getAllClients(req, res) {
   try {
-    const [rows] = await pool.query(
-      `SELECT id, name, email, phone, company, approved, role, created_at
-       FROM client_information
-       ORDER BY created_at DESC`
-    );
+    const { getClientUsers } = require('../utils/cmsStorage');
+    const clients = await getClientUsers();
 
-    const response = rows.map((c) => ({
+    const response = clients.map((c) => ({
       id: c.id,
       name: c.name,
       email: c.email,
@@ -250,13 +249,8 @@ async function getAllClients(req, res) {
 async function approveClient(req, res) {
   try {
     const { id } = req.params;
-
-    const [clients] = await pool.query('SELECT id FROM client_information WHERE id = ?', [id]);
-    if (clients.length === 0) {
-      return res.status(404).json({ error: 'Client not found' });
-    }
-
-    await pool.query('UPDATE client_information SET approved = 1 WHERE id = ?', [id]);
+    const { approveClientUser } = require('../utils/cmsStorage');
+    await approveClientUser(id);
 
     return res.status(200).send('Client approved successfully');
   } catch (error) {

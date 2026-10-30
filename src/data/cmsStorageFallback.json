@@ -589,6 +589,15 @@
   "admin_users": [
     {
       "id": 1,
+      "name": "Abdul Samad Rind (CEO)",
+      "email": "ab.samad@orbit-i.tech",
+      "password": "$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS",
+      "role": "ADMIN",
+      "avatar_url": "",
+      "created_at": "2026-10-14T12:00:00.000Z"
+    },
+    {
+      "id": 2,
       "name": "ORBIT-I Master Admin",
       "email": "contactus@orbit-i.tech",
       "password": "$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS",
@@ -597,7 +606,7 @@
       "created_at": "2026-10-14T12:00:00.000Z"
     },
     {
-      "id": 2,
+      "id": 3,
       "name": "ORBIT-I SuperAdmin",
       "email": "admin@orbit-i.tech",
       "password": "$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS",
@@ -606,6 +615,7 @@
       "created_at": "2026-10-14T12:00:00.000Z"
     }
   ],
+  "clients": [],
   "site_notice": {
     "enabled": false,
     "message": "🚀 Admissions open for Autumn 2026 Internship Batch! Apply now.",

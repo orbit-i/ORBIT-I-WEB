@@ -33,3 +33,9 @@ yarn-error.log*
 
 # testing
 /coverage
+
+# persistent database & file storage (survives git pulls and deployments)
+/.storage/
+/storage/
+*.sqlite
+*.sqlite3

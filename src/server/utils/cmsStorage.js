@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const { pool } = require('../config/db');
 
+const STORAGE_DIR = process.env.ORBIT_STORAGE_DIR || path.join(process.cwd(), '.storage');
+const PERSISTENT_FILE = path.join(STORAGE_DIR, 'persistent_vault.json');
 const FALLBACK_FILE = path.join(process.cwd(), 'src', 'data', 'cmsStorageFallback.json');
 
 // Default starter data
@@ -281,6 +283,15 @@ const DEFAULT_STORE = {
   admin_users: [
     {
       id: 1,
+      name: 'Abdul Samad Rind (CEO)',
+      email: 'ab.samad@orbit-i.tech',
+      password: '$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS',
+      role: 'ADMIN',
+      avatar_url: '',
+      created_at: '2026-10-14T12:00:00.000Z',
+    },
+    {
+      id: 2,
       name: 'ORBIT-I Master Admin',
       email: 'contactus@orbit-i.tech',
       password: '$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS',
@@ -289,7 +300,7 @@ const DEFAULT_STORE = {
       created_at: '2026-10-14T12:00:00.000Z',
     },
     {
-      id: 2,
+      id: 3,
       name: 'ORBIT-I SuperAdmin',
       email: 'admin@orbit-i.tech',
       password: '$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS',
@@ -298,6 +309,7 @@ const DEFAULT_STORE = {
       created_at: '2026-10-14T12:00:00.000Z',
     },
   ],
+  clients: [],
   site_notice: {
     enabled: false,
     message: '🚀 Admissions open for Autumn 2026 Internship Batch! Apply now.',
@@ -459,20 +471,41 @@ Contact Details: Email: contactus@orbit-i.tech | Phone/WhatsApp: +92 319 0375751
 
 function readFallbackStore() {
   try {
-    if (!fs.existsSync(FALLBACK_FILE)) {
-      fs.mkdirSync(path.dirname(FALLBACK_FILE), { recursive: true });
-      fs.writeFileSync(FALLBACK_FILE, JSON.stringify(DEFAULT_STORE, null, 2), 'utf8');
-      return JSON.parse(JSON.stringify(DEFAULT_STORE));
-    }
-    const data = fs.readFileSync(FALLBACK_FILE, 'utf8');
-    const parsed = JSON.parse(data);
-    if (!Array.isArray(parsed.intern_certificates)) parsed.intern_certificates = DEFAULT_STORE.intern_certificates;
-    if (!Array.isArray(parsed.admin_users) || parsed.admin_users.length === 0) {
-      parsed.admin_users = JSON.parse(JSON.stringify(DEFAULT_STORE.admin_users));
+    try {
+      fs.mkdirSync(STORAGE_DIR, { recursive: true });
+    } catch {}
+
+    let parsed = null;
+
+    // 1. Priority 1: Persistent untracked vault (completely immune to git pull/deployments)
+    if (fs.existsSync(PERSISTENT_FILE)) {
       try {
-        fs.writeFileSync(FALLBACK_FILE, JSON.stringify(parsed, null, 2), 'utf8');
-      } catch {}
+        const raw = fs.readFileSync(PERSISTENT_FILE, 'utf8');
+        parsed = JSON.parse(raw);
+      } catch (e) {
+        console.warn('Persistent vault read warning:', e.message);
+      }
     }
+
+    // 2. Priority 2: Fallback file from repository
+    if (!parsed && fs.existsSync(FALLBACK_FILE)) {
+      try {
+        const raw = fs.readFileSync(FALLBACK_FILE, 'utf8');
+        parsed = JSON.parse(raw);
+      } catch (e) {
+        console.warn('Fallback file read warning:', e.message);
+      }
+    }
+
+    // 3. Priority 3: Default starter store
+    if (!parsed) {
+      parsed = JSON.parse(JSON.stringify(DEFAULT_STORE));
+    }
+
+    // Ensure all critical array structures are initialized
+    if (!Array.isArray(parsed.intern_certificates)) parsed.intern_certificates = DEFAULT_STORE.intern_certificates;
+    if (!Array.isArray(parsed.admin_users)) parsed.admin_users = [];
+    if (!Array.isArray(parsed.clients)) parsed.clients = [];
     if (!parsed.site_notice) parsed.site_notice = DEFAULT_STORE.site_notice;
     if (!parsed.maintenance_mode) parsed.maintenance_mode = DEFAULT_STORE.maintenance_mode;
     if (!Array.isArray(parsed.hiring_banners)) parsed.hiring_banners = DEFAULT_STORE.hiring_banners;
@@ -481,6 +514,25 @@ function readFallbackStore() {
     if (!Array.isArray(parsed.chatbot_docs) || parsed.chatbot_docs.length === 0) parsed.chatbot_docs = DEFAULT_STORE.chatbot_docs;
     if (!Array.isArray(parsed.blog_categories) || parsed.blog_categories.length === 0) parsed.blog_categories = DEFAULT_STORE.blog_categories;
     if (!Array.isArray(parsed.analytics_page_views)) parsed.analytics_page_views = DEFAULT_STORE.analytics_page_views;
+
+    // Auto-merge seeded master admin users if not present (ab.samad, contactus, admin)
+    // Preserves existing passwords if already modified by the user!
+    for (const defAdmin of DEFAULT_STORE.admin_users) {
+      const existing = parsed.admin_users.find(
+        (u) => u.email && u.email.toLowerCase() === defAdmin.email.toLowerCase()
+      );
+      if (!existing) {
+        parsed.admin_users.push(JSON.parse(JSON.stringify(defAdmin)));
+      }
+    }
+
+    // Ensure persistent vault exists on disk
+    try {
+      if (!fs.existsSync(PERSISTENT_FILE)) {
+        fs.writeFileSync(PERSISTENT_FILE, JSON.stringify(parsed, null, 2), 'utf8');
+      }
+    } catch {}
+
     return parsed;
   } catch (err) {
     console.error('Error reading fallback store:', err.message);
@@ -490,8 +542,24 @@ function readFallbackStore() {
 
 function writeFallbackStore(store) {
   try {
-    fs.mkdirSync(path.dirname(FALLBACK_FILE), { recursive: true });
-    fs.writeFileSync(FALLBACK_FILE, JSON.stringify(store, null, 2), 'utf8');
+    try {
+      fs.mkdirSync(STORAGE_DIR, { recursive: true });
+    } catch {}
+
+    // 1. Always write to untracked persistent vault first (immune to git pull)
+    try {
+      fs.writeFileSync(PERSISTENT_FILE, JSON.stringify(store, null, 2), 'utf8');
+    } catch (e) {
+      console.warn('Persistent vault write warning:', e.message);
+    }
+
+    // 2. Also write to fallback file in repository
+    try {
+      fs.mkdirSync(path.dirname(FALLBACK_FILE), { recursive: true });
+      fs.writeFileSync(FALLBACK_FILE, JSON.stringify(store, null, 2), 'utf8');
+    } catch (e) {
+      console.warn('Fallback file write warning:', e.message);
+    }
   } catch (err) {
     console.error('Error writing fallback store:', err.message);
   }
@@ -1389,6 +1457,127 @@ async function deleteAdminUser(id) {
   return true;
 }
 
+// ─── CLIENT ACCOUNTS & REGISTRATION ─────────────────────────────────────────
+async function getClientUsers() {
+  const store = readFallbackStore();
+  const fallbackClients = (store.clients || []).map((c) => ({
+    id: c.id,
+    name: c.name,
+    email: c.email.toLowerCase(),
+    phone: c.phone || '',
+    company: c.company || '',
+    role: 'CLIENT',
+    approved: c.approved ? 1 : 0,
+    created_at: c.created_at,
+  }));
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, name, email, phone, company, role, approved, created_at FROM client_information WHERE role = "CLIENT" OR role = "client" ORDER BY id DESC'
+    );
+    const mergedMap = new Map();
+    for (const fb of fallbackClients) {
+      if (fb.email) mergedMap.set(fb.email.toLowerCase(), fb);
+    }
+    for (const r of rows) {
+      if (r.email) {
+        mergedMap.set(r.email.toLowerCase(), {
+          ...r,
+          email: r.email.toLowerCase(),
+          role: 'CLIENT',
+        });
+      }
+    }
+    return Array.from(mergedMap.values());
+  } catch {
+    return fallbackClients;
+  }
+}
+
+async function getClientByEmail(email) {
+  if (!email) return null;
+  const cleanEmail = email.trim().toLowerCase();
+  const store = readFallbackStore();
+  const fallback = (store.clients || []).find((c) => c.email.toLowerCase() === cleanEmail) || null;
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, name, email, password, phone, company, approved, role FROM client_information WHERE LOWER(email) = ?',
+      [cleanEmail]
+    );
+    if (rows && rows.length > 0) {
+      return rows[0];
+    }
+  } catch {}
+
+  if (fallback) {
+    return fallback;
+  }
+  return null;
+}
+
+async function saveClientUser(data) {
+  const { name, email, password, phone, company } = data;
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanName = name.trim();
+
+  const store = readFallbackStore();
+  if (!Array.isArray(store.clients)) store.clients = [];
+  const id = Date.now();
+  const clientObj = {
+    id,
+    name: cleanName,
+    email: cleanEmail,
+    password, // already hashed
+    phone: phone || '',
+    company: company || '',
+    role: 'CLIENT',
+    approved: 0,
+    created_at: new Date().toISOString(),
+  };
+
+  const existingIdx = store.clients.findIndex((c) => c.email.toLowerCase() === cleanEmail);
+  if (existingIdx !== -1) {
+    store.clients[existingIdx] = { ...store.clients[existingIdx], ...clientObj };
+  } else {
+    store.clients.push(clientObj);
+  }
+  writeFallbackStore(store);
+
+  // Sync to MySQL if available
+  try {
+    await pool.query(
+      `INSERT INTO client_information (name, email, password, phone, company, approved, role, created_at)
+       VALUES (?, ?, ?, ?, ?, 0, 'CLIENT', NOW())
+       ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), phone = VALUES(phone), company = VALUES(company)`,
+      [cleanName, cleanEmail, password, phone || null, company || null]
+    );
+  } catch (err) {
+    console.warn('MySQL client registration sync notice:', err.message);
+  }
+
+  return clientObj;
+}
+
+async function approveClientUser(idOrEmail) {
+  const store = readFallbackStore();
+  const idx = (store.clients || []).findIndex(
+    (c) => String(c.id) === String(idOrEmail) || c.email.toLowerCase() === String(idOrEmail).toLowerCase()
+  );
+  if (idx !== -1) {
+    store.clients[idx].approved = 1;
+    writeFallbackStore(store);
+  }
+
+  try {
+    await pool.query(
+      'UPDATE client_information SET approved = 1 WHERE id = ? OR LOWER(email) = LOWER(?)',
+      [isNaN(idOrEmail) ? 0 : Number(idOrEmail), String(idOrEmail).toLowerCase()]
+    );
+  } catch {}
+  return true;
+}
+
 // ─── MAINTENANCE MODE CONFIG ────────────────────────────────────────────────
 const DEFAULT_MAINTENANCE_CONFIG = {
   enabled: false,
@@ -1850,6 +2039,10 @@ module.exports = {
   saveAdminUser,
   updateAdminUser,
   deleteAdminUser,
+  getClientUsers,
+  getClientByEmail,
+  saveClientUser,
+  approveClientUser,
   getSiteNotice,
   updateSiteNotice,
   getMaintenanceConfig,

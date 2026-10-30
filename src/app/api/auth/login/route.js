@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '@/server/config/db';
-import { getAdminByEmail } from '@/server/utils/cmsStorage';
+import { getAdminByEmail, getClientByEmail } from '@/server/utils/cmsStorage';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'orbit_i_jwt_secret_key_super_secure_2026_dev';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '30d';
@@ -32,17 +32,29 @@ export async function POST(request) {
       console.warn('MySQL auth query unavailable, checking secure fallback storage:', dbErr.message);
     }
 
-    // 2. Fallback to local admin store if DB is down or user not in DB
+    // 2. Fallback to local admin store or client store if DB is down or user not in DB
     const fallbackAdmin = await getAdminByEmail(cleanEmail);
-    if (!user && fallbackAdmin) {
-      user = {
-        id: fallbackAdmin.id,
-        name: fallbackAdmin.name,
-        email: fallbackAdmin.email,
-        password: fallbackAdmin.password,
-        role: fallbackAdmin.role || 'ADMIN',
-        approved: 1,
-      };
+    const fallbackClient = !fallbackAdmin ? await getClientByEmail(cleanEmail) : null;
+    if (!user) {
+      if (fallbackAdmin) {
+        user = {
+          id: fallbackAdmin.id,
+          name: fallbackAdmin.name,
+          email: fallbackAdmin.email,
+          password: fallbackAdmin.password,
+          role: fallbackAdmin.role || 'ADMIN',
+          approved: 1,
+        };
+      } else if (fallbackClient) {
+        user = {
+          id: fallbackClient.id,
+          name: fallbackClient.name,
+          email: fallbackClient.email,
+          password: fallbackClient.password,
+          role: fallbackClient.role || 'CLIENT',
+          approved: fallbackClient.approved ? 1 : 0,
+        };
+      }
     }
 
     if (!user) {

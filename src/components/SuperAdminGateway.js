@@ -24,8 +24,8 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
   const [isSetup, setIsSetup] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
-    name: '',
-    email: 'contactus@orbit-i.tech',
+    name: 'Abdul Samad Rind',
+    email: 'ab.samad@orbit-i.tech',
     password: '',
     confirmPassword: '',
   })
@@ -244,30 +244,28 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
               >
                 <Lock size={13} /> SuperAdmin Login
               </button>
-              {setupRequired && (
-                <button
-                  type="button"
-                  onClick={() => { setIsSetup(true); setError(''); }}
-                  style={{
-                    flex: 1,
-                    padding: '9px 12px',
-                    borderRadius: 9,
-                    border: 'none',
-                    background: isSetup ? 'var(--accent)' : 'transparent',
-                    color: isSetup ? '#fff' : 'var(--text-muted)',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
-                >
-                  <Sparkles size={13} /> Initial Setup
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => { setIsSetup(true); setError(''); }}
+                style={{
+                  flex: 1,
+                  padding: '9px 12px',
+                  borderRadius: 9,
+                  border: 'none',
+                  background: isSetup ? 'var(--accent)' : 'transparent',
+                  color: isSetup ? '#fff' : 'var(--text-muted)',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                }}
+              >
+                <Sparkles size={13} /> Setup / Reset Password
+              </button>
             </div>
 
             <span className="tag" style={{ display: 'inline-flex', marginBottom: 10, fontSize: 10 }}>
@@ -385,10 +383,48 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, color: '#ef4444', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}
+                  style={{
+                    padding: '12px 14px',
+                    background: 'rgba(239,68,68,0.1)',
+                    border: '1px solid rgba(239,68,68,0.25)',
+                    borderRadius: 10,
+                    color: '#ef4444',
+                    fontSize: 13,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                  }}
                 >
-                  <AlertCircle size={15} style={{ flexShrink: 0 }} />
-                  <span>{error}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <AlertCircle size={15} style={{ flexShrink: 0 }} />
+                    <span>{error}</span>
+                  </div>
+                  {!isSetup && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSetup(true);
+                        setError('');
+                      }}
+                      style={{
+                        alignSelf: 'flex-start',
+                        background: 'rgba(59,130,246,0.15)',
+                        border: '1px solid rgba(59,130,246,0.3)',
+                        color: '#93c5fd',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        padding: '6px 12px',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        marginTop: 2,
+                      }}
+                    >
+                      <Sparkles size={12} /> Set / Reset Master Password for {form.email || 'this account'} &rarr;
+                    </button>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

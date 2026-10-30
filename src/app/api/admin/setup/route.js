@@ -26,31 +26,33 @@ export async function POST(request) {
     // Check if admin already exists
     const existingUser = await getAdminByEmail(cleanEmail);
     if (existingUser) {
-      const isMatch = (await bcrypt.compare(password, existingUser.password)) ||
-        (password !== password.trim() && (await bcrypt.compare(password.trim(), existingUser.password)));
-      if (isMatch) {
-        const token = jwt.sign(
-          {
-            sub: cleanEmail,
-            email: cleanEmail,
-            name: existingUser.name,
-            role: 'ADMIN',
-          },
-          JWT_SECRET,
-          { expiresIn: JWT_EXPIRES_IN }
-        );
+      // Update password for existing admin and authenticate them immediately
+      const hashedPassword = await bcrypt.hash(password, 12);
+      await saveAdminUser({
+        name: cleanName || existingUser.name,
+        email: cleanEmail,
+        password: hashedPassword,
+        avatar_url: existingUser.avatar_url || '',
+      });
 
-        return NextResponse.json({
-          message: 'Authenticated successfully with existing administrator credentials.',
-          token,
-          name: existingUser.name,
+      const token = jwt.sign(
+        {
+          sub: cleanEmail,
           email: cleanEmail,
+          name: cleanName || existingUser.name,
           role: 'ADMIN',
-        });
-      }
+        },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+      );
+
       return NextResponse.json({
-        error: 'Admin account already registered with this email. Please log in using the Admin Login form.',
-      }, { status: 403 });
+        message: 'Master Administrator account updated and authenticated successfully.',
+        token,
+        name: cleanName || existingUser.name,
+        email: cleanEmail,
+        role: 'ADMIN',
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
