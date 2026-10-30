@@ -183,11 +183,39 @@ img { max-width: 100%; height: auto; }
 
 /* ─── MOBILE ACCELERATION & TOUCH PERFORMANCE ────────────────────── */
 @media (max-width: 768px) {
-  .hero-card, .btn-primary, .btn-secondary {
-    transform: translateZ(0);
+  .orbit-loading-screen {
+    display: none !important;
   }
+
+  /* GPU layer promotion & fluid touch */
+  .hero-card, .btn-primary, .btn-secondary, .btn-outline {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
   html {
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Content visibility optimization: defer off-screen section layout/paint on mobile */
+  #about, #services, #team, #contact, footer {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 400px;
+  }
+
+  /* Reduce costly backdrop filters and heavy box-shadow glows on mobile GPUs */
+  .card-glow, .emblem-card {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

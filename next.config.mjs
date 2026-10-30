@@ -20,6 +20,15 @@ const nextConfig = {
     cpus: 2,
     workerThreads: false,
   },
+  async redirects() {
+    return [
+      {
+        source: '/home',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

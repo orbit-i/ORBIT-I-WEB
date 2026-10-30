@@ -21,11 +21,11 @@ import {
 import { saveToken, loginClient } from '@/lib/orbitApi'
 
 export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
-  const [isSetup, setIsSetup] = useState(Boolean(setupRequired))
+  const [isSetup, setIsSetup] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
     name: '',
-    email: '',
+    email: 'contactus@orbit-i.tech',
     password: '',
     confirmPassword: '',
   })
@@ -33,10 +33,6 @@ export default function SuperAdminGateway({ setupRequired, onAuthenticated }) {
   const [error, setError] = useState('')
   const [rateLimitCountdown, setRateLimitCountdown] = useState(null)
   const [focused, setFocused] = useState(null)
-
-  useEffect(() => {
-    setIsSetup(Boolean(setupRequired))
-  }, [setupRequired])
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

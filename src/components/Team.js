@@ -136,84 +136,84 @@ function FounderCard({ member, index }) {
       }}
     >
       <TiltCard style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Top accent bar */}
-      <div style={{ height: 2, background: 'linear-gradient(90deg, var(--accent), transparent)', width: '100%' }} />
+        {/* Top accent bar */}
+        <div style={{ height: 2, background: 'linear-gradient(90deg, var(--accent), transparent)', width: '100%' }} />
 
-      {/* Avatar section */}
-      <div style={{
-        height: 180,
-        background: 'linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg) 100%)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        position: 'relative',
-      }}>
-        {member.photo ? (
-          <Image
-            src={member.photo}
-            alt={member.name}
-            width={84}
-            height={84}
-            sizes="84px"
-            style={{ width: 84, height: 84, borderRadius: '50%', objectFit: 'cover', objectPosition: member.objectPosition || 'center 10%', border: '2px solid var(--border-hover)' }}
-          />
-        ) : (
-          <div style={{
-            width: 84, height: 84, borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(99,102,241,0.2) 100%)',
-            border: '2px solid var(--border-hover)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 24px var(--accent-glow)',
-          }}>
-            <span style={{
-              fontFamily: 'Space Grotesk', fontSize: 28, fontWeight: 800,
-              color: 'var(--accent-light)',
+        {/* Avatar section */}
+        <div style={{
+          height: 180,
+          background: 'linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg) 100%)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          position: 'relative',
+        }}>
+          {member.photo ? (
+            <Image
+              src={member.photo}
+              alt={member.name}
+              width={84}
+              height={84}
+              sizes="84px"
+              style={{ width: 84, height: 84, borderRadius: '50%', objectFit: 'cover', objectPosition: member.objectPosition || 'center 10%', border: '2px solid var(--border-hover)' }}
+            />
+          ) : (
+            <div style={{
+              width: 84, height: 84, borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(99,102,241,0.2) 100%)',
+              border: '2px solid var(--border-hover)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 24px var(--accent-glow)',
             }}>
-              {member.initials}
-            </span>
+              <span style={{
+                fontFamily: 'Space Grotesk', fontSize: 28, fontWeight: 800,
+                color: 'var(--accent-light)',
+              }}>
+                {member.initials}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div>
+            <p style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 4 }}>
+              {member.category}
+            </p>
+            <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+              {member.name}
+            </h3>
+            <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 2 }}>
+              {member.role}
+            </p>
           </div>
-        )}
-      </div>
 
-      {/* Content */}
-      <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-        <div>
-          <p style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 4 }}>
-            {member.category}
+          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            {member.bio}
           </p>
-          <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-            {member.name}
-          </h3>
-          <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 2 }}>
-            {member.role}
-          </p>
-        </div>
 
-        <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-          {member.bio}
-        </p>
-
-        {/* Social / contact row */}
-        <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-          {[
-            { label: 'LinkedIn', href: member.linkedin },
-            { label: 'Email', href: member.email },
-          ].map((s) => (
-            <a key={s.label} href={s.href} target="_blank" rel="noreferrer" style={{
-              fontSize: 11, padding: '4px 10px',
-              background: 'var(--bg-elevated)',
-              border: '1px solid var(--border)',
-              borderRadius: 100, color: 'var(--text-muted)',
-              cursor: 'pointer', fontFamily: 'Inter',
-              textDecoration: 'none', display: 'inline-block',
-              transition: 'all 0.15s',
-            }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border-hover)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
-            >
-              {s.label}
-            </a>
-          ))}
+          {/* Social / contact row */}
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            {[
+              { label: 'LinkedIn', href: member.linkedin },
+              { label: 'Email', href: member.email },
+            ].map((s) => (
+              <a key={s.label} href={s.href} target="_blank" rel="noreferrer" style={{
+                fontSize: 11, padding: '4px 10px',
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--border)',
+                borderRadius: 100, color: 'var(--text-muted)',
+                cursor: 'pointer', fontFamily: 'Inter',
+                textDecoration: 'none', display: 'inline-block',
+                transition: 'all 0.15s',
+              }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.borderColor = 'var(--border-hover)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+              >
+                {s.label}
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
       </TiltCard>
     </motion.div>
   )

@@ -278,7 +278,26 @@ const DEFAULT_STORE = {
       created_at: new Date().toISOString(),
     },
   ],
-  admin_users: [],
+  admin_users: [
+    {
+      id: 1,
+      name: 'ORBIT-I Master Admin',
+      email: 'contactus@orbit-i.tech',
+      password: '$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS',
+      role: 'ADMIN',
+      avatar_url: '',
+      created_at: '2026-10-14T12:00:00.000Z',
+    },
+    {
+      id: 2,
+      name: 'ORBIT-I SuperAdmin',
+      email: 'admin@orbit-i.tech',
+      password: '$2a$12$zZ9r3.AuJAW0XWpPjL0T3u/G6CvDFm2.vcSI74KkM0JkdW8yEfSTS',
+      role: 'ADMIN',
+      avatar_url: '',
+      created_at: '2026-10-14T12:00:00.000Z',
+    },
+  ],
   site_notice: {
     enabled: false,
     message: '🚀 Admissions open for Autumn 2026 Internship Batch! Apply now.',
@@ -448,7 +467,12 @@ function readFallbackStore() {
     const data = fs.readFileSync(FALLBACK_FILE, 'utf8');
     const parsed = JSON.parse(data);
     if (!Array.isArray(parsed.intern_certificates)) parsed.intern_certificates = DEFAULT_STORE.intern_certificates;
-    if (!Array.isArray(parsed.admin_users)) parsed.admin_users = [];
+    if (!Array.isArray(parsed.admin_users) || parsed.admin_users.length === 0) {
+      parsed.admin_users = JSON.parse(JSON.stringify(DEFAULT_STORE.admin_users));
+      try {
+        fs.writeFileSync(FALLBACK_FILE, JSON.stringify(parsed, null, 2), 'utf8');
+      } catch {}
+    }
     if (!parsed.site_notice) parsed.site_notice = DEFAULT_STORE.site_notice;
     if (!parsed.maintenance_mode) parsed.maintenance_mode = DEFAULT_STORE.maintenance_mode;
     if (!Array.isArray(parsed.hiring_banners)) parsed.hiring_banners = DEFAULT_STORE.hiring_banners;
@@ -1103,7 +1127,7 @@ async function deleteCertificate(codeOrId) {
   // Try DB
   try {
     await pool.query('DELETE FROM intern_certificates WHERE id = ? OR certificate_code = ?', [codeOrId, codeOrId]);
-  } catch {}
+  } catch { }
   return true;
 }
 
@@ -1169,13 +1193,14 @@ async function getAdminUsers() {
              ON DUPLICATE KEY UPDATE name = VALUES(name), role = 'ADMIN', approved = 1`,
             [fbAdmin.name, fbAdmin.email.toLowerCase(), fbAdmin.password]
           );
-        } catch {}
+        } catch { }
       }
     }
 
-    return mergedAdmins.length > 0 ? mergedAdmins : fallbackList;
+    const finalList = mergedAdmins.length > 0 ? mergedAdmins : (fallbackList.length > 0 ? fallbackList : DEFAULT_STORE.admin_users);
+    return finalList;
   } catch (err) {
-    return fallbackList;
+    return fallbackList.length > 0 ? fallbackList : DEFAULT_STORE.admin_users;
   }
 }
 
@@ -1184,7 +1209,8 @@ async function getAdminByEmail(email) {
   const cleanEmail = email.trim().toLowerCase();
 
   const store = readFallbackStore();
-  const fallback = (store.admin_users || []).find((u) => u.email.toLowerCase() === cleanEmail) || null;
+  const fallback = (store.admin_users || []).find((u) => u.email.toLowerCase() === cleanEmail) ||
+    DEFAULT_STORE.admin_users.find((u) => u.email.toLowerCase() === cleanEmail) || null;
 
   try {
     const [rows] = await pool.query(
@@ -1208,7 +1234,7 @@ async function getAdminByEmail(email) {
         };
       }
     }
-  } catch {}
+  } catch { }
 
   if (fallback) {
     try {
@@ -1218,7 +1244,7 @@ async function getAdminByEmail(email) {
          ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), role = 'ADMIN', approved = 1`,
         [fallback.name, fallback.email.toLowerCase(), fallback.password]
       );
-    } catch {}
+    } catch { }
     return {
       id: fallback.id,
       name: fallback.name,
@@ -1264,7 +1290,7 @@ async function saveAdminUser(data) {
   try {
     try {
       await pool.query('ALTER TABLE client_information ADD COLUMN avatar_url VARCHAR(500) NULL AFTER role');
-    } catch {}
+    } catch { }
 
     await pool.query(
       `INSERT INTO client_information (name, email, password, approved, role, avatar_url, created_at)
@@ -1359,7 +1385,7 @@ async function deleteAdminUser(id) {
       'DELETE FROM client_information WHERE (LOWER(email) = LOWER(?) OR id = ?) AND (role = "ADMIN" OR role = "admin")',
       [targetEmail || '', queryId]
     );
-  } catch {}
+  } catch { }
   return true;
 }
 
@@ -1556,7 +1582,7 @@ async function getChatbotDocs() {
       }
       return Array.from(map.values());
     }
-  } catch {}
+  } catch { }
 
   return fallbackDocs;
 }
@@ -1674,7 +1700,7 @@ async function recordPageView(data) {
   const { path = '/', referrer = '', userAgent = '', ip = '127.0.0.1', city = '', country = '' } = data;
   const store = readFallbackStore();
   if (!Array.isArray(store.analytics_page_views)) store.analytics_page_views = [];
-  
+
   // Detect regional city if not given
   let detectedCity = city;
   if (!detectedCity) {
@@ -1710,7 +1736,7 @@ async function recordPageView(data) {
        VALUES (?, ?, ?, ?, ?, ?, NOW())`,
       [path, referrer, userAgent, ip, detectedCity, country || 'Pakistan']
     );
-  } catch {}
+  } catch { }
 
   return newView;
 }

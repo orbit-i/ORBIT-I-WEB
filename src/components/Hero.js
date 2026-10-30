@@ -96,7 +96,7 @@ export default function Hero() {
               <motion.div {...fadeUp(0.25)} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <Link href="/services" className="btn-primary" style={{ fontSize: 13, textDecoration: 'none' }}>
                   Our Services
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7H11M11 7L7.5 3.5M11 7L7.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </Link>
                 <Link href="/team" className="btn-outline" style={{ fontSize: 13, textDecoration: 'none' }}>Meet the Team</Link>
                 <Link href="/contact" className="btn-outline" style={{ fontSize: 13, textDecoration: 'none' }}>Contact Us</Link>
@@ -177,7 +177,7 @@ export default function Hero() {
               <span style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Scroll</span>
               <div style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid var(--border-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M6 2V10M6 10L3 7M6 10L9 7" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M6 2V10M6 10L3 7M6 10L9 7" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
             </motion.div>

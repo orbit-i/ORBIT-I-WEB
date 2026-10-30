@@ -725,7 +725,7 @@ export default function SecretAdminPortalPage() {
         }
       } catch {
         if (!ignore) {
-          setSetupRequired(true)
+          setSetupRequired(false)
           setAuthChecked(true)
         }
       } finally {

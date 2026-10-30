@@ -51,6 +51,11 @@ app.prepare().then(async () => {
     return res.redirect(process.env.NEXT_PUBLIC_ADMIN_SECRET_PATH || '/control-vault-2026');
   });
 
+  // Redirect legacy /home path permanently to root /
+  server.get('/home', (req, res) => {
+    return res.redirect(301, '/');
+  });
+
   // 8. Delegate all remaining routes to Next.js
   server.all('*', (req, res) => {
     return handle(req, res);

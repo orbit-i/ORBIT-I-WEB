@@ -45,43 +45,71 @@ async function initialSuperAdminSetup(req, res) {
       return res.status(400).json({ error: 'Master Password must be at least 8 characters long.' });
     }
 
-    // Double check that NO admin exists
-    const [rows] = await pool.query("SELECT COUNT(*) as count FROM client_information WHERE role = 'ADMIN'");
-    const adminCount = Number(rows[0]?.count || 0);
+    const { getAdminUsers, saveAdminUser, getAdminByEmail } = require('../utils/cmsStorage');
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = name.trim();
 
-    if (adminCount > 0) {
+    // Check if user already exists
+    const existingUser = await getAdminByEmail(cleanEmail);
+    if (existingUser) {
+      const isMatch = (await bcrypt.compare(password, existingUser.password)) ||
+        (password !== password.trim() && (await bcrypt.compare(password.trim(), existingUser.password)));
+
+      if (isMatch) {
+        const token = jwt.sign(
+          {
+            sub: cleanEmail,
+            email: cleanEmail,
+            name: existingUser.name,
+            role: 'ADMIN',
+          },
+          JWT_SECRET,
+          { expiresIn: JWT_EXPIRES_IN }
+        );
+
+        return res.status(200).json({
+          message: 'Authenticated successfully with existing administrator credentials.',
+          token,
+          name: existingUser.name,
+          email: cleanEmail,
+          role: 'ADMIN',
+        });
+      }
+
       return res.status(403).json({
-        error: 'Security Lockout: Initial SuperAdmin setup has already been completed. Use the SuperAdmin Login portal.',
+        error: 'Admin account already registered with this email. Please log in using the Admin Login form.',
       });
     }
 
     // Hash with 12 rounds of bcrypt
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Insert as verified SuperAdmin
-    const [result] = await pool.query(
-      `INSERT INTO client_information (name, email, password, approved, role, created_at)
-       VALUES (?, ?, ?, 1, 'ADMIN', NOW())`,
-      [name.trim(), email.trim().toLowerCase(), hashedPassword]
-    );
+    // Save to both resilient fallback store and MySQL
+    await saveAdminUser({
+      name: cleanName,
+      email: cleanEmail,
+      password: hashedPassword,
+      avatar_url: '',
+    });
 
     const token = jwt.sign(
       {
-        sub: email.trim().toLowerCase(),
-        email: email.trim().toLowerCase(),
+        sub: cleanEmail,
+        email: cleanEmail,
+        name: cleanName,
         role: 'ADMIN',
       },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
 
-    console.log(`🛡️  Initial SuperAdmin [${email}] successfully initialized and secured!`);
+    console.log(`🛡️  Initial SuperAdmin [${cleanEmail}] successfully initialized and secured!`);
 
     return res.status(201).json({
       message: 'SuperAdmin Master Account created successfully.',
       token,
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
+      name: cleanName,
+      email: cleanEmail,
       role: 'ADMIN',
     });
   } catch (error) {
