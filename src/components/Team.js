@@ -1,5 +1,4 @@
 'use client'
-'use client'
 
 import { motion } from 'framer-motion'
 import TiltCard from './TiltCard'
@@ -19,7 +18,7 @@ const founders = [
     category: 'Executive Leadership',
     bio: 'Steering ORBIT-I Private Limited with focus on high-performance systems, sustainable architecture, and digital engineering partnerships across Pakistan and internationally.',
     initials: 'AS',
-    photo: '/team/samad rind.jpeg',
+    photo: '/team/samad-rind.jpeg',
     objectPosition: 'center 10%',
     linkedin: 'https://www.linkedin.com/company/orbit-i-private-limited/',
     email: 'mailto:contactus@orbit-i.tech',
@@ -30,7 +29,7 @@ const founders = [
     category: 'Operations & Strategy',
     bio: 'Overseeing client operations, sprint delivery management, team coordination, and strategic business growth for all ORBIT-I engagements.',
     initials: 'MA',
-    photo: '/team/female avatar.png',
+    photo: null,
     objectPosition: 'center center',
     linkedin: 'https://www.linkedin.com/company/orbit-i-private-limited/',
     email: 'mailto:contactus@orbit-i.tech',
@@ -41,7 +40,7 @@ const founders = [
     category: 'Engineering & Technology',
     bio: 'Orchestrating technical architecture, cloud scalability, secure database design, and engineering standards across all ORBIT-I products.',
     initials: 'MM',
-    photo: '/team/Muneeb ur rehman.jpeg',
+    photo: '/team/muneeb-ur-rehman.jpeg',
     objectPosition: 'center 10%',
     linkedin: 'https://www.linkedin.com/company/orbit-i-private-limited/',
     email: 'mailto:contactus@orbit-i.tech',
@@ -54,7 +53,7 @@ const team = [
     role: 'Web Developer',
     category: 'Web Engineering',
     initials: 'HA',
-    photo: '/team/hassan anser.jpeg',
+    photo: '/team/hassan-anser.jpeg',
     objectPosition: 'center 20%',
   },
   {
@@ -70,7 +69,7 @@ const team = [
     role: 'AI/ML Engineer',
     category: 'AI & Research',
     initials: 'RC',
-    photo: '/team/rashid channa.jpeg',
+    photo: '/team/rashid-channa.jpeg',
     objectPosition: 'center 15%',
   },
   {
@@ -78,7 +77,7 @@ const team = [
     role: 'Backend Developer',
     category: 'Backend & Systems',
     initials: 'LA',
-    photo: '/team/female avatar.png',
+    photo: null,
     objectPosition: 'center center',
   },
   {
@@ -86,7 +85,7 @@ const team = [
     role: '.NET Developer',
     category: 'Enterprise Systems',
     initials: 'AR',
-    photo: '/team/abdul rehman.png',
+    photo: '/team/abdul-rehman.png',
     objectPosition: 'center 10%',
   },
   {
@@ -102,7 +101,7 @@ const team = [
     role: 'Frontend Developer',
     category: 'Web Engineering',
     initials: 'UF',
-    photo: '/team/umar farooque.jpeg',
+    photo: '/team/umar-farooque.jpeg',
     objectPosition: 'center 10%',
   },
   {
@@ -110,7 +109,7 @@ const team = [
     role: 'DevOps Engineer',
     category: 'Cloud & Infrastructure',
     initials: 'AA',
-    photo: '/team/Ahsan ali.jpeg',
+    photo: '/team/ahsan-ali.jpeg',
     objectPosition: 'center 10%',
   },
   {
@@ -118,7 +117,7 @@ const team = [
     role: 'UI/UX Designer',
     category: 'Design Systems',
     initials: 'HN',
-    photo: '/team/female avatar.png',
+    photo: null,
     objectPosition: 'center center',
   },
 ]
@@ -153,15 +152,16 @@ function FounderCard({ member, index }) {
             alt={member.name}
             width={84}
             height={84}
+            sizes="84px"
             style={{ width: 84, height: 84, borderRadius: '50%', objectFit: 'cover', objectPosition: member.objectPosition || 'center 10%', border: '2px solid var(--border-hover)' }}
           />
         ) : (
           <div style={{
             width: 84, height: 84, borderRadius: '50%',
-            background: 'var(--bg)',
+            background: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(99,102,241,0.2) 100%)',
             border: '2px solid var(--border-hover)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 0 32px var(--accent-glow)',
+            boxShadow: '0 0 24px var(--accent-glow)',
           }}>
             <span style={{
               fontFamily: 'Space Grotesk', fontSize: 28, fontWeight: 800,
@@ -179,23 +179,26 @@ function FounderCard({ member, index }) {
           <p style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 4 }}>
             {member.category}
           </p>
-          <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+          <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             {member.name}
           </h3>
           <p style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600, marginTop: 2 }}>
             {member.role}
           </p>
         </div>
+
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
           {member.bio}
         </p>
+
+        {/* Social / contact row */}
         <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
           {[
-            { label: 'Email', href: member.email || '#' },
-            { label: 'LinkedIn', href: member.linkedin || '#' },
+            { label: 'LinkedIn', href: member.linkedin },
+            { label: 'Email', href: member.email },
           ].map((s) => (
-            <a key={s.label} href={s.href} target={s.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" style={{
-              fontSize: 11, padding: '5px 12px',
+            <a key={s.label} href={s.href} target="_blank" rel="noreferrer" style={{
+              fontSize: 11, padding: '4px 10px',
               background: 'var(--bg-elevated)',
               border: '1px solid var(--border)',
               borderRadius: 100, color: 'var(--text-muted)',
@@ -216,11 +219,12 @@ function FounderCard({ member, index }) {
   )
 }
 
-function TeamCard({ member }) {
+function TeamCard({ member, isDuplicate = false }) {
   return (
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
+      aria-hidden={isDuplicate ? 'true' : undefined}
       style={{
         width: 220,
         flexShrink: 0,
@@ -252,13 +256,14 @@ function TeamCard({ member }) {
             alt={member.name}
             width={240}
             height={160}
+            sizes="220px"
             style={{ width: '100%', height: 160, objectFit: 'cover', objectPosition: member.objectPosition || 'center 15%' }}
           />
         ) : (
           <div style={{
             width: 60, height: 60, borderRadius: '50%',
-            background: 'var(--bg)',
-            border: '1.5px solid var(--border-hover)',
+            background: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(99,102,241,0.2) 100%)',
+            border: '2px solid var(--border-hover)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <span style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 800, color: 'var(--accent-light)' }}>
@@ -268,38 +273,23 @@ function TeamCard({ member }) {
         )}
       </div>
 
-      {/* Content */}
-      <div style={{ padding: '14px 16px 16px' }}>
-        <p style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 4 }}>
+      {/* Info */}
+      <div style={{ padding: '16px' }}>
+        <p style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: '0.07em', textTransform: 'uppercase', fontWeight: 600 }}>
           {member.category}
         </p>
-        <h4 style={{ fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+        <p style={{ fontFamily: 'Space Grotesk', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', marginTop: 3 }}>
           {member.name}
-        </h4>
-        <p style={{ fontSize: 11, color: 'var(--accent)', fontWeight: 600, marginTop: 2 }}>
+        </p>
+        <p style={{ fontSize: 11, color: 'var(--accent)', marginTop: 2, fontWeight: 500 }}>
           {member.role}
         </p>
-        <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
-          {['✉', 'in'].map((s) => (
-            <button key={s} style={{
-              fontSize: 10, padding: '3px 8px',
-              background: 'var(--bg-elevated)',
-              border: '1px solid var(--border)',
-              borderRadius: 100, color: 'var(--text-muted)',
-              cursor: 'pointer', fontFamily: 'Inter',
-            }}>
-              {s}
-            </button>
-          ))}
-        </div>
       </div>
     </motion.div>
   )
 }
 
 export default function Team() {
-  const doubled = [...team, ...team]
-
   return (
     <section id="team" style={{ paddingTop: 100, paddingBottom: 100, background: 'var(--bg)' }}>
       <div className="container">
@@ -308,7 +298,7 @@ export default function Team() {
           <motion.div {...fadeUp(0)}>
             <div className="tag">
               <span className="dot" style={{ background: 'var(--accent)' }} />
-              ORBIT-I Core Team & Leadership
+              ORBIT-I Core Team &amp; Leadership
             </div>
           </motion.div>
 
@@ -322,7 +312,7 @@ export default function Team() {
               <span className="gradient-text-blue">ORBIT-I Team</span>
             </motion.h2>
             <motion.p {...fadeUp(0.2)} style={{ fontSize: 15, color: 'var(--text-secondary)', maxWidth: 380, lineHeight: 1.6 }}>
-              The visionary founders, engineers, AI specialists, and designers building
+              The software engineers, system architects, and technical leaders building
               dependable enterprise technology at ORBIT-I.
             </motion.p>
           </div>
@@ -346,10 +336,10 @@ export default function Team() {
         {/* Core team label */}
         <motion.div {...fadeUp(0.1)} style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
           <span style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600, whiteSpace: 'nowrap' }}>
-            Engineering & Creative
+            Engineering &amp; Specialists
           </span>
           <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-          <span style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>7 Specialists</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Core Team</span>
         </motion.div>
       </div>
 
@@ -362,7 +352,8 @@ export default function Team() {
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 120, background: 'linear-gradient(90deg, var(--bg), transparent)', zIndex: 10, pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 120, background: 'linear-gradient(270deg, var(--bg), transparent)', zIndex: 10, pointerEvents: 'none' }} />
         <div className="marquee-track" style={{ display: 'flex', gap: 14, width: 'max-content', paddingLeft: 32, paddingRight: 32 }}>
-          {doubled.map((m, i) => <TeamCard key={`${m.name}-${i}`} member={m} />)}
+          {team.map((m, i) => <TeamCard key={`team-p-${m.name}-${i}`} member={m} isDuplicate={false} />)}
+          {team.map((m, i) => <TeamCard key={`team-d-${m.name}-${i}`} member={m} isDuplicate={true} />)}
         </div>
       </motion.div>
 

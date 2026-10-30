@@ -1,25 +1,18 @@
 export const metadata = {
-  title: 'Careers & Engineering Internships | ORBIT-I Private Limited',
-  description: 'Join Pakistan premier software engineering and applied AI team. Explore open full-time positions, software fellowships, and paid internship opportunities in Nawabshah, Karachi, and remote.',
-  keywords: [
-    'software jobs Nawabshah',
-    'AI engineer jobs Karachi',
-    'Next.js internships Pakistan',
-    'software developer careers Sindh',
-    'ORBIT-I internships',
-  ],
+  title: 'Careers & Internships | ORBIT-I Private Limited',
+  description: 'Join the software engineering and applied AI team at ORBIT-I. Explore full-time roles, software fellowships, and internship opportunities in Nawabshah, Karachi, and remote.',
   openGraph: {
-    title: 'Careers & Engineering Internships | ORBIT-I Private Limited',
-    description: 'Explore engineering positions, fellowships, and paid internships in Nawabshah, Karachi, and remote.',
+    title: 'Careers & Internships | ORBIT-I Private Limited',
+    description: 'Explore engineering positions, fellowships, and internships in Nawabshah, Karachi, and remote.',
     url: 'https://orbit-i.tech/careers',
     siteName: 'ORBIT-I Private Limited',
-    images: [{ url: '/orbitlogo-removebg-preview.png', width: 512, height: 512, alt: 'ORBIT-I Careers' }],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'ORBIT-I Careers' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Careers & Engineering Internships | ORBIT-I Private Limited',
+    title: 'Careers & Internships | ORBIT-I Private Limited',
     description: 'Explore engineering positions and internships at ORBIT-I.',
-    images: ['/orbitlogo-removebg-preview.png'],
+    images: ['/og-image.jpg'],
   },
   alternates: {
     canonical: 'https://orbit-i.tech/careers',

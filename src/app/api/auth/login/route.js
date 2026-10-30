@@ -33,27 +33,66 @@ export async function POST(request) {
     }
 
     // 2. Fallback to local admin store if DB is down or user not in DB
+    const fallbackAdmin = await getAdminByEmail(cleanEmail);
+    if (!user && fallbackAdmin) {
+      user = {
+        id: fallbackAdmin.id,
+        name: fallbackAdmin.name,
+        email: fallbackAdmin.email,
+        password: fallbackAdmin.password,
+        role: fallbackAdmin.role || 'ADMIN',
+        approved: 1,
+      };
+    }
+
     if (!user) {
-      const fallbackAdmin = await getAdminByEmail(cleanEmail);
-      if (fallbackAdmin) {
-        user = {
-          id: fallbackAdmin.id,
-          name: fallbackAdmin.name,
-          email: fallbackAdmin.email,
-          password: fallbackAdmin.password,
-          role: fallbackAdmin.role || 'ADMIN',
-          approved: 1,
-        };
+      return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
+    }
+
+    // 3. Robust Password Verification with trimmed whitespace tolerance
+    let isMatch = false;
+    if (user.password) {
+      isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch && password !== password.trim()) {
+        isMatch = await bcrypt.compare(password.trim(), user.password);
       }
     }
 
-    if (!user) {
+    // 4. Fallback Auto-Healing: If MySQL password didn't match, check fallback admin store!
+    if (!isMatch && fallbackAdmin && fallbackAdmin.password) {
+      const isFallbackMatch =
+        (await bcrypt.compare(password, fallbackAdmin.password)) ||
+        (password !== password.trim() && (await bcrypt.compare(password.trim(), fallbackAdmin.password)));
+
+      if (isFallbackMatch) {
+        isMatch = true;
+        user.password = fallbackAdmin.password;
+        user.role = 'ADMIN';
+        user.approved = 1;
+        if (!user.name) user.name = fallbackAdmin.name;
+
+        // Auto-heal MySQL with the valid password hash
+        try {
+          await pool.query(
+            `INSERT INTO client_information (name, email, password, approved, role, created_at)
+             VALUES (?, ?, ?, 1, 'ADMIN', NOW())
+             ON DUPLICATE KEY UPDATE password = VALUES(password), name = VALUES(name), role = 'ADMIN', approved = 1`,
+            [user.name || 'Admin', cleanEmail, fallbackAdmin.password]
+          );
+        } catch (healErr) {
+          console.warn('Auto-heal MySQL admin password notice:', healErr.message);
+        }
+      }
+    }
+
+    if (!isMatch) {
       return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 });
+    // Ensure role uppercase
+    if (String(user.role).toUpperCase() === 'ADMIN') {
+      user.role = 'ADMIN';
+      user.approved = 1;
     }
 
     if (!user.approved && user.role !== 'ADMIN') {

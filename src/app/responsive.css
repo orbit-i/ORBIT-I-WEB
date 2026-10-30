@@ -180,3 +180,14 @@ html, body {
 * { box-sizing: border-box; }
 img { max-width: 100%; height: auto; }
 
+
+/* ─── MOBILE ACCELERATION & TOUCH PERFORMANCE ────────────────────── */
+@media (max-width: 768px) {
+  .hero-card, .btn-primary, .btn-secondary {
+    transform: translateZ(0);
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}

@@ -20,15 +20,16 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^1.57.0",
     "mysql2": "^3.11.5",
-    "next": "16.3.8",
-    "nodemailer": "^6.9.16",
+    "next": "16.4.3",
+    "nodemailer": "^10.3.1",
+    "pdf-parse": "^2.4.5",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.3",
     "tailwindcss": "^4"
   }
 }

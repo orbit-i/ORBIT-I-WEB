@@ -1,5 +1,6 @@
 import { servicesList } from '@/data/servicesData'
-import { getBlogPosts, getCmsPages } from '@/server/utils/cmsStorage'
+import { careerPositions } from '@/data/careersData'
+import { getBlogPosts, getCmsPages, getCareersJobs } from '@/server/utils/cmsStorage'
 
 export default async function sitemap() {
   const baseUrl = 'https://orbit-i.tech'
@@ -18,7 +19,6 @@ export default async function sitemap() {
     { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${baseUrl}/verify`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/portal`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
   ]
 
   const servicePages = servicesList.map((s) => ({
@@ -54,5 +54,26 @@ export default async function sitemap() {
       }))
   } catch {}
 
-  return [...staticPages, ...servicePages, ...blogPages, ...cmsPages]
+  let careerRolePages = careerPositions.map((c) => ({
+    url: `${baseUrl}/careers/${c.slug || c.id}`,
+    lastModified: now,
+    changeFrequency: 'weekly',
+    priority: 0.85,
+  }))
+
+  try {
+    const jobs = await getCareersJobs()
+    const dynamicRoles = (jobs || []).map((j) => ({
+      url: `${baseUrl}/careers/${j.slug || j.id}`,
+      lastModified: new Date(j.updated_at || j.created_at || now),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+    }))
+    const seen = new Set(careerRolePages.map((c) => c.url))
+    for (const d of dynamicRoles) {
+      if (!seen.has(d.url)) careerRolePages.push(d)
+    }
+  } catch {}
+
+  return [...staticPages, ...servicePages, ...blogPages, ...cmsPages, ...careerRolePages]
 }

@@ -299,6 +299,15 @@ const DEFAULT_STORE = {
       created_at: new Date().toISOString(),
     },
   ],
+  maintenance_mode: {
+    enabled: false,
+    title: 'System Upgrades in Progress',
+    message: 'ORBIT-I systems are currently undergoing scheduled upgrades & performance enhancements. Select public portals remain fully accessible.',
+    estimated_return: '1-2 Hours',
+    allowed_routes: ['/careers', '/contact', '/verify'],
+    custom_allowed_routes: '',
+    updated_at: new Date().toISOString(),
+  },
   chatbot_config: {
     enabled: true,
     bot_name: 'ORBIT-I AI Assistant',
@@ -441,6 +450,7 @@ function readFallbackStore() {
     if (!Array.isArray(parsed.intern_certificates)) parsed.intern_certificates = DEFAULT_STORE.intern_certificates;
     if (!Array.isArray(parsed.admin_users)) parsed.admin_users = [];
     if (!parsed.site_notice) parsed.site_notice = DEFAULT_STORE.site_notice;
+    if (!parsed.maintenance_mode) parsed.maintenance_mode = DEFAULT_STORE.maintenance_mode;
     if (!Array.isArray(parsed.hiring_banners)) parsed.hiring_banners = DEFAULT_STORE.hiring_banners;
     if (!parsed.chatbot_config) parsed.chatbot_config = DEFAULT_STORE.chatbot_config;
     if (!Array.isArray(parsed.chatbot_qa) || parsed.chatbot_qa.length === 0) parsed.chatbot_qa = DEFAULT_STORE.chatbot_qa;
@@ -1099,108 +1109,142 @@ async function deleteCertificate(codeOrId) {
 
 // ─── ADMIN USERS & ACCOUNTS ─────────────────────────────────────────────────
 async function getAdminUsers() {
-  return executeDbOrFallback(
-    async () => {
-      let rows = [];
+  const store = readFallbackStore();
+  const fallbackList = (store.admin_users || []).map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email.toLowerCase(),
+    role: u.role || 'ADMIN',
+    approved: 1,
+    avatar_url: u.avatar_url || '',
+    created_at: u.created_at,
+  }));
+
+  try {
+    let rows = [];
+    try {
+      const [r] = await pool.query(
+        'SELECT id, name, email, role, approved, avatar_url, created_at FROM client_information WHERE role = "ADMIN" OR role = "admin" ORDER BY id ASC'
+      );
+      rows = r;
+    } catch {
       try {
         const [r] = await pool.query(
-          'SELECT id, name, email, role, approved, avatar_url, created_at FROM client_information WHERE role = "ADMIN" ORDER BY id ASC'
+          'SELECT id, name, email, role, approved, created_at FROM client_information WHERE role = "ADMIN" OR role = "admin" ORDER BY id ASC'
         );
         rows = r;
-      } catch (colErr) {
-        // Fallback if avatar_url column does not exist in MySQL table
-        try {
-          const [r] = await pool.query(
-            'SELECT id, name, email, role, approved, created_at FROM client_information WHERE role = "ADMIN" ORDER BY id ASC'
-          );
-          rows = r;
-        } catch {
-          rows = [];
-        }
+      } catch {
+        rows = [];
       }
-
-      if (rows && rows.length > 0) {
-        return rows;
-      }
-
-      // If MySQL table had 0 admin rows, check the file fallback store!
-      const store = readFallbackStore();
-      const fallbackList = (store.admin_users || []).map((u) => ({
-        id: u.id,
-        name: u.name,
-        email: u.email,
-        role: u.role || 'ADMIN',
-        approved: 1,
-        avatar_url: u.avatar_url || '',
-        created_at: u.created_at,
-      }));
-
-      // If fallback store has admins, sync them to MySQL so future queries find them
-      if (fallbackList.length > 0) {
-        for (const adm of store.admin_users) {
-          try {
-            await pool.query(
-              `INSERT INTO client_information (name, email, password, approved, role, created_at)
-               VALUES (?, ?, ?, 1, 'ADMIN', NOW())
-               ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password)`,
-              [adm.name, adm.email, adm.password]
-            );
-          } catch {}
-        }
-      }
-
-      return fallbackList;
-    },
-    () => {
-      const store = readFallbackStore();
-      return (store.admin_users || []).map((u) => ({
-        id: u.id,
-        name: u.name,
-        email: u.email,
-        role: u.role || 'ADMIN',
-        approved: 1,
-        avatar_url: u.avatar_url || '',
-        created_at: u.created_at,
-      }));
     }
-  );
+
+    // Merge bi-directionally by lowercase email
+    const mergedMap = new Map();
+    for (const fb of fallbackList) {
+      if (fb.email) mergedMap.set(fb.email.toLowerCase(), fb);
+    }
+    for (const r of rows) {
+      if (r.email) {
+        const cleanEmail = r.email.toLowerCase();
+        const existing = mergedMap.get(cleanEmail) || {};
+        mergedMap.set(cleanEmail, {
+          ...existing,
+          ...r,
+          email: cleanEmail,
+          role: 'ADMIN',
+          approved: 1,
+        });
+      }
+    }
+
+    const mergedAdmins = Array.from(mergedMap.values());
+
+    // If fallback store has admins not yet in MySQL, heal MySQL
+    for (const fbAdmin of store.admin_users || []) {
+      if (fbAdmin.email && fbAdmin.password) {
+        try {
+          await pool.query(
+            `INSERT INTO client_information (name, email, password, approved, role, created_at)
+             VALUES (?, ?, ?, 1, 'ADMIN', NOW())
+             ON DUPLICATE KEY UPDATE name = VALUES(name), role = 'ADMIN', approved = 1`,
+            [fbAdmin.name, fbAdmin.email.toLowerCase(), fbAdmin.password]
+          );
+        } catch {}
+      }
+    }
+
+    return mergedAdmins.length > 0 ? mergedAdmins : fallbackList;
+  } catch (err) {
+    return fallbackList;
+  }
 }
 
 async function getAdminByEmail(email) {
   if (!email) return null;
   const cleanEmail = email.trim().toLowerCase();
 
-  try {
-    const [rows] = await pool.query('SELECT * FROM client_information WHERE LOWER(email) = ? AND role = "ADMIN"', [cleanEmail]);
-    if (rows && rows.length > 0) return rows[0];
-  } catch {}
-
   const store = readFallbackStore();
   const fallback = (store.admin_users || []).find((u) => u.email.toLowerCase() === cleanEmail) || null;
+
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, name, email, password, phone, company, approved, role FROM client_information WHERE LOWER(email) = ?',
+      [cleanEmail]
+    );
+
+    if (rows && rows.length > 0) {
+      const dbUser = rows[0];
+      // If user is marked admin or fallback says admin, return with complete info
+      if (dbUser.role === 'ADMIN' || dbUser.role === 'admin' || fallback) {
+        return {
+          id: dbUser.id,
+          name: dbUser.name || (fallback ? fallback.name : 'Admin'),
+          email: cleanEmail,
+          password: dbUser.password,
+          role: 'ADMIN',
+          approved: 1,
+          avatar_url: dbUser.avatar_url || (fallback ? fallback.avatar_url : ''),
+          fallbackPassword: fallback ? fallback.password : null,
+        };
+      }
+    }
+  } catch {}
+
   if (fallback) {
     try {
       await pool.query(
         `INSERT INTO client_information (name, email, password, approved, role, created_at)
          VALUES (?, ?, ?, 1, 'ADMIN', NOW())
-         ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password)`,
-        [fallback.name, fallback.email, fallback.password]
+         ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), role = 'ADMIN', approved = 1`,
+        [fallback.name, fallback.email.toLowerCase(), fallback.password]
       );
     } catch {}
+    return {
+      id: fallback.id,
+      name: fallback.name,
+      email: cleanEmail,
+      password: fallback.password,
+      role: 'ADMIN',
+      approved: 1,
+      avatar_url: fallback.avatar_url || '',
+    };
   }
-  return fallback;
+
+  return null;
 }
 
 async function saveAdminUser(data) {
   const { name, email, password, avatar_url } = data;
   const cleanEmail = email.trim().toLowerCase();
+  const cleanName = name.trim();
 
-  // Always write to fallback store
+  // 1. Write to resilient fallback file store
   const store = readFallbackStore();
   if (!Array.isArray(store.admin_users)) store.admin_users = [];
   const id = Date.now();
   const adminObj = {
     id,
-    name: name.trim(),
+    name: cleanName,
     email: cleanEmail,
     password, // already hashed
     role: 'ADMIN',
@@ -1208,7 +1252,7 @@ async function saveAdminUser(data) {
     created_at: new Date().toISOString(),
   };
 
-  const existingIdx = (store.admin_users || []).findIndex((u) => u.email.toLowerCase() === cleanEmail);
+  const existingIdx = store.admin_users.findIndex((u) => u.email.toLowerCase() === cleanEmail);
   if (existingIdx !== -1) {
     store.admin_users[existingIdx] = { ...store.admin_users[existingIdx], ...adminObj };
   } else {
@@ -1216,7 +1260,7 @@ async function saveAdminUser(data) {
   }
   writeFallbackStore(store);
 
-  // Also try MySQL - attempt with avatar_url, fall back to without avatar_url
+  // 2. Write to MySQL with proper column checks and NULL handling
   try {
     try {
       await pool.query('ALTER TABLE client_information ADD COLUMN avatar_url VARCHAR(500) NULL AFTER role');
@@ -1225,23 +1269,23 @@ async function saveAdminUser(data) {
     await pool.query(
       `INSERT INTO client_information (name, email, password, approved, role, avatar_url, created_at)
        VALUES (?, ?, ?, 1, 'ADMIN', ?, NOW())
-       ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), avatar_url = VALUES(avatar_url)`,
-      [name.trim(), cleanEmail, password, avatar_url || null]
+       ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), avatar_url = VALUES(avatar_url), role = 'ADMIN', approved = 1`,
+      [cleanName, cleanEmail, password, avatar_url || null]
     );
   } catch {
     try {
       await pool.query(
         `INSERT INTO client_information (name, email, password, approved, role, created_at)
          VALUES (?, ?, ?, 1, 'ADMIN', NOW())
-         ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password)`,
-        [name.trim(), cleanEmail, password]
+         ON DUPLICATE KEY UPDATE name = VALUES(name), password = VALUES(password), role = 'ADMIN', approved = 1`,
+        [cleanName, cleanEmail, password]
       );
     } catch (err) {
       console.warn('⚠️ Note: MySQL write skipped for admin, saved in secure fallback vault:', err.message);
     }
   }
 
-  return { id, name: name.trim(), email: cleanEmail, role: 'ADMIN', avatar_url: avatar_url || '' };
+  return { id, name: cleanName, email: cleanEmail, role: 'ADMIN', avatar_url: avatar_url || '' };
 }
 
 async function updateAdminUser(idOrEmail, data) {
@@ -1250,37 +1294,105 @@ async function updateAdminUser(idOrEmail, data) {
     (u) => String(u.id) === String(idOrEmail) || u.email.toLowerCase() === String(idOrEmail).toLowerCase()
   );
 
+  let targetEmail = String(idOrEmail).includes('@') ? String(idOrEmail).trim().toLowerCase() : null;
   if (idx !== -1) {
+    targetEmail = store.admin_users[idx].email?.toLowerCase()?.trim() || targetEmail;
     store.admin_users[idx] = { ...store.admin_users[idx], ...data, updated_at: new Date().toISOString() };
     writeFallbackStore(store);
   }
 
+  // Safe parameter normalization (never pass undefined to mysql2!)
+  const nameVal = data.name !== undefined ? data.name : null;
+  const emailVal = data.email !== undefined ? data.email.toLowerCase().trim() : null;
+  const passwordVal = data.password !== undefined ? data.password : null;
+  const avatarVal = data.avatar_url !== undefined ? data.avatar_url : null;
+  const queryEmail = targetEmail || (emailVal || '');
+  const queryId = isNaN(idOrEmail) ? 0 : Number(idOrEmail);
+
   try {
-    if (data.password) {
+    if (passwordVal) {
       await pool.query(
-        'UPDATE client_information SET name = COALESCE(?, name), email = COALESCE(?, email), password = ?, avatar_url = COALESCE(?, avatar_url) WHERE id = ? OR email = ?',
-        [data.name, data.email, data.password, data.avatar_url, idOrEmail, idOrEmail]
+        `UPDATE client_information
+         SET name = COALESCE(?, name),
+             email = COALESCE(?, email),
+             password = ?,
+             avatar_url = COALESCE(?, avatar_url),
+             role = 'ADMIN',
+             approved = 1
+         WHERE LOWER(email) = LOWER(?) OR LOWER(email) = LOWER(?) OR id = ?`,
+        [nameVal, emailVal, passwordVal, avatarVal, queryEmail, emailVal || queryEmail, queryId]
       );
     } else {
       await pool.query(
-        'UPDATE client_information SET name = COALESCE(?, name), email = COALESCE(?, email), avatar_url = COALESCE(?, avatar_url) WHERE id = ? OR email = ?',
-        [data.name, data.email, data.avatar_url, idOrEmail, idOrEmail]
+        `UPDATE client_information
+         SET name = COALESCE(?, name),
+             email = COALESCE(?, email),
+             avatar_url = COALESCE(?, avatar_url),
+             role = 'ADMIN',
+             approved = 1
+         WHERE LOWER(email) = LOWER(?) OR LOWER(email) = LOWER(?) OR id = ?`,
+        [nameVal, emailVal, avatarVal, queryEmail, emailVal || queryEmail, queryId]
       );
     }
-  } catch {}
+  } catch (err) {
+    console.warn('⚠️ Note: MySQL admin update fallback applied:', err.message);
+  }
 
   return true;
 }
 
 async function deleteAdminUser(id) {
   const store = readFallbackStore();
-  store.admin_users = (store.admin_users || []).filter((u) => String(u.id) !== String(id));
+  const target = (store.admin_users || []).find(
+    (u) => String(u.id) === String(id) || u.email.toLowerCase() === String(id).toLowerCase()
+  );
+  const targetEmail = target ? target.email.toLowerCase().trim() : (String(id).includes('@') ? String(id).toLowerCase().trim() : '');
+  const queryId = isNaN(id) ? 0 : Number(id);
+
+  store.admin_users = (store.admin_users || []).filter(
+    (u) => String(u.id) !== String(id) && u.email.toLowerCase() !== String(id).toLowerCase()
+  );
   writeFallbackStore(store);
 
   try {
-    await pool.query('DELETE FROM client_information WHERE id = ? AND role = "ADMIN"', [id]);
+    await pool.query(
+      'DELETE FROM client_information WHERE (LOWER(email) = LOWER(?) OR id = ?) AND (role = "ADMIN" OR role = "admin")',
+      [targetEmail || '', queryId]
+    );
   } catch {}
   return true;
+}
+
+// ─── MAINTENANCE MODE CONFIG ────────────────────────────────────────────────
+const DEFAULT_MAINTENANCE_CONFIG = {
+  enabled: false,
+  title: 'System Upgrades in Progress',
+  message: 'ORBIT-I systems are currently undergoing scheduled upgrades & performance enhancements. Select public portals remain fully accessible.',
+  estimated_return: '1-2 Hours',
+  allowed_routes: ['/careers', '/contact', '/verify'],
+  custom_allowed_routes: '',
+  updated_at: new Date().toISOString(),
+};
+
+function getMaintenanceConfig() {
+  const store = readFallbackStore();
+  if (!store.maintenance_mode) {
+    store.maintenance_mode = DEFAULT_MAINTENANCE_CONFIG;
+    writeFallbackStore(store);
+  }
+  return store.maintenance_mode;
+}
+
+function saveMaintenanceConfig(data) {
+  const store = readFallbackStore();
+  store.maintenance_mode = {
+    ...DEFAULT_MAINTENANCE_CONFIG,
+    ...(store.maintenance_mode || {}),
+    ...data,
+    updated_at: new Date().toISOString(),
+  };
+  writeFallbackStore(store);
+  return store.maintenance_mode;
 }
 
 // ─── QUICK SITE NOTICE & BROADCAST ALERT ────────────────────────────────────
@@ -1428,53 +1540,79 @@ async function deleteChatbotQA(id) {
 
 // ─── CHATBOT DOCUMENT / PDF TEXT KNOWLEDGE ──────────────────────────────────
 async function getChatbotDocs() {
-  return executeDbOrFallback(
-    async () => {
-      const [rows] = await pool.query('SELECT * FROM chatbot_docs ORDER BY id DESC');
-      return rows;
-    },
-    () => {
-      const store = readFallbackStore();
-      return store.chatbot_docs || [];
+  const store = readFallbackStore();
+  const fallbackDocs = store.chatbot_docs || [];
+
+  try {
+    const [rows] = await pool.query('SELECT * FROM chatbot_docs ORDER BY id DESC');
+    if (rows && rows.length > 0) {
+      // Merge MySQL and fallback docs by ID or title so none are lost
+      const map = new Map();
+      for (const d of fallbackDocs) {
+        map.set(String(d.id), d);
+      }
+      for (const r of rows) {
+        map.set(String(r.id), r);
+      }
+      return Array.from(map.values());
     }
-  );
+  } catch {}
+
+  return fallbackDocs;
 }
 
 async function saveChatbotDoc(data) {
   const { title, category = 'General Knowledge', content_text } = data;
-  return executeDbOrFallback(
-    async () => {
-      const [res] = await pool.query(
-        `INSERT INTO chatbot_docs (title, category, content_text, created_at) VALUES (?, ?, ?, NOW())`,
-        [title, category, content_text]
-      );
-      return { id: res.insertId, ...data };
-    },
-    () => {
-      const store = readFallbackStore();
-      const id = Date.now();
-      const newDoc = { id, title, category, content_text, created_at: new Date().toISOString() };
-      if (!Array.isArray(store.chatbot_docs)) store.chatbot_docs = [];
-      store.chatbot_docs.unshift(newDoc);
-      writeFallbackStore(store);
-      return newDoc;
+  const store = readFallbackStore();
+  const id = Date.now();
+  const cleanTitle = (title || 'Knowledge Document').trim();
+  const cleanContent = (content_text || '').trim();
+  const cleanCategory = (category || 'General Knowledge').trim();
+
+  const newDoc = {
+    id,
+    title: cleanTitle,
+    category: cleanCategory,
+    content_text: cleanContent,
+    created_at: new Date().toISOString(),
+  };
+
+  if (!Array.isArray(store.chatbot_docs)) store.chatbot_docs = [];
+  store.chatbot_docs.unshift(newDoc);
+  writeFallbackStore(store);
+
+  try {
+    const [res] = await pool.query(
+      `INSERT INTO chatbot_docs (title, category, content_text, created_at) VALUES (?, ?, ?, NOW())`,
+      [cleanTitle, cleanCategory, cleanContent]
+    );
+    if (res && res.insertId) {
+      newDoc.id = res.insertId;
     }
-  );
+  } catch (err) {
+    console.warn('MySQL chatbot_docs write skipped, saved in resilient fallback storage:', err.message);
+  }
+
+  return newDoc;
 }
 
 async function deleteChatbotDoc(id) {
-  return executeDbOrFallback(
-    async () => {
-      await pool.query('DELETE FROM chatbot_docs WHERE id = ?', [id]);
-      return true;
-    },
-    () => {
-      const store = readFallbackStore();
-      store.chatbot_docs = (store.chatbot_docs || []).filter((d) => String(d.id) !== String(id));
-      writeFallbackStore(store);
-      return true;
-    }
-  );
+  const store = readFallbackStore();
+  const strId = String(id).trim();
+
+  // Always delete from fallback store (coerce both number and string)
+  store.chatbot_docs = (store.chatbot_docs || []).filter((d) => String(d.id).trim() !== strId);
+  writeFallbackStore(store);
+
+  // Always delete from MySQL
+  try {
+    const numId = isNaN(id) ? 0 : Number(id);
+    await pool.query('DELETE FROM chatbot_docs WHERE id = ? OR id = ?', [id, numId]);
+  } catch (err) {
+    console.warn('MySQL chatbot_docs delete skipped or already removed:', err.message);
+  }
+
+  return true;
 }
 
 // ─── BLOG CATEGORIES ────────────────────────────────────────────────────────
@@ -1688,6 +1826,8 @@ module.exports = {
   deleteAdminUser,
   getSiteNotice,
   updateSiteNotice,
+  getMaintenanceConfig,
+  saveMaintenanceConfig,
   getHiringBanners,
   saveHiringBanner,
   deleteHiringBanner,

@@ -7,46 +7,18 @@ import UtmTracker from '@/components/UtmTracker'
 import BackToTop from '@/components/BackToTop'
 import FloatingContactButton from '@/components/FloatingContactButton'
 import AnalyticsClientTracker from '@/components/AnalyticsClientTracker'
+import MaintenanceGuard from '@/components/MaintenanceGuard'
 
 export const metadata = {
   metadataBase: new URL('https://orbit-i.tech'),
   title: {
-    default: 'ORBIT-I Private Limited — Top #1 Software & AI Engineering Company in Nawabshah & Karachi, Sindh',
+    default: 'ORBIT-I | Software & AI Development in Nawabshah & Karachi',
     template: '%s | ORBIT-I Private Limited',
   },
-  description: 'ORBIT-I Private Limited is an SECP registered technology enterprise (Est. 2026) headquartered in Nawabshah with executive regional branch in Karachi, Pakistan. Delivering enterprise AI systems, full-stack web platforms, mobile apps, and custom software.',
-  keywords: [
-    // Nawabshah Local SEO Top Rankings
-    'software company Nawabshah',
-    'software house in Nawabshah',
-    'IT company Nawabshah',
-    'web development Nawabshah',
-    'best software engineering Nawabshah',
-    'AI solutions Nawabshah',
-    // Karachi Local SEO Top Rankings
-    'software house Karachi',
-    'software development company Karachi',
-    'enterprise AI Karachi',
-    'custom software Karachi',
-    'Next.js developer Karachi',
-    'top IT firms Karachi',
-    // Pakistan & Global AISEO Keywords
-    'SECP registered software company Pakistan',
-    'autonomous AI agents Pakistan',
-    'enterprise software house Pakistan',
-    'cloud DevOps Pakistan',
-    'ORBIT-I Private Limited',
-    'orbit-i.tech',
-  ],
+  description: 'SECP-registered software company building AI systems, web and mobile apps, and custom software. Request a consultation.',
   authors: [{ name: 'ORBIT-I Private Limited', url: 'https://orbit-i.tech' }],
   creator: 'ORBIT-I Private Limited',
   publisher: 'ORBIT-I Private Limited',
-  other: {
-    'geo.region': 'PK-SD',
-    'geo.placename': 'Nawabshah, Karachi',
-    'geo.position': '26.2483;68.4096',
-    'ICBM': '26.2483, 68.4096',
-  },
   robots: {
     index: true,
     follow: true,
@@ -67,22 +39,22 @@ export const metadata = {
     locale: 'en_US',
     url: 'https://orbit-i.tech',
     siteName: 'ORBIT-I Private Limited',
-    title: 'ORBIT-I Private Limited — Top #1 Software & AI Engineering Company',
-    description: 'SECP registered technology enterprise headquartered in Nawabshah with executive branch in Karachi, Pakistan. Delivering enterprise AI, web, mobile, and custom cloud systems.',
+    title: 'ORBIT-I | Software & AI Engineering Company',
+    description: 'SECP-registered software company building AI systems, web and mobile apps, and custom software from Nawabshah & Karachi, Pakistan.',
     images: [
       {
-        url: '/orbitlogo-removebg-preview.png',
-        width: 512,
-        height: 512,
-        alt: 'ORBIT-I Private Limited Logo',
+        url: '/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'ORBIT-I Private Limited — Software & AI Engineering Company',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ORBIT-I Private Limited — Top #1 Software & AI Engineering Company',
-    description: 'Enterprise AI systems, web platforms, mobile apps, and cloud infrastructure from Nawabshah & Karachi, Pakistan.',
-    images: ['/orbitlogo-removebg-preview.png'],
+    title: 'ORBIT-I | Software & AI Engineering Company',
+    description: 'SECP-registered software company building AI systems, web and mobile apps, and custom software.',
+    images: ['/og-image.jpg'],
   },
   alternates: {
     canonical: 'https://orbit-i.tech',
@@ -101,7 +73,7 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        {/* Structured data — Schema.org LocalBusiness, Corporation & Organization for dominant Nawabshah & Karachi SEO */}
+        {/* Structured data — Schema.org Organization */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -109,16 +81,14 @@ export default function RootLayout({ children }) {
               '@context': 'https://schema.org',
               '@graph': [
                 {
-                  '@type': ['LocalBusiness', 'Organization'],
+                  '@type': 'Organization',
                   '@id': 'https://orbit-i.tech/#organization',
                   name: 'ORBIT-I Private Limited',
                   alternateName: 'ORBIT-I',
                   url: 'https://orbit-i.tech',
                   logo: 'https://orbit-i.tech/orbitlogo-removebg-preview.png',
-                  image: 'https://orbit-i.tech/orbitlogo-removebg-preview.png',
-                  description: 'Top SECP registered software engineering company (Est. 2026) headquartered in Nawabshah, with regional branch in Karachi, Pakistan. Delivering enterprise AI systems, full-stack web platforms, mobile apps, and custom cloud infrastructure.',
-                  foundingDate: '2026',
-                  priceRange: '$$$',
+                  image: 'https://orbit-i.tech/og-image.jpg',
+                  description: 'SECP-registered software and AI engineering company headquartered in Nawabshah with executive branch in Karachi, Pakistan. Delivering enterprise AI systems, web platforms, mobile apps, and custom software.',
                   telephone: '+92-319-0375751',
                   email: 'contactus@orbit-i.tech',
                   address: {
@@ -129,49 +99,11 @@ export default function RootLayout({ children }) {
                     postalCode: '67450',
                     addressCountry: 'PK',
                   },
-                  geo: {
-                    '@type': 'GeoCoordinates',
-                    latitude: 26.2483,
-                    longitude: 68.4096,
-                  },
-                  department: [
-                    {
-                      '@type': 'LocalBusiness',
-                      name: 'ORBIT-I Corporate Headquarters',
-                      address: {
-                        '@type': 'PostalAddress',
-                        streetAddress: 'Nawabshah',
-                        addressLocality: 'Nawabshah',
-                        addressRegion: 'Sindh',
-                        postalCode: '67450',
-                        addressCountry: 'PK',
-                      },
-                      telephone: '+92-319-0375751',
-                    },
-                    {
-                      '@type': 'LocalBusiness',
-                      name: 'ORBIT-I Karachi Regional Branch',
-                      address: {
-                        '@type': 'PostalAddress',
-                        streetAddress: 'Karachi',
-                        addressLocality: 'Karachi',
-                        addressRegion: 'Sindh',
-                        addressCountry: 'PK',
-                      },
-                      telephone: '+92-319-0375751',
-                    },
-                  ],
-                  areaServed: [
-                    { '@type': 'City', name: 'Nawabshah' },
-                    { '@type': 'City', name: 'Karachi' },
-                    { '@type': 'City', name: 'Hyderabad' },
-                    { '@type': 'City', name: 'Sukkur' },
-                    { '@type': 'City', name: 'Lahore' },
-                    { '@type': 'City', name: 'Islamabad' },
-                    { '@type': 'Country', name: 'Pakistan' },
-                    { '@type': 'Country', name: 'United States' },
-                    { '@type': 'Country', name: 'United Kingdom' },
-                    { '@type': 'Country', name: 'United Arab Emirates' },
+                  sameAs: [
+                    'https://www.linkedin.com/company/orbit-i-private-limited/',
+                    'https://www.facebook.com/orbitiprivatelimited',
+                    'https://www.instagram.com/orbiti_private_limited',
+                    'https://www.tiktok.com/@orbitiprivatelimited',
                   ],
                   hasOfferCatalog: {
                     '@type': 'OfferCatalog',
@@ -208,6 +140,7 @@ export default function RootLayout({ children }) {
         <a href="#main-content" className="skip-to-content">
           Skip to main content
         </a>
+        <MaintenanceGuard />
         <ScrollProgressBar />
         <UtmTracker />
         <AnalyticsClientTracker />

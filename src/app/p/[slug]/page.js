@@ -12,7 +12,22 @@ export async function generateMetadata({ params }) {
   return {
     title: page.meta_title || `${page.title} | ORBIT-I`,
     description: page.meta_description || page.excerpt || 'Official corporate page of ORBIT-I Private Limited.',
-    keywords: page.keywords || 'ORBIT-I enterprise software',
+    alternates: {
+      canonical: `https://orbit-i.tech/p/${page.slug}`,
+    },
+    openGraph: {
+      title: page.meta_title || page.title,
+      description: page.meta_description || page.excerpt,
+      url: `https://orbit-i.tech/p/${page.slug}`,
+      siteName: 'ORBIT-I Private Limited',
+      images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: page.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: page.meta_title || page.title,
+      description: page.meta_description || page.excerpt,
+      images: ['/og-image.jpg'],
+    },
   };
 }
 

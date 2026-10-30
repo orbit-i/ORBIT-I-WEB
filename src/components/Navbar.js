@@ -27,7 +27,7 @@ const navLinks = [
   },
   { label: 'Careers', href: '/careers' },
   {
-    label: 'Blogs',
+    label: 'Blog',
     href: '/blog',
     dropdown: [
       { label: '✦ All Engineering Articles', href: '/blog' },

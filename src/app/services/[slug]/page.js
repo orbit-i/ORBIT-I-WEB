@@ -17,15 +17,8 @@ export async function generateMetadata({ params }) {
   if (!service) return { title: 'Service Not Found' }
 
   return {
-    title: `${service.title} | Top Rated in Nawabshah & Karachi | ORBIT-I`,
+    title: `${service.title} in Nawabshah & Karachi | ORBIT-I`,
     description: service.metaDesc,
-    keywords: [
-      ...service.keywords,
-      `${service.title} Nawabshah`,
-      `${service.title} Karachi`,
-      'ORBIT-I Private Limited',
-      'SECP registered software company',
-    ],
     openGraph: {
       title: `${service.title} | ORBIT-I Private Limited`,
       description: service.metaDesc,
@@ -33,9 +26,9 @@ export async function generateMetadata({ params }) {
       siteName: 'ORBIT-I Private Limited',
       images: [
         {
-          url: '/orbitlogo-removebg-preview.png',
-          width: 512,
-          height: 512,
+          url: '/og-image.jpg',
+          width: 1200,
+          height: 630,
           alt: service.title,
         },
       ],
@@ -44,7 +37,7 @@ export async function generateMetadata({ params }) {
       card: 'summary_large_image',
       title: `${service.title} | ORBIT-I Private Limited`,
       description: service.metaDesc,
-      images: ['/orbitlogo-removebg-preview.png'],
+      images: ['/og-image.jpg'],
     },
     alternates: {
       canonical: `https://orbit-i.tech/services/${service.slug}`,

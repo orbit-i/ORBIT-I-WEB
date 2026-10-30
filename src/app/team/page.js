@@ -16,7 +16,7 @@ const founders = [
     category: 'Executive Leadership',
     bio: 'Steering ORBIT-I Private Limited with relentless focus on high-performance enterprise systems, sustainable digital architecture, and strategic engineering partnerships across Pakistan, the Middle East, and global markets.',
     initials: 'AS',
-    photo: '/team/samad rind.jpeg',
+    photo: '/team/samad-rind.jpeg',
     objectPosition: 'center 10%',
     linkedin: 'https://www.linkedin.com/company/orbit-i-private-limited/',
     email: 'contactus@orbit-i.tech',
@@ -28,7 +28,7 @@ const founders = [
     category: 'Operations & Strategy',
     bio: 'Orchestrating commercial client operations, agile sprint deliveries, talent incubation, and corporate enterprise expansion across both domestic and international client accounts.',
     initials: 'MA',
-    photo: '/team/female avatar.png',
+    photo: null,
     objectPosition: 'center center',
     linkedin: 'https://www.linkedin.com/company/orbit-i-private-limited/',
     email: 'contactus@orbit-i.tech',
@@ -40,7 +40,7 @@ const founders = [
     category: 'Engineering & Technology',
     bio: 'Pioneering technical system architecture, cloud DevOps scalability, zero-trust security hardening, and autonomous AI pipelines across all ORBIT-I production software.',
     initials: 'MM',
-    photo: '/team/Muneeb ur rehman.jpeg',
+    photo: '/team/muneeb-ur-rehman.jpeg',
     objectPosition: 'center 10%',
     linkedin: 'https://www.linkedin.com/company/orbit-i-private-limited/',
     email: 'contactus@orbit-i.tech',
@@ -54,7 +54,7 @@ const baseTeam = [
     role: 'Lead Web Engineer',
     category: 'Web Engineering',
     initials: 'HA',
-    photo: '/team/hassan anser.jpeg',
+    photo: '/team/hassan-anser.jpeg',
     objectPosition: 'center 20%',
     skills: 'Next.js, React, Tailwind CSS, TypeScript',
   },
@@ -72,7 +72,7 @@ const baseTeam = [
     role: 'AI / Machine Learning Engineer',
     category: 'AI & Data Science',
     initials: 'RC',
-    photo: '/team/rashid channa.jpeg',
+    photo: '/team/rashid-channa.jpeg',
     objectPosition: 'center 15%',
     skills: 'PyTorch, LangChain, RAG Systems, FastAPI',
   },
@@ -81,7 +81,7 @@ const baseTeam = [
     role: 'Backend & Cloud Systems Engineer',
     category: 'Backend & Cloud',
     initials: 'LA',
-    photo: '/team/female avatar.png',
+    photo: null,
     objectPosition: 'center center',
     skills: 'Node.js, PostgreSQL, Docker, Microservices',
   },
@@ -90,7 +90,7 @@ const baseTeam = [
     role: '.NET & Enterprise Systems Developer',
     category: 'Enterprise Systems',
     initials: 'AR',
-    photo: '/team/abdul rehman.png',
+    photo: '/team/abdul-rehman.png',
     objectPosition: 'center 10%',
     skills: 'C#, .NET Core, SQL Server, Clean Architecture',
   },
@@ -102,6 +102,24 @@ const baseTeam = [
     photo: '/team/chander.jpeg',
     objectPosition: 'center top',
     skills: 'React Native, Express, MongoDB, UI Ergonomics',
+  },
+  {
+    name: 'Umar Farooque',
+    role: 'Frontend Developer',
+    category: 'Web Engineering',
+    initials: 'UF',
+    photo: '/team/umar-farooque.jpeg',
+    objectPosition: 'center 10%',
+    skills: 'Next.js, Vue, Tailwind CSS, Responsive Design',
+  },
+  {
+    name: 'Ahsan Ali',
+    role: 'DevOps & Cloud Engineer',
+    category: 'Backend & Cloud',
+    initials: 'AA',
+    photo: '/team/ahsan-ali.jpeg',
+    objectPosition: 'center 10%',
+    skills: 'Docker, Kubernetes, AWS, CI/CD Automations',
   },
 ]
 
@@ -136,7 +154,7 @@ export default function TeamPage() {
       role: m.designation,
       category: m.department || 'Engineering',
       initials: m.name.substring(0, 2).toUpperCase(),
-      photo: m.avatar_url || '/orbitlogo-removebg-preview.png',
+      photo: m.avatar_url || null,
       skills: m.skills || '',
       linkedin: m.linkedin_url,
     })),
@@ -160,10 +178,10 @@ export default function TeamPage() {
           <div className="grid-bg" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
           <div className="container" style={{ position: 'relative', textAlign: 'center', maxWidth: 860, margin: '0 auto' }}>
             <div className="tag" style={{ display: 'inline-flex', marginBottom: 16 }}>
-              <span className="dot" />World-Class Engineering Talent
+              <span className="dot" />Engineering Talent &amp; Leadership
             </div>
             <h1 style={{ fontFamily: 'Space Grotesk', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.15, marginBottom: 18 }}>
-              Meet the Engineers & Architects <span className="gradient-text-blue">Behind ORBIT-I</span>
+              Meet the Engineers &amp; Architects <span className="gradient-text-blue">Behind ORBIT-I</span>
             </h1>
             <p style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.7, maxWidth: 680, margin: '0 auto' }}>
               From corporate headquarters in <strong>Nawabshah</strong> to commercial offices in <strong>Karachi</strong> — our SECP-governed software leaders build scalable digital futures.
@@ -178,20 +196,20 @@ export default function TeamPage() {
               <div style={{ width: 1, background: 'var(--border)' }} />
               <div>
                 <div style={{ fontFamily: 'Space Grotesk', fontSize: 28, fontWeight: 800, color: 'var(--accent)' }}>12+</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Engineers & Researchers</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Engineers &amp; Designers</div>
               </div>
               <div style={{ width: 1, background: 'var(--border)' }} />
               <div>
-                <div style={{ fontFamily: 'Space Grotesk', fontSize: 28, fontWeight: 800, color: 'var(--accent)' }}>100%</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>In-House IP Engineering</div>
+                <div style={{ fontFamily: 'Space Grotesk', fontSize: 28, fontWeight: 800, color: 'var(--accent)' }}>2</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Regional Hubs</div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Filter Pills */}
+        {/* Filter Navigation */}
         <section style={{ padding: '0 0 40px' }}>
-          <div className="container" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 8 }}>
+          <div className="container" style={{ display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' }}>
             {departments.map((dep) => (
               <button
                 key={dep}
@@ -244,12 +262,24 @@ export default function TeamPage() {
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 18 }}>
                         <div style={{ position: 'relative', width: 72, height: 72, borderRadius: 20, overflow: 'hidden', border: '2px solid var(--accent)', flexShrink: 0 }}>
-                          <Image
-                            src={f.photo}
-                            alt={f.name}
-                            fill
-                            style={{ objectFit: 'cover', objectPosition: f.objectPosition || 'center' }}
-                          />
+                          {f.photo ? (
+                            <Image
+                              src={f.photo}
+                              alt={f.name}
+                              fill
+                              sizes="72px"
+                              style={{ objectFit: 'cover', objectPosition: f.objectPosition || 'center' }}
+                            />
+                          ) : (
+                            <div style={{
+                              width: '100%', height: '100%',
+                              background: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(99,102,241,0.2) 100%)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              color: 'var(--accent)', fontFamily: 'Space Grotesk', fontWeight: 800, fontSize: 24
+                            }}>
+                              {f.initials}
+                            </div>
+                          )}
                         </div>
                         <div>
                           <span style={{ fontSize: 10, padding: '3px 8px', background: 'var(--accent-glow)', border: '1px solid var(--border-hover)', borderRadius: 100, color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase' }}>
@@ -304,7 +334,7 @@ export default function TeamPage() {
               <div style={{ textAlign: 'center', marginBottom: 32 }}>
                 <span className="tag" style={{ fontSize: 10, padding: '4px 10px' }}>Core Engineering Unit</span>
                 <h2 style={{ fontFamily: 'Space Grotesk', fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', marginTop: 8 }}>
-                  Specialists & Systems Engineers
+                  Specialists &amp; Systems Engineers
                 </h2>
               </div>
 
@@ -325,12 +355,24 @@ export default function TeamPage() {
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
                       <div style={{ position: 'relative', width: 56, height: 56, borderRadius: 16, overflow: 'hidden', border: '1px solid var(--border)', flexShrink: 0 }}>
-                        <Image
-                          src={m.photo}
-                          alt={m.name}
-                          fill
-                          style={{ objectFit: 'cover', objectPosition: m.objectPosition || 'center' }}
-                        />
+                        {m.photo ? (
+                          <Image
+                            src={m.photo}
+                            alt={m.name}
+                            fill
+                            sizes="56px"
+                            style={{ objectFit: 'cover', objectPosition: m.objectPosition || 'center' }}
+                          />
+                        ) : (
+                          <div style={{
+                            width: '100%', height: '100%',
+                            background: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(99,102,241,0.2) 100%)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: 'var(--accent)', fontFamily: 'Space Grotesk', fontWeight: 800, fontSize: 18
+                          }}>
+                            {m.initials}
+                          </div>
+                        )}
                       </div>
                       <div>
                         <span style={{ fontSize: 9, padding: '2px 7px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 100, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>

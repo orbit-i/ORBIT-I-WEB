@@ -16,7 +16,7 @@ export async function generateMetadata({ params }) {
       post.focus_keyword,
       post.tags,
       post.downloadable_tags,
-      'software house Nawabshah',
+      'software company Nawabshah',
       'AI engineering Karachi',
       'enterprise software Pakistan',
     ].filter(Boolean).join(', '),
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }) {
       url: `https://orbit-i.tech/blog/${post.slug}`,
       images: [
         {
-          url: post.featured_image || 'https://orbit-i.tech/orbitlogo-removebg-preview.png',
+          url: post.featured_image || 'https://orbit-i.tech/og-image.jpg',
           alt: post.title,
         },
       ],
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }) {
       card: 'summary_large_image',
       title: post.seo_title || post.title,
       description: post.seo_description || post.excerpt,
-      images: [post.featured_image || 'https://orbit-i.tech/orbitlogo-removebg-preview.png'],
+      images: [post.featured_image || 'https://orbit-i.tech/og-image.jpg'],
     },
     alternates: {
       canonical: `https://orbit-i.tech/blog/${post.slug}`,

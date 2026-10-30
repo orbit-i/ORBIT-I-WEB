@@ -20,9 +20,9 @@ const values = [
 
 const metrics = [
   { value: '7+', label: 'Services', sub: 'AI, Web, Mobile & Cloud' },
-  { value: '2026', label: 'Founded', sub: 'SECP Registered' },
-  { value: '100%', label: 'IP Owned', sub: 'No recurring costs' },
-  { value: 'Global', label: 'Delivery', sub: 'Nawabshah & Karachi' },
+  { value: 'SECP', label: 'Registered', sub: 'Pvt. Ltd. Entity' },
+  { value: '100%', label: 'IP Owned', sub: 'Client full ownership' },
+  { value: 'Sindh', label: 'Presence', sub: 'Nawabshah & Karachi' },
 ]
 
 const infoCards = [
@@ -41,7 +41,6 @@ const infoCards = [
 export default function About() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
-  const doubled = [...infoCards, ...infoCards]
 
   return (
     <section id="about" style={{ paddingTop: 0, paddingBottom: 80, background: 'var(--bg)' }}>
@@ -81,9 +80,9 @@ export default function About() {
               <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Who We Are</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[
-                  'Our team of experienced software engineers, cloud architects, and AI specialists focuses on custom software solutions, enterprise web platforms, cross-platform mobile apps, cloud infrastructure, and secure API integrations.',
-                  "We don't build basic prototypes — we engineer production systems, uncover operational bottlenecks, and provide clear, practical code that your team can maintain and scale.",
-                  'What makes us different is our hands-on engineering approach. We simulate real-world concurrency and data workloads to ensure your systems are fault-tolerant.',
+                  'Our team of software engineers, cloud architects, and AI specialists focuses on custom software solutions, enterprise web platforms, cross-platform mobile apps, cloud infrastructure, and secure API integrations.',
+                  "We don't build superficial prototypes — we engineer production systems, identify performance bottlenecks, and deliver clear, maintainable code.",
+                  'What defines our practice is disciplined engineering. We simulate real-world concurrency and data workloads to ensure systems remain dependable and fault-tolerant.',
                 ].map((p, i) => <p key={i} style={{ fontSize: 14, lineHeight: 1.75, color: 'var(--text-secondary)' }}>{p}</p>)}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -112,7 +111,7 @@ export default function About() {
         <motion.div ref={ref} initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.6 }}>
           <TiltCard style={{ borderRadius: 20, padding: '28px 24px', background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
             <div className="about-metrics">
-              {metrics.map((m, i) => (
+              {metrics.map((m) => (
                 <div key={m.label} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                   <span style={{ fontFamily: 'Space Grotesk', fontSize: 28, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: 1 }}>{m.value}</span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', fontFamily: 'Space Grotesk' }}>{m.label}</span>
@@ -130,8 +129,19 @@ export default function About() {
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 80, background: 'linear-gradient(90deg, var(--bg), transparent)', zIndex: 10, pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 80, background: 'linear-gradient(270deg, var(--bg), transparent)', zIndex: 10, pointerEvents: 'none' }} />
         <div className="marquee-track" style={{ display: 'flex', gap: 10, width: 'max-content', paddingLeft: 24 }}>
-          {doubled.map((card, i) => (
-            <div key={i} style={{ flexShrink: 0, padding: '12px 18px', background: 'var(--bg-card)', border: '1px solid var(--border-hover)', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 10, minWidth: 180 }}>
+          {/* Primary accessible copy */}
+          {infoCards.map((card, i) => (
+            <div key={`tech-primary-${i}`} style={{ flexShrink: 0, padding: '12px 18px', background: 'var(--bg-card)', border: '1px solid var(--border-hover)', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 10, minWidth: 180 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontFamily: 'Space Grotesk', fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>{card.label}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>{card.sub}</div>
+              </div>
+            </div>
+          ))}
+          {/* Duplicate copy hidden from screen readers & crawlers */}
+          {infoCards.map((card, i) => (
+            <div key={`tech-duplicate-${i}`} aria-hidden="true" style={{ flexShrink: 0, padding: '12px 18px', background: 'var(--bg-card)', border: '1px solid var(--border-hover)', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 10, minWidth: 180 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
               <div>
                 <div style={{ fontFamily: 'Space Grotesk', fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>{card.label}</div>
@@ -143,13 +153,6 @@ export default function About() {
       </motion.div>
 
       <div className="separator" style={{ marginTop: 56 }} />
-
-      <style>{`
-        @media (min-width: 1024px) {
-          #about-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
-          #metrics-grid { grid-template-columns: repeat(4, 1fr) !important; }
-        }
-      `}</style>
     </section>
   )
 }

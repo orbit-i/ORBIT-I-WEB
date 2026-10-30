@@ -27,10 +27,16 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
+  Share2,
+  Copy,
+  Check,
+  ExternalLink,
 } from 'lucide-react'
 
 export default function CareersPage() {
   const [filter, setFilter] = useState('all') // 'all' | 'internship' | 'freelance'
+  const [departmentFilter, setDepartmentFilter] = useState('all')
+  const [copiedSlug, setCopiedSlug] = useState(null)
   const [positions, setPositions] = useState(careerPositions)
   const [selectedRole, setSelectedRole] = useState(null)
   const [formData, setFormData] = useState({
@@ -87,10 +93,53 @@ export default function CareersPage() {
       .catch(() => {})
   }, [])
 
+  // Check URL query parameters for direct link highlighting (e.g. ?role=wordpress-developer-intern)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const roleSlug = params.get('role')
+      if (roleSlug) {
+        const found = positions.find(
+          (p) => (p.slug && p.slug.toLowerCase() === roleSlug.toLowerCase()) || String(p.id).toLowerCase() === roleSlug.toLowerCase()
+        )
+        if (found) {
+          setExpandedCard(found.id)
+          setTimeout(() => {
+            const el = document.getElementById(`role-${found.slug || found.id}`)
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }, 300)
+        }
+      }
+    }
+  }, [positions])
+
+  // Extract all distinct departments dynamically
+  const uniqueDepartments = Array.from(new Set(positions.map((p) => p.department).filter(Boolean)))
+
   const filteredRoles = positions.filter((role) => {
-    if (filter === 'all') return true
-    return role.category === filter
+    const matchesCategory = filter === 'all' || role.category === filter
+    const matchesDept = departmentFilter === 'all' || role.department === departmentFilter
+    return matchesCategory && matchesDept
   })
+
+  const handleCopyRoleLink = async (role) => {
+    const slug = role.slug || role.id
+    const url = `${window.location.origin}/careers/${slug}`
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url)
+      } else {
+        const input = document.createElement('input')
+        input.value = url
+        document.body.appendChild(input)
+        input.select()
+        document.execCommand('copy')
+        document.body.removeChild(input)
+      }
+      setCopiedSlug(slug)
+      setTimeout(() => setCopiedSlug(null), 2500)
+    } catch {}
+  }
 
   const handleOpenModal = (role) => {
     setSelectedRole(role)
@@ -330,16 +379,18 @@ export default function CareersPage() {
 
         {/* FILTER CONTROLS */}
         <section className="container" style={{ marginBottom: 36 }}>
+          {/* Category Tabs */}
           <div style={{
             display: 'flex',
             justifyContent: 'center',
             gap: 10,
             flexWrap: 'wrap',
+            marginBottom: 16,
           }}>
             {[
               { id: 'all', label: `All Openings (${positions.length})` },
-              { id: 'internship', label: `Remote Internships — 2 Mo Unpaid (6)` },
-              { id: 'freelance', label: `Freelance / Project-Based Paid (2)` },
+              { id: 'internship', label: `Remote Internships (${positions.filter((p) => p.category === 'internship').length})` },
+              { id: 'freelance', label: `Freelance / Project-Based (${positions.filter((p) => p.category === 'freelance').length})` },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -361,6 +412,62 @@ export default function CareersPage() {
               </button>
             ))}
           </div>
+
+          {/* Dynamic Department Filter Pills */}
+          {uniqueDepartments.length > 0 && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 8,
+              flexWrap: 'wrap',
+              padding: '8px 12px',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              borderRadius: 100,
+              maxWidth: 900,
+              margin: '0 auto',
+            }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '0 8px' }}>
+                Department:
+              </span>
+              <button
+                onClick={() => setDepartmentFilter('all')}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: 100,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  border: departmentFilter === 'all' ? '1px solid #818cf8' : '1px solid transparent',
+                  background: departmentFilter === 'all' ? 'rgba(99,102,241,0.15)' : 'transparent',
+                  color: departmentFilter === 'all' ? '#818cf8' : 'var(--text-secondary)',
+                  transition: 'all 0.15s',
+                }}
+              >
+                All Departments
+              </button>
+              {uniqueDepartments.map((dept) => (
+                <button
+                  key={dept}
+                  onClick={() => setDepartmentFilter(dept)}
+                  style={{
+                    padding: '5px 12px',
+                    borderRadius: 100,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    border: departmentFilter === dept ? '1px solid #818cf8' : '1px solid transparent',
+                    background: departmentFilter === dept ? 'rgba(99,102,241,0.15)' : 'transparent',
+                    color: departmentFilter === dept ? '#818cf8' : 'var(--text-secondary)',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {dept}
+                </button>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* JOB CARDS GRID */}
@@ -373,6 +480,7 @@ export default function CareersPage() {
               return (
                 <div
                   key={role.id}
+                  id={`role-${role.slug || role.id}`}
                   style={{
                     background: 'var(--bg-card)',
                     border: '1px solid var(--border)',
@@ -520,19 +628,20 @@ export default function CareersPage() {
                   </div>
 
                   {/* Actions Bottom Bar */}
-                  <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, marginTop: 20, display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <div style={{ borderTop: '1px solid var(--border)', paddingTop: 16, marginTop: 20, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                     <button
                       onClick={() => handleOpenModal(role)}
                       className="btn-primary"
                       style={{
                         flex: 1,
-                        padding: '11px 18px',
+                        minWidth: 120,
+                        padding: '11px 16px',
                         fontSize: 13,
                         fontWeight: 600,
                         justifyContent: 'center',
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: 8,
+                        gap: 6,
                         background: isFreelance ? 'linear-gradient(135deg, #16a34a 0%, #22c55e 100%)' : undefined,
                       }}
                     >
@@ -542,7 +651,7 @@ export default function CareersPage() {
                     <button
                       onClick={() => setExpandedCard(isExpanded ? null : role.id)}
                       style={{
-                        padding: '10px 14px',
+                        padding: '10px 12px',
                         borderRadius: 100,
                         background: 'transparent',
                         border: '1px solid var(--border)',
@@ -557,11 +666,57 @@ export default function CareersPage() {
                       }}
                     >
                       {isExpanded ? (
-                        <>Show Less <ChevronUp size={13} /></>
+                        <>Less <ChevronUp size={13} /></>
                       ) : (
                         <>Details <ChevronDown size={13} /></>
                       )}
                     </button>
+
+                    <button
+                      onClick={() => handleCopyRoleLink(role)}
+                      title="Copy direct shareable link for this role"
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: 100,
+                        background: copiedSlug === (role.slug || role.id) ? 'rgba(34,197,94,0.1)' : 'var(--bg-elevated)',
+                        border: `1px solid ${copiedSlug === (role.slug || role.id) ? 'rgba(34,197,94,0.3)' : 'var(--border)'}`,
+                        color: copiedSlug === (role.slug || role.id) ? '#22c55e' : 'var(--text-secondary)',
+                        cursor: 'pointer',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {copiedSlug === (role.slug || role.id) ? (
+                        <><Check size={13} color="#22c55e" /> Copied</>
+                      ) : (
+                        <><Copy size={13} /> Share</>
+                      )}
+                    </button>
+
+                    <Link
+                      href={`/careers/${role.slug || role.id}`}
+                      title="Open dedicated shareable page"
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: 100,
+                        background: 'rgba(99,102,241,0.08)',
+                        border: '1px solid rgba(99,102,241,0.25)',
+                        color: '#818cf8',
+                        textDecoration: 'none',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      <ExternalLink size={13} />
+                    </Link>
                   </div>
                 </div>
               )

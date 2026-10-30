@@ -19,7 +19,7 @@ export const servicesList = [
       'Enterprise RAG with strict on-premise & VPC data governance',
       'Autonomous multi-step agents that execute complex business actions',
       'Domain-adapted model fine-tuning for specialized industry vocabulary',
-      'Sub-100ms vector search with hybrid semantic scaling and caching',
+      'High-performance vector search with hybrid semantic scaling and caching',
       'Custom AI pipelines integrated into legacy ERPs and modern databases'
     ],
     tags: ['LangChain', 'Python', 'FastAPI', 'pgvector', 'PyTorch', 'Ollama', 'Llama 3', 'OpenAI'],
@@ -58,7 +58,7 @@ export const servicesList = [
       'End-to-end type safety across client, server, and database layers',
       'Custom modular design systems with pixel-perfect responsive layouts',
       'Sub-second first contentful paint (FCP) and Google Core Web Vitals optimization',
-      'Automated CI/CD pipelines, containerized deployments, and zero-downtime releases'
+      'Automated CI/CD pipelines, containerized deployments, and high-availability rolling releases'
     ],
     tags: ['Next.js', 'React', 'Node.js', 'TypeScript', 'Tailwind CSS', 'PostgreSQL', 'MySQL'],
     deliverables: [
@@ -188,18 +188,18 @@ export const servicesList = [
     featured: false,
     category: 'Infrastructure & Reliability',
     title: 'Cloud & DevOps Engineering (AWS, Linux, CI/CD)',
-    shortDesc: 'Resilient cloud infrastructure, automated CI/CD pipelines, containerization, and zero-downtime production deployments.',
-    heroTag: 'Zero-Downtime Cloud Operations',
+    shortDesc: 'Resilient cloud infrastructure, automated CI/CD pipelines, containerization, and high-availability production deployments.',
+    heroTag: 'High-Availability Cloud Operations',
     metaTitle: 'Cloud & DevOps Engineering Services | ORBIT-I',
     metaDesc: 'Cloud & DevOps engineering from Nawabshah & Karachi. AWS, Docker, Kubernetes, CI/CD automation, Hostinger/VPS deployment, and security hardening.',
     keywords: [
       'cloud DevOps Pakistan', 'AWS consulting Karachi', 'Docker containerization Nawabshah',
       'CI CD pipeline Pakistan', 'Linux server hardening Sindh', 'cloud infrastructure Lahore',
-      'zero downtime deployment'
+      'high availability deployment'
     ],
     icon: '⬢',
     features: [
-      'Zero-downtime CI/CD deployment pipelines using GitHub Actions and Docker',
+      'High-availability rolling CI/CD deployment pipelines using GitHub Actions and Docker',
       'Isolated production, staging, and preview testing environments',
       'Automated database backups with point-in-time disaster recovery',
       'Real-time uptime monitoring, Prometheus metrics, and automated alerts'
@@ -223,7 +223,7 @@ export const servicesList = [
     featured: false,
     category: 'System Integration & Gateways',
     title: 'Enterprise API & Gateway Integrations',
-    shortDesc: 'Secure payment gateways, banking APIs, ERP connectors, and idempotent webhooks engineered with bank-grade encryption.',
+    shortDesc: 'Secure payment gateways, banking APIs, ERP connectors, and idempotent webhooks engineered with enterprise-grade encryption (TLS 1.3 & AES-256).',
     heroTag: 'Mission-Critical Integrations',
     metaTitle: 'Enterprise API & Gateway Integrations | ORBIT-I',
     metaDesc: 'Enterprise API integrations by ORBIT-I. Payment gateways (Stripe, JazzCash, EasyPaisa, PayFast), banking connectors, and webhook infrastructure.',

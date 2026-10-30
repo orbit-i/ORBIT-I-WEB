@@ -266,6 +266,18 @@ export default function SecretAdminPortalPage() {
     is_active: 1,
   })
 
+  // Maintenance Mode & Route Firewall state
+  const [maintenanceForm, setMaintenanceForm] = useState({
+    enabled: false,
+    title: 'System Upgrades in Progress',
+    message: 'ORBIT-I systems are currently undergoing scheduled upgrades & performance enhancements. Select public portals remain fully accessible.',
+    estimated_return: '1-2 Hours',
+    allowed_routes: ['/careers', '/contact', '/verify'],
+    custom_allowed_routes: '',
+  })
+  const [pdfExtracting, setPdfExtracting] = useState(false)
+  const [pdfExtractResult, setPdfExtractResult] = useState(null)
+
   // Chatbot configuration state
   const [chatbotForm, setChatbotForm] = useState({
     enabled: true,
@@ -802,6 +814,7 @@ export default function SecretAdminPortalPage() {
         fetchAdmins()
       } else if (tab === 'banners_notices') {
         fetchNoticeAndBanners()
+        fetchMaintenance()
       } else if (tab === 'chatbot') {
         fetchChatbot()
         fetchChatbotQAs()
@@ -1373,6 +1386,92 @@ export default function SecretAdminPortalPage() {
     } catch {}
   }, [])
 
+  const fetchMaintenance = useCallback(async () => {
+    try {
+      const res = await fetch('/api/maintenance')
+      const data = await res.json()
+      if (data && typeof data === 'object') {
+        setMaintenanceForm({
+          enabled: Boolean(data.enabled),
+          title: data.title || 'System Upgrades in Progress',
+          message: data.message || '',
+          estimated_return: data.estimated_return || '1-2 Hours',
+          allowed_routes: Array.isArray(data.allowed_routes) ? data.allowed_routes : ['/careers', '/contact', '/verify'],
+          custom_allowed_routes: data.custom_allowed_routes || '',
+        })
+      }
+    } catch {}
+  }, [])
+
+  const handleSaveMaintenance = async (e) => {
+    e.preventDefault()
+    try {
+      const res = await adminReq('/api/admin/maintenance', {
+        method: 'POST',
+        body: JSON.stringify(maintenanceForm),
+      })
+      showMsg(res.message || 'Maintenance settings updated successfully!')
+      fetchMaintenance()
+    } catch (err) {
+      showMsg(err.message, 'error')
+    }
+  }
+
+  const toggleAllowedRoute = (route) => {
+    setMaintenanceForm((prev) => {
+      const exists = prev.allowed_routes.includes(route)
+      return {
+        ...prev,
+        allowed_routes: exists
+          ? prev.allowed_routes.filter((r) => r !== route)
+          : [...prev.allowed_routes, route],
+      }
+    })
+  }
+
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setPdfExtracting(true)
+    setPdfExtractResult(null)
+
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+
+      const token = localStorage.getItem('orbit_access_token') || localStorage.getItem('orbit_admin_token')
+      const res = await fetch('/api/chatbot/upload-pdf', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: fd,
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to extract text from file')
+      }
+
+      setDocForm((prev) => ({
+        ...prev,
+        title: data.title || prev.title,
+        content_text: data.content_text || prev.content_text,
+      }))
+
+      setPdfExtractResult({
+        fileName: data.fileName,
+        wordCount: data.wordCount,
+        numPages: data.numPages,
+      })
+      showMsg(`Successfully extracted ${data.wordCount} words from [${data.fileName}]! Ready to ingest.`)
+    } catch (err) {
+      showMsg(err.message, 'error')
+    } finally {
+      setPdfExtracting(false)
+    }
+  }
+
   const fetchChatbot = useCallback(async () => {
     try {
       const res = await fetch('/api/chatbot/config')
@@ -1614,6 +1713,7 @@ export default function SecretAdminPortalPage() {
         category: 'Company Profile & Hubs',
         content_text: '',
       })
+      setPdfExtractResult(null)
       setIsAddingDoc(false)
       fetchChatbotDocs()
     } catch (err) {
@@ -3548,8 +3648,30 @@ export default function SecretAdminPortalPage() {
                         />
                       </div>
                       <div>
-                        <label style={labelStyle}>Department *</label>
-                        <input type="text" placeholder="e.g. Artificial Intelligence & Data" value={careerForm.department} required onChange={(e) => setCareerForm((prev) => ({ ...prev, department: e.target.value }))} style={inputStyle} />
+                        <label style={labelStyle}>Department * (Select or Type Any Custom Department)</label>
+                        <input
+                          type="text"
+                          list="career-departments-list"
+                          placeholder="e.g. Artificial Intelligence & Data, DevOps, Mobile Dev..."
+                          value={careerForm.department}
+                          required
+                          onChange={(e) => setCareerForm((prev) => ({ ...prev, department: e.target.value }))}
+                          style={inputStyle}
+                        />
+                        <datalist id="career-departments-list">
+                          <option value="Web Development" />
+                          <option value="Artificial Intelligence & Data" />
+                          <option value="Creative Design" />
+                          <option value="UI/UX Design" />
+                          <option value="Software Development" />
+                          <option value="Mobile Application Development" />
+                          <option value="Cybersecurity and Information Security" />
+                          <option value="DevOps and Cloud Engineering" />
+                          <option value="Digital Marketing & SEO" />
+                          <option value="AI Automation and Business Solutions" />
+                          <option value="Game Development" />
+                          <option value="Content and Communications" />
+                        </datalist>
                       </div>
                       <div>
                         <label style={labelStyle}>Category *</label>
@@ -3702,14 +3824,25 @@ export default function SecretAdminPortalPage() {
                         <input type="text" placeholder="e.g. Founder & CEO" value={teamForm.designation} required onChange={(e) => setTeamForm((prev) => ({ ...prev, designation: e.target.value }))} style={inputStyle} />
                       </div>
                       <div>
-                        <label style={labelStyle}>Department</label>
-                        <select value={teamForm.department} onChange={(e) => setTeamForm((prev) => ({ ...prev, department: e.target.value }))} style={{ ...inputStyle, cursor: 'pointer' }}>
-                          <option value="Leadership">Leadership</option>
-                          <option value="Operations & Strategy">Operations & Strategy</option>
-                          <option value="AI & Data Science">AI & Data Science</option>
-                          <option value="Web Engineering">Web Engineering</option>
-                          <option value="Cyber Security">Cyber Security</option>
-                        </select>
+                        <label style={labelStyle}>Department (Select or Type Custom)</label>
+                        <input
+                          type="text"
+                          list="team-departments-list"
+                          placeholder="e.g. Leadership, Web Engineering, Research..."
+                          value={teamForm.department}
+                          onChange={(e) => setTeamForm((prev) => ({ ...prev, department: e.target.value }))}
+                          style={inputStyle}
+                        />
+                        <datalist id="team-departments-list">
+                          <option value="Leadership" />
+                          <option value="Operations & Strategy" />
+                          <option value="AI & Data Science" />
+                          <option value="Web Engineering" />
+                          <option value="Cyber Security" />
+                          <option value="Mobile Development" />
+                          <option value="Creative Design & UI/UX" />
+                          <option value="Marketing & Growth" />
+                        </datalist>
                       </div>
                       <div>
                         <label style={labelStyle}>Display Order</label>
@@ -4670,6 +4803,149 @@ export default function SecretAdminPortalPage() {
                     )}
                   </div>
                 </SectionCard>
+
+                {/* ── CUSTOMIZABLE MAINTENANCE MODE & ROUTE ACCESS FIREWALL ── */}
+                <SectionCard
+                  title="Maintenance Mode & Selective Public Route Firewall"
+                  subtitle="Activate scheduled maintenance mode while selecting which specific public pages remain live and operational."
+                  onSubmit={handleSaveMaintenance}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 12, marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+                      <input
+                        type="checkbox"
+                        checked={maintenanceForm.enabled}
+                        onChange={(e) => setMaintenanceForm({ ...maintenanceForm, enabled: e.target.checked })}
+                        style={{ width: 18, height: 18, cursor: 'pointer' }}
+                      />
+                      <span>Enable System Maintenance Mode</span>
+                    </label>
+
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        padding: '4px 12px',
+                        borderRadius: 100,
+                        background: maintenanceForm.enabled ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.12)',
+                        border: `1px solid ${maintenanceForm.enabled ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'}`,
+                        color: maintenanceForm.enabled ? '#ef4444' : '#22c55e',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                    >
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: maintenanceForm.enabled ? '#ef4444' : '#22c55e' }} />
+                      {maintenanceForm.enabled ? 'Maintenance Active (Routes Guarded)' : 'Website Fully Live Online'}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 14 }}>
+                    <div>
+                      <label style={labelStyle}>Notice Headline Title *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Scheduled Orbital Calibration"
+                        value={maintenanceForm.title}
+                        onChange={(e) => setMaintenanceForm({ ...maintenanceForm, title: e.target.value })}
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Estimated Return Duration / ETA</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 1-2 Hours, Tonight 11:00 PM"
+                        value={maintenanceForm.estimated_return}
+                        onChange={(e) => setMaintenanceForm({ ...maintenanceForm, estimated_return: e.target.value })}
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: 18 }}>
+                    <label style={labelStyle}>Maintenance Explanation Message *</label>
+                    <textarea
+                      rows={2}
+                      required
+                      placeholder="Explain the scheduled upgrade to visitors..."
+                      value={maintenanceForm.message}
+                      onChange={(e) => setMaintenanceForm({ ...maintenanceForm, message: e.target.value })}
+                      style={{ ...inputStyle, resize: 'vertical' }}
+                    />
+                  </div>
+
+                  {/* Selective Route Visibility Selector */}
+                  <div style={{ padding: '16px 18px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 14, marginBottom: 18 }}>
+                    <div style={{ marginBottom: 12 }}>
+                      <label style={{ ...labelStyle, marginBottom: 4 }}>
+                        Public Routes Kept Accessible During Maintenance
+                      </label>
+                      <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
+                        Checked pages remain fully visible and operational to the public. Unchecked pages automatically redirect to /maintenance. (Admin & Control Vault always remain accessible).
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10, marginBottom: 14 }}>
+                      {[
+                        { route: '/careers', label: 'Careers & Internships (/careers)' },
+                        { route: '/contact', label: 'Contact Us & Forms (/contact)' },
+                        { route: '/verify', label: 'Certificate Registry (/verify)' },
+                        { route: '/services', label: 'Services Catalog (/services)' },
+                        { route: '/about', label: 'About Company (/about)' },
+                        { route: '/blog', label: 'Engineering Blog (/blog)' },
+                        { route: '/team', label: 'Leadership Team (/team)' },
+                        { route: '/locations', label: 'Hubs & Locations (/locations)' },
+                      ].map((item) => {
+                        const isChecked = (maintenanceForm.allowed_routes || []).includes(item.route)
+                        return (
+                          <label
+                            key={item.route}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8,
+                              padding: '8px 12px',
+                              borderRadius: 8,
+                              background: isChecked ? 'rgba(99,102,241,0.1)' : 'var(--bg-card)',
+                              border: `1px solid ${isChecked ? 'rgba(99,102,241,0.3)' : 'var(--border)'}`,
+                              cursor: 'pointer',
+                              fontSize: 12,
+                              color: isChecked ? 'var(--text-primary)' : 'var(--text-secondary)',
+                              transition: 'all 0.15s',
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleAllowedRoute(item.route)}
+                              style={{ width: 15, height: 15, cursor: 'pointer' }}
+                            />
+                            <span>{item.label}</span>
+                          </label>
+                        )
+                      })}
+                    </div>
+
+                    <div>
+                      <label style={{ ...labelStyle, fontSize: 11 }}>
+                        Additional Custom Routes (Comma-separated)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. /p/security-policy, /custom-event, /privacy"
+                        value={maintenanceForm.custom_allowed_routes || ''}
+                        onChange={(e) => setMaintenanceForm({ ...maintenanceForm, custom_allowed_routes: e.target.value })}
+                        style={inputStyle}
+                      />
+                    </div>
+                  </div>
+
+                  <button type="submit" className="btn-primary" style={{ fontSize: 13, padding: '10px 22px', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <Save size={14} /> Save Maintenance Configuration & Firewall Rules
+                  </button>
+                </SectionCard>
               </motion.div>
             )}
 
@@ -4899,9 +5175,57 @@ export default function SecretAdminPortalPage() {
                 {isAddingDoc && (
                   <SectionCard
                     title="Ingest Knowledge Document or PDF Text"
-                    subtitle="Paste text extracted from company PDF profiles, brochures, or technical whitepapers to expand the chatbot's dynamic memory."
+                    subtitle="Upload a PDF/Word file or paste text from company profiles, brochures, and charters to expand the chatbot's dynamic memory."
                     onSubmit={handleSaveDoc}
                   >
+                    {/* Direct PDF / Text File Uploader */}
+                    <div style={{
+                      marginBottom: 18,
+                      padding: '20px 24px',
+                      background: 'var(--bg-elevated)',
+                      border: '2px dashed var(--border)',
+                      borderRadius: 14,
+                      textAlign: 'center',
+                    }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                        <Upload size={28} color="var(--accent)" />
+                        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+                          {pdfExtracting ? 'Extracting readable text from document...' : 'Upload PDF or Document File (.pdf, .txt, .md)'}
+                        </span>
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0, maxWidth: 500 }}>
+                          Select any PDF file or text document. The system will automatically parse its pages, extract the text, and populate the fields below for your review.
+                        </p>
+                        <label style={{
+                          marginTop: 8,
+                          padding: '8px 20px',
+                          borderRadius: 100,
+                          background: pdfExtracting ? 'var(--bg-hover)' : 'var(--accent)',
+                          color: '#ffffff',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: pdfExtracting ? 'not-allowed' : 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          boxShadow: '0 4px 14px var(--accent-glow)',
+                        }}>
+                          <Upload size={14} /> {pdfExtracting ? 'Parsing File Content...' : 'Choose PDF or Document File'}
+                          <input
+                            type="file"
+                            accept=".pdf,.txt,.md,.json"
+                            disabled={pdfExtracting}
+                            onChange={handlePdfUpload}
+                            style={{ display: 'none' }}
+                          />
+                        </label>
+                        {pdfExtractResult && (
+                          <div style={{ marginTop: 8, padding: '6px 14px', borderRadius: 100, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#22c55e', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <CheckCircle2 size={14} /> Successfully extracted {pdfExtractResult.wordCount} words ({pdfExtractResult.numPages} pages) from [{pdfExtractResult.fileName}]
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginBottom: 14 }}>
                       <div>
                         <label style={labelStyle}>Document Title *</label>

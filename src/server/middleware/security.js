@@ -226,6 +226,19 @@ function securityHeaders(req, res, next) {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   res.removeHeader('X-Powered-By');
+
+  const p = req.path || '';
+  if (
+    p === '/portal' ||
+    p.startsWith('/portal/') ||
+    p.startsWith('/admin') ||
+    p.startsWith('/superadmin') ||
+    p.startsWith('/control-vault-2026') ||
+    p.startsWith('/api/admin')
+  ) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+  }
+
   next();
 }
 

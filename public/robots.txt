@@ -1,13 +1,7 @@
 User-agent: *
 Allow: /
-Disallow: /control-vault-2026
-Disallow: /superadmin
-Disallow: /admin
-Disallow: /portal/admin
-Disallow: /portal/dashboard
-Disallow: /api/admin/
 
-# Allow AI Search Engines for AISEO Ranking
+# Dedicated crawlers
 User-agent: Googlebot
 Allow: /
 

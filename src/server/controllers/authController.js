@@ -59,28 +59,62 @@ async function login(req, res) {
     }
 
     // 2. Fallback to admin storage
+    const { getAdminByEmail } = require('../utils/cmsStorage');
+    const fallbackAdmin = await getAdminByEmail(cleanEmail);
+    if (!user && fallbackAdmin) {
+      user = {
+        id: fallbackAdmin.id,
+        name: fallbackAdmin.name,
+        email: fallbackAdmin.email,
+        password: fallbackAdmin.password,
+        role: fallbackAdmin.role || 'ADMIN',
+        approved: 1,
+      };
+    }
+
     if (!user) {
-      const { getAdminByEmail } = require('../utils/cmsStorage');
-      const fallbackAdmin = await getAdminByEmail(cleanEmail);
-      if (fallbackAdmin) {
-        user = {
-          id: fallbackAdmin.id,
-          name: fallbackAdmin.name,
-          email: fallbackAdmin.email,
-          password: fallbackAdmin.password,
-          role: fallbackAdmin.role || 'ADMIN',
-          approved: 1,
-        };
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    let isMatch = false;
+    if (user.password) {
+      isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch && password !== password.trim()) {
+        isMatch = await bcrypt.compare(password.trim(), user.password);
       }
     }
 
-    if (!user) {
+    // Auto-healing from fallback admin store
+    if (!isMatch && fallbackAdmin && fallbackAdmin.password) {
+      const isFallbackMatch =
+        (await bcrypt.compare(password, fallbackAdmin.password)) ||
+        (password !== password.trim() && (await bcrypt.compare(password.trim(), fallbackAdmin.password)));
+
+      if (isFallbackMatch) {
+        isMatch = true;
+        user.password = fallbackAdmin.password;
+        user.role = 'ADMIN';
+        user.approved = 1;
+        if (!user.name) user.name = fallbackAdmin.name;
+
+        try {
+          await pool.query(
+            `INSERT INTO client_information (name, email, password, approved, role, created_at)
+             VALUES (?, ?, ?, 1, 'ADMIN', NOW())
+             ON DUPLICATE KEY UPDATE password = VALUES(password), name = VALUES(name), role = 'ADMIN', approved = 1`,
+            [user.name || 'Admin', cleanEmail, fallbackAdmin.password]
+          );
+        } catch {}
+      }
+    }
+
+    if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password.' });
+    if (String(user.role).toUpperCase() === 'ADMIN') {
+      user.role = 'ADMIN';
+      user.approved = 1;
     }
 
     if (!user.approved && user.role !== 'ADMIN') {

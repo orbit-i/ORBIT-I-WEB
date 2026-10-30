@@ -345,7 +345,7 @@ export default function LinksPage() {
 
             {/* tags */}
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-              {['SECP Active', 'Est. 2024', 'Nawabshah', 'Pakistan'].map((t) => (
+              {['SECP Active', 'Est. 2026', 'Nawabshah', 'Pakistan'].map((t) => (
                 <span key={t} style={{ fontSize: 10, padding: '3px 10px', background: 'var(--accent-glow)', border: '1px solid var(--border-hover)', borderRadius: 100, color: 'var(--accent-light)', fontWeight: 600 }}>
                   {t}
                 </span>

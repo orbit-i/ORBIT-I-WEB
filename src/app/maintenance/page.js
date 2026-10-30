@@ -1,17 +1,72 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import OrbitLogo from '@/components/OrbitLogo'
-import { MessageCircle, Mail } from 'lucide-react'
+import { MessageCircle, Mail, ArrowRight, ExternalLink } from 'lucide-react'
 
 export default function MaintenancePage() {
+  const [config, setConfig] = useState({
+    title: 'Scheduled Orbital Calibration',
+    message:
+      'ORBIT-I infrastructure engineering team is currently conducting scheduled system maintenance and performance calibrations to ensure maximum reliability and speed.',
+    estimated_return: '1-2 Hours',
+    allowed_routes: ['/careers', '/contact', '/verify'],
+    custom_allowed_routes: '',
+  })
+
+  useEffect(() => {
+    fetch('/api/maintenance')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && typeof data === 'object') {
+          setConfig((prev) => ({
+            ...prev,
+            title: data.title || prev.title,
+            message: data.message || prev.message,
+            estimated_return: data.estimated_return || prev.estimated_return,
+            allowed_routes: Array.isArray(data.allowed_routes) ? data.allowed_routes : prev.allowed_routes,
+            custom_allowed_routes: data.custom_allowed_routes || '',
+          }))
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const routeTitles = {
+    '/careers': 'Careers & Internships Portal',
+    '/contact': 'Contact Us & Technical Inquiries',
+    '/verify': 'Certificate Verification Registry',
+    '/services': 'Services Catalog',
+    '/about': 'About ORBIT-I',
+    '/blog': 'Engineering Insights Blog',
+    '/team': 'Core Leadership Team',
+    '/locations': 'Official Sindh Hubs & Locations',
+  }
+
+  const customList = (config.custom_allowed_routes || '')
+    .split(/[,;\n]/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+
+  const activePortals = Array.from(new Set([...config.allowed_routes, ...customList]))
+    .map((path) => {
+      let clean = path.toLowerCase().trim()
+      if (!clean.startsWith('/')) clean = '/' + clean
+      return {
+        path: clean,
+        title: routeTitles[clean] || `Portal: ${clean}`,
+      }
+    })
+    .filter((p) => p.path !== '/' && p.path !== '/maintenance')
+
   const telemetry = [
     { name: 'Core API Gateway', status: 'Operational', color: '#10b981' },
     { name: 'Distributed Cloud Clusters', status: 'Operational', color: '#10b981' },
-    { name: 'Client Portal & Auth Services', status: 'Calibrating', color: '#f59e0b' },
     { name: 'Data Pipeline Synced', status: 'Active', color: '#10b981' },
+    { name: 'Estimated Completion', status: config.estimated_return || '1-2 Hours', color: '#f59e0b' },
   ]
 
   return (
@@ -60,7 +115,7 @@ export default function MaintenancePage() {
           </div>
 
           <div style={{
-            fontSize: 'clamp(28px, 5vw, 44px)',
+            fontSize: 'clamp(28px, 5vw, 40px)',
             fontWeight: 800,
             fontFamily: 'Space Grotesk',
             lineHeight: 1.2,
@@ -70,7 +125,7 @@ export default function MaintenancePage() {
             WebkitTextFillColor: 'transparent',
             marginBottom: 12,
           }}>
-            Scheduled Orbital Calibration
+            {config.title}
           </div>
 
           <span style={{
@@ -86,7 +141,7 @@ export default function MaintenancePage() {
             borderRadius: 100,
             marginBottom: 18,
           }}>
-            System Upgrades in Progress
+            System Upgrades in Progress · ETA: {config.estimated_return}
           </span>
 
           <p style={{
@@ -97,8 +152,49 @@ export default function MaintenancePage() {
             maxWidth: 520,
             margin: '0 auto 28px',
           }}>
-            ORBIT-I infrastructure engineering team is currently conducting scheduled system maintenance and performance calibrations to ensure maximum reliability and speed.
+            {config.message}
           </p>
+
+          {/* Accessible Live Portals */}
+          {activePortals.length > 0 && (
+            <div style={{
+              background: 'rgba(34,197,94,0.06)',
+              border: '1px solid rgba(34,197,94,0.25)',
+              borderRadius: 16,
+              padding: '16px 20px',
+              marginBottom: 28,
+              textAlign: 'left',
+            }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                Accessible Services During Maintenance:
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {activePortals.map((portal) => (
+                  <Link
+                    key={portal.path}
+                    href={portal.path}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                      background: 'var(--bg-elevated)',
+                      border: '1px solid var(--border)',
+                      padding: '7px 14px',
+                      borderRadius: 100,
+                      textDecoration: 'none',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <span>{portal.title}</span>
+                    <ArrowRight size={12} color="#4ade80" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Telemetry Status Board */}
           <div style={{
@@ -133,7 +229,7 @@ export default function MaintenancePage() {
             alignItems: 'center',
           }}>
             <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-              Need immediate enterprise assistance or have a mission-critical request?
+              Need urgent enterprise assistance or have a mission-critical inquiry?
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
               <a
@@ -170,21 +266,6 @@ export default function MaintenancePage() {
               >
                 <Mail size={15} /> contactus@orbit-i.tech
               </a>
-              <Link
-                href="/"
-                style={{
-                  textDecoration: 'none',
-                  padding: '10px 20px',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: 'var(--text-secondary)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 100,
-                  background: 'var(--bg-card)',
-                }}
-              >
-                Return Home
-              </Link>
             </div>
           </div>
         </div>
@@ -193,3 +274,4 @@ export default function MaintenancePage() {
     </>
   )
 }
+

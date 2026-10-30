@@ -71,20 +71,23 @@ export default function Hero() {
 
             {/* Left text */}
             <div className="hero-text">
-              <motion.div {...fadeUp(0)}>
+              <motion.div {...fadeUp(0)} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 <div className="tag"><span className="dot" />HQ · Nawabshah | Branch · Karachi</div>
+                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--accent)', textTransform: 'uppercase' }}>
+                  ORBIT-I Private Limited
+                </span>
               </motion.div>
 
-              <motion.h1 {...fadeUp(0.1)} style={{ fontSize: 'clamp(38px, 7vw, 70px)', lineHeight: 1.04, letterSpacing: '-0.03em', color: 'var(--text-primary)', fontFamily: 'Space Grotesk', fontWeight: 800 }}>
-                ORBIT-I{' '}
-                <span className="gradient-text-blue" style={{ display: 'block' }}>Private Limited</span>
+              <motion.h1 {...fadeUp(0.1)} style={{ fontSize: 'clamp(32px, 5.2vw, 54px)', lineHeight: 1.1, letterSpacing: '-0.03em', color: 'var(--text-primary)', fontFamily: 'Space Grotesk', fontWeight: 800 }}>
+                Custom Software, AI &amp; Web Development in{' '}
+                <span className="gradient-text-blue" style={{ display: 'block' }}>Nawabshah &amp; Karachi</span>
               </motion.h1>
 
-              <motion.h2 {...fadeUp(0.15)} style={{ fontSize: 'clamp(15px, 2.5vw, 22px)', fontWeight: 500, color: 'var(--text-secondary)', fontFamily: 'Space Grotesk', letterSpacing: '-0.02em', lineHeight: 1.4 }}>
+              <motion.p {...fadeUp(0.15)} style={{ fontSize: 'clamp(15px, 2.2vw, 19px)', fontWeight: 500, color: 'var(--text-primary)', fontFamily: 'Space Grotesk', letterSpacing: '-0.02em', lineHeight: 1.45 }}>
                 Engineering Software That Stays in{' '}
                 <span className="gradient-text-blue">Orbit</span>{' '}
                 Around Your Business
-              </motion.h2>
+              </motion.p>
 
               <motion.p {...fadeUp(0.2)} style={{ fontSize: 15, lineHeight: 1.75, color: 'var(--text-secondary)' }}>
                 We engineer custom software systems, scalable cloud platforms, and modern enterprise applications with strict type safety, modular architecture, and long-term production reliability.
@@ -133,17 +136,18 @@ export default function Hero() {
                     <div style={{ position: 'absolute', bottom: -3, left: '50%', transform: 'translateX(-50%)', width: 6, height: 6, borderRadius: '50%', background: 'rgba(99,140,210,0.5)' }} />
                   </motion.div>
                   <Image src="/orbitlogo-removebg-preview.png" alt="ORBIT-I" width={56} height={56}
+                    sizes="56px"
                     style={{ objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(59,130,246,0.5))' }} />
                 </div>
 
                 <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <p style={{ fontSize: 10, letterSpacing: '0.12em', color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 600 }}>Official Corporate Emblem</p>
                   <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>ORBIT-I Private Limited</h3>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Engineering software, custom platforms, and verifiable cloud architectures from Nawabshah & Karachi, Pakistan.</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Engineering software, custom platforms, and verifiable cloud architectures from Nawabshah &amp; Karachi, Pakistan.</p>
                 </div>
 
                 <div style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', borderTop: '1px solid var(--border)' }}>
-                  {[['EST. 2026', 'Founded'], ['SECP', 'Active'], ['SINDH', 'HQ & Branch']].map(([v, l], i) => (
+                  {[['SECP', 'Registered'], ['ACTIVE', 'Status'], ['SINDH', 'HQ & Branch']].map(([v, l], i) => (
                     <div key={l} style={{ padding: '12px 6px', textAlign: 'center', borderLeft: i > 0 ? '1px solid var(--border)' : 'none' }}>
                       <div style={{ fontFamily: 'Space Grotesk', fontSize: 11, fontWeight: 700, color: 'var(--text-primary)' }}>{v}</div>
                       <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{l}</div>

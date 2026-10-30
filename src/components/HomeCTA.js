@@ -35,10 +35,10 @@ export default function HomeCTA() {
             <span className="tag"><span className="dot" />Get Started with ORBIT-I</span>
           </motion.div>
           <motion.h2 {...fadeUp(0.1)} style={{ fontFamily: 'Space Grotesk', fontSize: 'clamp(28px, 4.5vw, 46px)', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, marginTop: 14, marginBottom: 16 }}>
-            Collaborate With Pakistan's Leading <span className="gradient-text-blue">AI & Software Engineering Firm</span>
+            Collaborate With Our <span className="gradient-text-blue">Software &amp; AI Engineering Firm</span>
           </motion.h2>
           <motion.p {...fadeUp(0.2)} style={{ fontSize: 16, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-            Headquartered in <strong>Nawabshah</strong> with metropolitan operations in <strong>Karachi</strong>. Explore our team or launch your enterprise project with us today.
+            Headquartered in <strong>Nawabshah</strong> with executive branch operations in <strong>Karachi</strong>. Explore our team or launch your enterprise project with us today.
           </motion.p>
         </div>
 
@@ -67,25 +67,25 @@ export default function HomeCTA() {
                     <Users size={22} />
                   </div>
                   <span style={{ fontSize: 11, padding: '4px 10px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 100, color: 'var(--text-muted)', fontWeight: 600 }}>
-                    12+ Core Engineers & AI Researchers
+                    12+ Engineers, Designers &amp; Specialists
                   </span>
                 </div>
 
                 <h3 style={{ fontFamily: 'Space Grotesk', fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 12 }}>
-                  Meet Our Engineering & Leadership Team
+                  Meet Our Engineering &amp; Leadership Team
                 </h3>
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 24 }}>
-                  Led by certified system architects, AI researchers, and cloud DevOps specialists in Nawabshah and Karachi. Discover their credentials, bios, and technical domain specializations.
+                  Led by system architects, AI researchers, and cloud DevOps specialists in Nawabshah and Karachi. Discover their credentials, bios, and technical domain specializations.
                 </p>
 
                 {/* Team Avatars Preview */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
                   <div style={{ display: 'flex', marginLeft: 8 }}>
                     {[
-                      { name: 'Samad', img: '/team/samad rind.jpeg' },
-                      { name: 'Maria', img: '/team/female avatar.png' },
-                      { name: 'Muneeb', img: '/team/Muneeb ur rehman.jpeg' },
-                      { name: 'Hassan', img: '/team/hassan anser.jpeg' },
+                      { name: 'Samad', img: '/team/samad-rind.jpeg' },
+                      { name: 'Muneeb', img: '/team/muneeb-ur-rehman.jpeg' },
+                      { name: 'Hassan', img: '/team/hassan-anser.jpeg' },
+                      { name: 'Rashid', img: '/team/rashid-channa.jpeg' },
                     ].map((m, idx) => (
                       <div key={idx} style={{
                         position: 'relative',
@@ -96,12 +96,12 @@ export default function HomeCTA() {
                         border: '2px solid var(--bg-card)',
                         marginLeft: -8,
                       }}>
-                        <Image src={m.img} alt={m.name} fill style={{ objectFit: 'cover' }} />
+                        <Image src={m.img} alt={m.name} fill sizes="38px" style={{ objectFit: 'cover' }} />
                       </div>
                     ))}
                   </div>
                   <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>
-                    Executive Founders & Lead Developers
+                    Executive Founders &amp; Lead Developers
                   </span>
                 </div>
               </div>
@@ -170,7 +170,7 @@ export default function HomeCTA() {
                   Start Your Next Enterprise Project
                 </h3>
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
-                  Have an AI system, web platform, or custom ERP to build? Fill out our project inquiry form or talk directly with our commercial advisors in Nawabshah and Karachi.
+                  Have an AI system, web platform, or custom ERP to build? Fill out our project inquiry form or talk directly with our engineering advisors in Nawabshah and Karachi.
                 </p>
 
                 {/* Quick Info Badges */}
@@ -188,7 +188,7 @@ export default function HomeCTA() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)' }}>
                     <Phone size={15} color="var(--accent)" style={{ flexShrink: 0 }} />
                     <a href="https://wa.me/923190375751" target="_blank" rel="noreferrer" style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: 600 }}>
-                      +92 319 0375751 (WhatsApp & Phone)
+                      +92 319 0375751 (WhatsApp &amp; Phone)
                     </a>
                   </div>
                 </div>
@@ -210,7 +210,7 @@ export default function HomeCTA() {
                     textAlign: 'center',
                   }}
                 >
-                  Open Contact & Inquiry Page <ArrowRight size={16} />
+                  Open Contact &amp; Inquiry Page <ArrowRight size={16} />
                 </Link>
                 <a
                   href="https://wa.me/923190375751"
